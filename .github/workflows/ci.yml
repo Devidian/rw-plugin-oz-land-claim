@@ -194,7 +194,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          name: "PluginTemplate ${{ needs.build.outputs.version }}"
+          name: "OZ - Land Claim ${{ needs.build.outputs.version }}"
           tag_name: "${{ github.ref_name }}"
           files: |
             dist/*.zip
