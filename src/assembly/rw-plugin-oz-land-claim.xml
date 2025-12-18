@@ -11,8 +11,8 @@
 
     <fileSets>
         <fileSet>
-            <directory>${project.basedir}/dist/MavenTemplate</directory>
-            <outputDirectory>/MavenTemplate</outputDirectory>
+            <directory>${project.basedir}/dist/OZLandClaim</directory>
+            <outputDirectory>/OZLandClaim</outputDirectory>
             <includes>
                 <include>**/*</include>
             </includes>

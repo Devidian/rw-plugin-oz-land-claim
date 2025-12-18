@@ -1,0 +1,69 @@
+{
+  "area": {
+    "addplayer": true,
+    "canenter": true,
+    "canleave": true,
+    "removeplayer": true,
+    "setname": true
+  },
+  "creative": {
+    "allrecipes": false,
+    "areatools": false,
+    "edittools": false,
+    "fly": false,
+    "freecrafting": false,
+    "godmode": false,
+    "infiniteitems": false,
+    "instantdigging": false,
+    "light": false,
+    "placementtools": false,
+    "removaltools": false,
+    "terraintools": false
+  },
+  "general": {
+    "changeblockshape": true,
+    "changegamemode": false,
+    "destroyitems": true,
+    "dropitems": true,
+    "fixedspawn": false,
+    "fly": false,
+    "godmode": false,
+    "instantdigging": false,
+    "keepinventory": true,
+    "noclipping": false,
+    "nofalldamage": false,
+    "nohungerthirst": false,
+    "nostamina": false,
+    "notemperature": false,
+    "pickupitems": true,
+    "placeitems": true,
+    "peacefulmode": true,
+    "pve": true,
+    "pvp": true,
+    "unlockalldoors": true,
+    "voicechat": true
+  },
+  "world": {
+    "destroyconstructions": true,
+    "destroyobjects": true,
+    "destroyownconstructions": true,
+    "destroyownobjects": true,
+    "destroyownvegetations": true,
+    "destroyterrain": true,
+    "destroyvegetations": true,
+    "editconstructions": true,
+    "editobjects": true,
+    "editownconstructions": true,
+    "editownobjects": true,
+    "editownvegetations": true,
+    "editvegetations": true,
+    "placeconstructions": true,
+    "placeobjects": true,
+    "placeobjectsexception": [],
+    "placeterrain": true,
+    "placevegetations": true
+  },
+  "forbidden": {
+    "items": []
+  }
+}

@@ -7,10 +7,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.devidian</groupId>
-    <artifactId>rw-plugin-maven-template</artifactId>
-    <version>0.0.0</version>
+    <artifactId>rw-plugin-oz-land-claim</artifactId>
+    <version>0.1.0</version>
 
-    <name>MavenTemplate</name>
+    <name>OZLandClaim</name>
     <description>No description yet</description>
 
     <!-- Repositories -->
@@ -49,21 +49,20 @@
         <!-- <dependency>
             <groupId>com.github.devidian</groupId>
             <artifactId>rw-plugin-oz-global-intercom</artifactId>
-            <version>0.12.8</version>
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency> -->
-        <!-- <dependency>
-            <groupId>com.github.devidian</groupId>
-            <artifactId>rw-plugin-oz-discord-connect</artifactId>
-            <version>0.16.12</version>
+            <version>0.13.0</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency> -->
         <dependency>
             <groupId>com.github.devidian</groupId>
+            <artifactId>rw-plugin-oz-discord-connect</artifactId>
+            <version>0.17.2</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.github.devidian</groupId>
             <artifactId>rw-plugin-oz-tools</artifactId>
-            <version>0.9.4</version>
+            <version>0.11.0</version>
         </dependency>
 
         <!-- Rising World PluginAPI -->
@@ -85,7 +84,13 @@
                 <targetPath>resources</targetPath>
                 <directory>${basedir}/src/resources</directory>
                 <includes>
-                    <include>*.yml</include>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <includes>
+                    <include>**/*</include>
                 </includes>
             </resource>
         </resources>
@@ -223,6 +228,25 @@
                                     <directory>${basedir}/src</directory>
                                     <includes>
                                         <include>*.properties</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <!-- copy any assets -->
+                    <execution>
+                        <id>copy-assets</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/dist/${project.name}/assets</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/src/assets</directory>
+                                    <includes>
+                                        <include>*.*</include>
                                     </includes>
                                 </resource>
                             </resources>

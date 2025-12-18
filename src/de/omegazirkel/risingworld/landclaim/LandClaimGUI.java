@@ -1,0 +1,727 @@
+package de.omegazirkel.risingworld.landclaim;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+
+import de.omegazirkel.risingworld.LandClaim;
+import de.omegazirkel.risingworld.landclaim.ChunkClaimUtil.Direction;
+import de.omegazirkel.risingworld.landclaim.ui.AreaPermissionPanel;
+import de.omegazirkel.risingworld.landclaim.ui.UIDialogFactory;
+import de.omegazirkel.risingworld.tools.I18n;
+import de.omegazirkel.risingworld.tools.ui.AssetManager;
+import de.omegazirkel.risingworld.tools.ui.CursorManager;
+import de.omegazirkel.risingworld.tools.ui.MenuItem;
+import de.omegazirkel.risingworld.tools.ui.PluginMenuManager;
+import net.risingworld.api.Plugin;
+import net.risingworld.api.Server;
+import net.risingworld.api.objects.Area;
+import net.risingworld.api.objects.Player;
+import net.risingworld.api.ui.UIElement;
+import net.risingworld.api.ui.UITarget;
+import net.risingworld.api.utils.Vector3i;
+import net.risingworld.api.worldelements.Area3D;
+
+/**
+ * LandClaimGUI
+ * LandClaim main menu is using integrated radial menu with submenues
+ * 
+ * Menu tree:
+ * - Main
+ * | - ✅: open Visibility settings
+ * | | - ✅: switch current chunk frame (yellow eye)
+ * | | - ✅: switch owned area frames (green eye)
+ * | | - ✅: switch other area frames (blue eye)
+ * | | - ✅: close menu (Visibility settings)
+ * | - ✅: open Admin Menu (Admin only)
+ * | | - ✅: show debug stuff [DEV ONLY]
+ * | | - ✅: rename area
+ * | | - ✅: manage permissions
+ * | | - ✅: remove claim/area
+ * | | - TODO: open special area menu
+ * | | | - TODO: set current area to special area (white border)
+ * | | | - TODO: set current area to arena (pvp) area (red border)
+ * | | | - TODO: set current area to arena (rest) area (light green? border)
+ * | | | - TODO: set current area to arena (trap) area (orange border)
+ * | | | - TODO: open expand area menu (adjust expanding method for special
+ * areas)
+ * | | - ✅: start repairmode
+ * | | - TODO: mark for sale
+ * | | - ✅: close menu (Admin Menu)
+ * | - ✅: claim current chunk (if possible)
+ * | - TODO: buy current area (if set for sale)
+ * | - ✅: open claim options
+ * | | - ✅: rename area
+ * | | - ✅: manage permissions
+ * | | - ✅: unclaim area
+ * | | - ✅: split area (if multi-chunk)
+ * | | - ✅: open expand area
+ * | | | - ✅: expand north
+ * | | | - ✅: expand east
+ * | | | - ✅: expand south
+ * | | | - ✅: expand west
+ * | | | - ✅: expand up
+ * | | | - ✅: expand down
+ * | | | - ✅: close menu (expand area)
+ * | | - TODO: set area for sale
+ * | | - ✅: close menu (claim options)
+ * | - ✅: close menu (Main)
+ * 
+ * Other:
+ * - ✅ time to claim hud
+ * 
+ * 
+ */
+public class LandClaimGUI {
+    private static LandClaimGUI instance = null;
+    private static ChunkClaimUtil chunkClaimUtil;
+    private static final I18n t = I18n.getInstance(LandClaim.name);
+    private static final PluginSettings s = PluginSettings.getInstance();
+    private final Map<String, AreaColors> AREA_COLORS = new HashMap<>();
+
+    private LandClaimGUI() {
+        AREA_COLORS.put(s.specialRestAreaPermission,
+                new AreaColors(s.restAreaBorderColor, s.restAreaFrameColor));
+
+        AREA_COLORS.put(s.specialPvPAreaPermission,
+                new AreaColors(s.pvpAreaBorderColor, s.pvpAreaFrameColor));
+
+        AREA_COLORS.put(s.specialTrapAreaPermission,
+                new AreaColors(s.trapAreaBorderColor, s.trapAreaFrameColor));
+
+        AREA_COLORS.put(s.specialAreaPermission,
+                new AreaColors(s.specialAreaBorderColor, s.specialAreaFrameColor));
+
+        AREA_COLORS.put(s.defaultAreaPermission,
+                new AreaColors(s.otherAreaBorderColor, s.otherAreaFrameColor));
+
+    }
+
+    public static LandClaimGUI getInstance(ChunkClaimUtil ccu, Plugin p) {
+        chunkClaimUtil = ccu;
+
+        // Icons for radial menu
+        AssetManager.loadIconFromPlugin(p, "oz-lc-logo", "/assets/icons/oz-lc-logo-alt.png");
+        AssetManager.loadIconFromPlugin(p, "debug", "/assets/icons/error-bug.png");
+        AssetManager.loadIconFromPlugin(p, "hideCurrentChunk", "/assets/icons/hide-current-frame.png");
+        AssetManager.loadIconFromPlugin(p, "showCurrentChunk", "/assets/icons/show-current-frame.png");
+        AssetManager.loadIconFromPlugin(p, "hideOwnedAreas", "/assets/icons/hide-owned-area-frames.png");
+        AssetManager.loadIconFromPlugin(p, "showOwnedAreas", "/assets/icons/show-owned-area-frames.png");
+        AssetManager.loadIconFromPlugin(p, "hideOtherAreas", "/assets/icons/hide-other-area-frames.png");
+        AssetManager.loadIconFromPlugin(p, "showOtherAreas", "/assets/icons/show-other-area-frames.png");
+        AssetManager.loadIconFromPlugin(p, "visibilityMenu", "/assets/icons/visibility-menu.png");
+        AssetManager.loadIconFromPlugin(p, "tools");
+        AssetManager.loadIconFromPlugin(p, "claim-chunk");
+        AssetManager.loadIconFromPlugin(p, "resize");
+        AssetManager.loadIconFromPlugin(p, "grid");
+        AssetManager.loadIconFromPlugin(p, "square-minus");
+        AssetManager.loadIconFromPlugin(p, "users-gear");
+        // Area expansion menu
+        AssetManager.loadIconFromPlugin(p, "compass-north");
+        AssetManager.loadIconFromPlugin(p, "compass-east");
+        AssetManager.loadIconFromPlugin(p, "compass-south");
+        AssetManager.loadIconFromPlugin(p, "compass-west");
+        AssetManager.loadIconFromPlugin(p, "up");
+        AssetManager.loadIconFromPlugin(p, "down");
+        // Special area menu (admin)
+        AssetManager.loadIconFromPlugin(p, "square-star"); // open special area menu
+        AssetManager.loadIconFromPlugin(p, "icon-star"); // create default special area
+        AssetManager.loadIconFromPlugin(p, "user-forbidden"); // create trap area
+        AssetManager.loadIconFromPlugin(p, "bed"); // create rest area
+        AssetManager.loadIconFromPlugin(p, "sword"); // create pvp area
+
+        return getInstance();
+    }
+
+    public static LandClaimGUI getInstance() {
+        if (instance == null) {
+            instance = new LandClaimGUI();
+        }
+        return instance;
+    }
+
+    private MenuItem menuItemSplitArea(Player uiPlayer, Area area, Consumer<Player> onCancel) {
+        return new MenuItem(
+                AssetManager.getIcon("grid"),
+                t.get("TC_MENU_AREA_SPLIT", uiPlayer),
+                (p) -> {
+                    UIElement confirmDialog = UIDialogFactory.getConfirmDangerDialog(p,
+                            t.get("TC_DIALOG_AREA_SPLIT_TITLE", p),
+                            t.get("TC_DIALOG_AREA_SPLIT_CONFIRM", p)
+                                    .replace("PH_AREA_NAME",
+                                            area.getName() == null ? "Unnamed Area"
+                                                    : area.getName()),
+                            (Boolean v) -> {
+                                if (v) {
+                                    if (!chunkClaimUtil.splitClaim(area, p))
+                                        onCancel.accept(p);
+                                    // if claim succeeds close menu
+                                    else {
+                                        p.hideRadialMenu(false);
+                                        updateAreaFramesForAllPlayers();
+                                    }
+                                }
+                            }, onCancel);
+
+                    p.addUIElement(confirmDialog, UITarget.HUD);
+                    CursorManager.show(p);
+                    p.hideRadialMenu(false);
+                });
+    }
+
+    private MenuItem menuItemRenameArea(Player player, Area area, Consumer<Player> onCancel) {
+        return new MenuItem(
+                AssetManager.getIcon("rename"),
+                t.get("TC_MENU_AREA_RENAME", player),
+                (p) -> {
+                    UIElement renameWindow = UIDialogFactory.getTextInput(p,
+                            t.get("TC_DIALOG_AREA_RENAME_TITLE", p),
+                            area.getName(), (String v) -> area.setName(v), onCancel);
+
+                    p.addUIElement(renameWindow, UITarget.HUD);
+                    CursorManager.show(p);
+                    p.hideRadialMenu(false);
+
+                });
+    }
+
+    private MenuItem menuItemRemoveArea(Player player, Area area, Consumer<Player> onCancel) {
+        return new MenuItem(
+                AssetManager.getIcon("square-minus"),
+                t.get("TC_MENU_AREA_RELEASE", player),
+                (p) -> {
+                    UIElement confirmDialog = UIDialogFactory.getConfirmDangerDialog(p,
+                            t.get("TC_DIALOG_AREA_RELEASE_TITLE", p),
+                            t.get("TC_DIALOG_AREA_RELEASE_CONFIRM", p).replace("PH_AREA_NAME",
+                                    area.getName() == null ? "Unnamed Area" : area.getName()),
+                            (Boolean v) -> {
+                                if (v) {
+                                    chunkClaimUtil.releaseArea(p, area);
+                                    updateAreaFramesForAllPlayers();
+                                    p.sendTextMessage(t.get("TC_DIALOG_AREA_RELEASE_SUCCESS", p));
+                                }
+                            }, onCancel);
+
+                    p.addUIElement(confirmDialog, UITarget.HUD);
+                    CursorManager.show(p);
+                    p.hideRadialMenu(false);
+
+                });
+    }
+
+    private MenuItem menuItemCreateSpecialArea(
+            Player uiPlayer,
+            String iconKey,
+            String labelKey,
+            Area area,
+            String permission,
+            Consumer<Player> onBack) {
+        return new MenuItem(
+                AssetManager.getIcon(iconKey),
+                t.get(labelKey, uiPlayer),
+                (p) -> {
+                    Area createdArea = chunkClaimUtil.claimArea(uiPlayer, area, permission, null);
+
+                    if (createdArea != null) {
+                        createSpecialAreaAnnouncement(area, uiPlayer);
+                        updateAreaFramesForAllPlayers();
+                    }
+
+                    openSpecialAreaMenu(uiPlayer, onBack);
+                });
+    }
+
+    private MenuItem menuItemExpandArea(Player player, Area area, Direction direction, String iconKey, String labelKey,
+            Consumer<Player> onCancel, Consumer<Player> onBack) {
+        return new MenuItem(
+                AssetManager.getIcon(iconKey),
+                t.get(labelKey, player),
+                (p) -> {
+                    UIElement confirmDialog = UIDialogFactory.getConfirmDangerDialog(p,
+                            t.get("TC_DIALOG_AREA_EXPAND_TITLE", p),
+                            t.get("TC_DIALOG_AREA_EXPAND_CONFIRM", p)
+                                    .replace("PH_AREA_NAME", area.getName() == null ? "Unnamed Area" : area.getName())
+                                    .replace("PH_DIRECTION",
+                                            t.get("TC_DIRECTION_" + direction.name().toUpperCase(), p)),
+                            (Boolean v) -> {
+                                if (v) {
+                                    Area expandedArea = chunkClaimUtil.expandClaim(area, direction, p);
+                                    if (expandedArea != null) {
+                                        expandClaimAnnouncement(expandedArea, p);
+                                        updateAreaFramesForAllPlayers();
+                                        openExpandAreaMenu(p, onBack);
+                                    } else {
+                                        // p.sendTextMessage(t.get("TC_DIALOG_AREA_EXPAND_FAILED", p));
+                                    }
+                                }
+                            }, onCancel);
+
+                    p.addUIElement(confirmDialog, UITarget.HUD);
+                    CursorManager.show(p);
+                    p.hideRadialMenu(false);
+
+                });
+    }
+
+    private MenuItem menuItemPermissionManager(Player player, Area area, Consumer<Player> onResponse) {
+        return new MenuItem(
+                AssetManager.getIcon("users-gear"),
+                t.get("TC_MENU_AREA_PERMISSIONS", player),
+                (p) -> {
+                    new AreaPermissionPanel(area, p, onResponse);
+
+                    p.hideRadialMenu(false);
+
+                });
+    }
+
+    public void updateCurrentChunkFrameForPlayer(Player player, Area area) {
+        Area3D chunkBorderArea = ((Area3D) player.getAttribute("currentAreaFrame"));
+        if (area == null) {
+            if (chunkBorderArea != null) {
+                player.removeGameObject(chunkBorderArea);
+                player.setAttribute("currentAreaFrame", null);
+                // if (player.isAdmin())
+                // player.sendTextMessage("debug:> currentAreaFrame removed");
+            }
+            return;
+        }
+        if (chunkBorderArea == null) {
+            chunkBorderArea = new Area3D(area);
+            // chunkBorderArea.setAlwaysVisible(true);
+            chunkBorderArea.setColor(s.currentChunkBorderColor);
+            chunkBorderArea.setFrameColor(s.currentChunkFrameColor);
+            chunkBorderArea.setFrameVisible(true);
+            player.setAttribute("currentAreaFrame", chunkBorderArea);
+            player.addGameObject(chunkBorderArea);
+            // if (player.isAdmin())
+            // player.sendTextMessage("debug:> currentAreaFrame added");
+        } else {
+            // ** WORKAROUND **
+            player.removeGameObject(chunkBorderArea);
+            chunkBorderArea = new Area3D(area);
+            chunkBorderArea.setColor(s.currentChunkBorderColor);
+            chunkBorderArea.setFrameColor(s.currentChunkFrameColor);
+            chunkBorderArea.setFrameVisible(true);
+            player.setAttribute("currentAreaFrame", chunkBorderArea);
+            player.addGameObject(chunkBorderArea);
+
+            // ** NULL POINTER EXCEPTIONS **
+            // Area current = chunkBorderArea.getArea();
+            // current.destroy();
+            // current.setStartPosition(area.getStartPosition());
+            // current.setEndPosition(area.getEndPosition());
+            // chunkBorderArea.setArea(current);
+
+            // ** NOT WORKING **
+            // chunkBorderArea.setArea(area);
+            // chunkBorderArea.updateCoordinates();
+        }
+    }
+
+    public void updateAreaFramesForAllPlayers() {
+        for (Player player : Server.getAllPlayers()) {
+            updateAreaFramesForPlayer(player);
+        }
+    }
+
+    public void updateAreaFramesForPlayer(Player player) {
+        Boolean showOwned = (Boolean) player.getAttribute("showOwnedAreaFrames");
+        Boolean showOther = (Boolean) player.getAttribute("showOtherAreaFrames");
+
+        // Get or create map
+        if (!player.hasAttribute("areaFrames")) {
+            player.setAttribute("areaFrames", new ConcurrentHashMap<Long, Area3D>());
+        }
+
+        @SuppressWarnings("unchecked")
+        ConcurrentHashMap<Long, Area3D> frames = (ConcurrentHashMap<Long, Area3D>) player.getAttribute("areaFrames");
+        if (frames == null) {
+            frames = new ConcurrentHashMap<>();
+            player.setAttribute("areaFrames", frames);
+        }
+        // remove frames not existing in the server db
+        for (Map.Entry<Long, Area3D> entry : new ConcurrentHashMap<>(frames).entrySet()) {
+            long areaId = entry.getKey();
+            Area3D existing = entry.getValue();
+            if (Server.getArea(areaId) == null) {
+                player.removeGameObject(existing);
+                frames.remove(areaId);
+            }
+        }
+
+        for (Area area : Server.getAllAreas()) {
+
+            long areaId = area.getID();
+            String areaPermission = area.getPlayerPermission(player);
+            boolean isOwner = areaPermission != null && areaPermission.equals(s.ownerAreaPermission);
+            boolean shouldShow = isOwner ? showOwned : showOther;
+
+            Area3D existing = frames.get(areaId);
+
+            // if (player.isAdmin()) {
+            // player.sendTextMessage("AreaID: " + areaId + " Owner: " + isOwner + "
+            // ShouldShow: " + shouldShow);
+            // player.sendTextMessage("Existing: " + existing);
+            // player.sendTextMessage("PlayerPermission: " +
+            // area.getPlayerPermission(player));
+            // player.sendTextMessage("OwnerAreaPermission: " +
+            // settings.ownerAreaPermission);
+            // }
+
+            if (shouldShow) {
+                // if it should be visible but does not exist → create
+                if (existing == null) {
+
+                    Area3D a3d = new Area3D(area);
+
+                    if (isOwner) {
+                        a3d.setColor(s.ownedAreaBorderColor);
+                        a3d.setFrameColor(s.ownedAreaFrameColor);
+                    } else {
+                        // TODO if for sale ...
+                        String defaultAreaPermission = area.getDefaultPermission();
+                        AreaColors colors = AREA_COLORS.getOrDefault(
+                                defaultAreaPermission,
+                                new AreaColors(s.otherAreaBorderColor, s.otherAreaFrameColor));
+
+                        a3d.setColor(colors.border());
+                        a3d.setFrameColor(colors.frame());
+                    }
+                    a3d.setFrameVisible(true);
+
+                    frames.put(areaId, a3d);
+                    player.addGameObject(a3d);
+                }
+            } else {
+                // if it should not be visible but exists → remove
+                if (existing != null) {
+                    player.removeGameObject(existing);
+                    frames.remove(areaId);
+                }
+            }
+        }
+    }
+
+    public void openSpecialAreaMenu(Player uiPlayer, Consumer<Player> onBack) {
+        List<MenuItem> menuItems = new ArrayList<>();
+
+        Vector3i chunkPos = uiPlayer.getChunkPosition();
+        Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPos);
+        Area existingArea = chunkClaimUtil.isAreaIntersecting(area);
+
+        Consumer<Player> onBackReopen = (Player player) -> openSpecialAreaMenu(player, onBack);
+
+        if (existingArea == null) {
+            // special areas
+            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "icon-star", "TC_MENU_SPECIAL_AREA_CREATE", area,
+                    s.specialAreaPermission, onBack));
+            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "sword", "TC_MENU_SPECIAL_AREA_PVP", area,
+                    s.specialPvPAreaPermission, onBack));
+            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "bed", "TC_MENU_SPECIAL_AREA_REST", area,
+                    s.specialRestAreaPermission, onBack));
+            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "user-forbidden", "TC_MENU_SPECIAL_AREA_TRAP", area,
+                    s.specialTrapAreaPermission, onBack));
+        }
+        // show extend menu if area exist
+        if (existingArea != null) {
+            menuItems.add(new MenuItem(
+                    AssetManager.getIcon("resize"),
+                    t.get("TC_MENU_AREA_EXPAND_OPTION", uiPlayer),
+                    (p) -> {
+                        openExpandAreaMenu(p, onBackReopen);
+                    }));
+        }
+
+        menuItems.add(MenuItem.closeMenu(uiPlayer));
+        menuItems.add(MenuItem.backMenu(uiPlayer, onBack));
+
+        PluginMenuManager.showMenu(uiPlayer, menuItems);
+    }
+
+    public void openAdminMenu(Player uiPlayer, Consumer<Player> onBack) {
+        Boolean developerMode = (Boolean) uiPlayer.getAttribute("developerMode");
+        Vector3i chunkPos = uiPlayer.getChunkPosition();
+        Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPos);
+        Area existingArea = chunkClaimUtil.isAreaIntersecting(area);
+        String defaultPermission = existingArea == null ? null : existingArea.getDefaultPermission();
+        Boolean isDefaultArea = defaultPermission != null && defaultPermission.equals(s.defaultAreaPermission);
+        Integer chunkCount = existingArea == null ? 0 : ChunkClaimUtil.areaToChunks(existingArea).size();
+        // Boolean isSpecialArea = !isDefaultArea && defaultPermission != null
+        // && defaultPermission.startsWith("ozlc-special");
+
+        List<MenuItem> menuItems = new ArrayList<>();
+
+        Consumer<Player> onBackReopen = (Player player) -> openAdminMenu(player, onBack);
+
+        if (developerMode) {
+
+            menuItems.add(new MenuItem(
+                    AssetManager.getIcon("debug"),
+                    t.get("TC_MENU_ADMIN_DEBUG", uiPlayer),
+                    (p) -> {
+                        updateAreaFramesForPlayer(p);
+                        chunkClaimUtil.idleChunk(p);
+
+                        long a = chunkClaimUtil.getPlayerClaimCount(p);
+                        long b = chunkClaimUtil.getPlayerMaxClaims(p);
+                        long c = chunkClaimUtil.playerTimeInChunkInSeconds(p, chunkPos);
+                        long d = chunkClaimUtil.getPlayerNextClaimTime(p);
+
+                        p.sendTextMessage("you have claimed " + a + " of " + b + " chunks");
+                        p.sendTextMessage("you have spent " + c + " seconds in this chunk");
+                        p.sendTextMessage("your next claim requires " + d + " seconds in the nextchunk");
+                        // if we do not reopen the menu it seems to be frozen and unclickable
+                        openAdminMenu(p, onBack);
+                    }));
+            menuItems.add(new MenuItem(
+                    AssetManager.getIcon("tools"),
+                    t.get("TC_MENU_ADMIN_SYNC_REPAIR", uiPlayer),
+                    (p) -> {
+                        if (p.isAdmin()) {
+                            chunkClaimUtil.syncAndRepairAreas();
+                            p.sendTextMessage(t.get("TC_CMD_REPAIR_SUCCESS"));
+                        } else
+                            p.sendTextMessage(t.get("TC_CMD_REPAIR_ERR_PERMISSION"));
+                        // if we do not reopen the menu it seems to be frozen and unclickable
+                        openAdminMenu(p, onBack);
+                    }));
+        }
+        if (existingArea != null) {
+            menuItems.add(menuItemRenameArea(uiPlayer, existingArea, onBackReopen));
+            menuItems.add(menuItemPermissionManager(uiPlayer, existingArea, onBackReopen));
+            menuItems.add(menuItemRemoveArea(uiPlayer, existingArea, onBackReopen));
+        }
+        if (!isDefaultArea)
+            menuItems.add(new MenuItem(
+                    AssetManager.getIcon("square-star"),
+                    t.get("TC_MENU_SPECIAL_AREA", uiPlayer),
+                    (p) -> openSpecialAreaMenu(p, onBackReopen)));
+        if (chunkCount > 1)
+            menuItems.add(menuItemSplitArea(uiPlayer, existingArea, onBackReopen));
+
+        menuItems.add(MenuItem.closeMenu(uiPlayer));
+        menuItems.add(MenuItem.backMenu(uiPlayer, onBack));
+
+        PluginMenuManager.showMenu(uiPlayer, menuItems);
+    }
+
+    public void openClaimOptionsMenu(Player uiPlayer, Consumer<Player> onBack) {
+        List<MenuItem> menuItems = new ArrayList<>();
+        Vector3i chunkPos = uiPlayer.getChunkPosition();
+        Area existingArea = chunkClaimUtil.isAreaIntersecting(ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPos));
+
+        String areaPermission = existingArea == null ? null : existingArea.getPlayerPermission(uiPlayer);
+        boolean isOwner = areaPermission != null && areaPermission.equals(s.ownerAreaPermission);
+        Integer chunkCount = existingArea == null ? 0 : ChunkClaimUtil.areaToChunks(existingArea).size();
+
+        Consumer<Player> onBackReopen = (Player player) -> openClaimOptionsMenu(player, onBack);
+
+        if (isOwner) {
+            menuItems.add(new MenuItem(
+                    AssetManager.getIcon("resize"),
+                    t.get("TC_MENU_AREA_EXPAND_OPTION", uiPlayer),
+                    (p) -> {
+                        openExpandAreaMenu(p, onBackReopen);
+                    }));
+            if (chunkCount > 1)
+                menuItems.add(menuItemSplitArea(uiPlayer, existingArea, onBackReopen));
+
+            menuItems.add(menuItemPermissionManager(uiPlayer, existingArea, onBackReopen));
+            menuItems.add(menuItemRenameArea(uiPlayer, existingArea, onBackReopen));
+            menuItems.add(menuItemRemoveArea(uiPlayer, existingArea, onBackReopen));
+        }
+
+        menuItems.add(MenuItem.closeMenu(uiPlayer));
+        menuItems.add(MenuItem.backMenu(uiPlayer, onBack));
+
+        PluginMenuManager.showMenu(uiPlayer, menuItems);
+    }
+
+    public void openExpandAreaMenu(Player uiPlayer, Consumer<Player> onBack) {
+        List<MenuItem> menuItems = new ArrayList<>();
+        Vector3i chunkPos = uiPlayer.getChunkPosition();
+        Area virtualArea = ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPos);
+        Area existingArea = chunkClaimUtil.isAreaIntersecting(virtualArea);
+
+        Consumer<Player> onBackReopen = (Player player) -> openExpandAreaMenu(player, onBack);
+
+        if (existingArea != null) {
+            menuItems.add(menuItemExpandArea(uiPlayer, existingArea, Direction.NORTH, "compass-north",
+                    "TC_MENU_AREA_EXPAND_NORTH", onBackReopen, onBackReopen));
+            menuItems.add(menuItemExpandArea(uiPlayer, existingArea, Direction.EAST, "compass-east",
+                    "TC_MENU_AREA_EXPAND_EAST", onBackReopen, onBackReopen));
+            menuItems.add(menuItemExpandArea(uiPlayer, existingArea, Direction.SOUTH, "compass-south",
+                    "TC_MENU_AREA_EXPAND_SOUTH", onBackReopen, onBackReopen));
+            menuItems.add(menuItemExpandArea(uiPlayer, existingArea, Direction.WEST, "compass-west",
+                    "TC_MENU_AREA_EXPAND_WEST", onBackReopen, onBackReopen));
+            menuItems.add(menuItemExpandArea(uiPlayer, existingArea, Direction.UP, "up", "TC_MENU_AREA_EXPAND_UP",
+                    onBackReopen, onBackReopen));
+            menuItems.add(menuItemExpandArea(uiPlayer, existingArea, Direction.DOWN, "down",
+                    "TC_MENU_AREA_EXPAND_DOWN", onBackReopen, onBackReopen));
+        }
+        menuItems.add(MenuItem.closeMenu(uiPlayer));
+        menuItems.add(MenuItem.backMenu(uiPlayer, onBack));
+
+        PluginMenuManager.showMenu(uiPlayer, menuItems);
+    }
+
+    private void expandClaimAnnouncement(Area area, Player player) {
+        player.sendTextMessage(t.get("TC_CLAIM_EXPANDED", player).replace("PH_AREA_NAME", area.getName()));
+        String message = t.get("TC_DISCORD_AREA_EXPANDED", DiscordConnect.botLang())
+                .replace("PH_AREA_NAME", area.getName())
+                .replace("PH_CHUNK_POS", area.getStartChunkPosition() + "")
+                .replace("PH_PLAYER_NAME", Server.getLastKnownPlayerName(player.getDbID()));
+        DiscordConnect.sendDiscordExpandAnnouncement(message);
+        // message to all players
+        for (Player onlinePlayer : Server.getAllPlayers()) {
+            if (!onlinePlayer.equals(player))
+                onlinePlayer.sendTextMessage(
+                        t.get("TC_ANNOUNCEMENT_AREA_EXPANDED", onlinePlayer)
+                                .replace("PH_AREA_NAME", area.getName())
+                                .replace("PH_PLAYER_NAME", Server.getLastKnownPlayerName(player.getDbID())));
+        }
+    }
+
+    private void createSpecialAreaAnnouncement(Area area, Player player) {
+        player.sendYellMessage(t.get("TC_AREA_SPECIAL_CREATED", player), 5, false);
+        // Discord announcement
+        String message = t.get("TC_DISCORD_AREA_SPECIAL_CREATED", DiscordConnect.botLang())
+                .replace("PH_AREA_NAME", area.getName())
+                .replace("PH_CHUNK_POS", area.getStartChunkPosition().toString())
+                .replace("PH_PLAYER_NAME", Server.getLastKnownPlayerName(player.getDbID()));
+        DiscordConnect.sendDiscordClaimAnnouncement(message);
+        // Server announcement
+        for (Player onlinePlayer : Server.getAllPlayers()) {
+            if (!onlinePlayer.equals(player))
+                onlinePlayer.sendTextMessage(
+                        t.get("TC_ANNOUNCEMENT_AREA_SPECIAL_CREATED", onlinePlayer)
+                                .replace("PH_AREA_NAME", area.getName())
+                                .replace("PH_CHUNK_POS", area.getStartChunkPosition().toString())
+                                .replace("PH_PLAYER_NAME", Server.getLastKnownPlayerName(player.getDbID())));
+        }
+        updateAreaFramesForAllPlayers();
+    }
+
+    public void openVisibilitySettingsMenu(Player uiPlayer) {
+        Boolean showCurrentChunkFrame = (Boolean) uiPlayer.getAttribute("showCurrentChunkFrame");
+        Boolean showOwnedAreaFrames = (Boolean) uiPlayer.getAttribute("showOwnedAreaFrames");
+        Boolean showOtherAreaFrames = (Boolean) uiPlayer.getAttribute("showOtherAreaFrames");
+
+        List<MenuItem> menuItems = new ArrayList<>();
+
+        menuItems.add(new MenuItem(
+                AssetManager.getIcon(showCurrentChunkFrame ? "hideCurrentChunk" : "showCurrentChunk"),
+                t.get(showCurrentChunkFrame ? "TC_MENU_VISIBILITY_CURRENT_HIDE" : "TC_MENU_VISIBILITY_CURRENT_SHOW",
+                        uiPlayer),
+                (p) -> {
+                    Vector3i chunkPos = p.getChunkPosition();
+                    Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPos);
+                    p.setAttribute("showCurrentChunkFrame", !showCurrentChunkFrame);
+                    updateCurrentChunkFrameForPlayer(p, showCurrentChunkFrame ? (Area) null : area);
+                    // if we do not reopen the menu it seems to be frozen and unclickable
+                    openVisibilitySettingsMenu(p);
+                }));
+
+        menuItems.add(new MenuItem(
+                AssetManager.getIcon(showOwnedAreaFrames ? "hideOwnedAreas" : "showOwnedAreas"),
+                t.get(showOwnedAreaFrames ? "TC_MENU_VISIBILITY_OWNED_HIDE" : "TC_MENU_VISIBILITY_OWNED_SHOW",
+                        uiPlayer),
+                (p) -> {
+                    p.setAttribute("showOwnedAreaFrames", !showOwnedAreaFrames);
+                    // if we do not reopen the menu it seems to be frozen and unclickable
+                    openVisibilitySettingsMenu(p);
+                    updateAreaFramesForPlayer(p);
+                }));
+
+        menuItems.add(new MenuItem(
+                AssetManager.getIcon(showOtherAreaFrames ? "hideOtherAreas" : "showOtherAreas"),
+                t.get(showOtherAreaFrames ? "TC_MENU_VISIBILITY_OTHER_HIDE" : "TC_MENU_VISIBILITY_OTHER_SHOW",
+                        uiPlayer),
+                (p) -> {
+                    p.setAttribute("showOtherAreaFrames", !showOtherAreaFrames);
+                    // if we do not reopen the menu it seems to be frozen and unclickable
+                    openVisibilitySettingsMenu(p);
+                    updateAreaFramesForPlayer(p);
+                }));
+
+        menuItems.add(MenuItem.closeMenu(uiPlayer));
+        menuItems.add(MenuItem.backMenu(uiPlayer, (p) -> openMainMenu(p)));
+
+        PluginMenuManager.showMenu(uiPlayer, menuItems);
+    }
+
+    public void openMainMenu(Player uiPlayer) {
+        Vector3i chunkPos = uiPlayer.getChunkPosition();
+        Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPos);
+        Boolean canClaimArea = chunkClaimUtil.canPlayerClaimArea(uiPlayer, area, null);
+        Area existingArea = chunkClaimUtil.isAreaIntersecting(area);
+
+        // String areaPermission = existingArea == null ? null :
+        // existingArea.getPlayerPermission(player);
+        // boolean isOwner = areaPermission != null &&
+        // areaPermission.equals(s.ownerAreaPermission);
+
+        List<MenuItem> menuItems = new ArrayList<>();
+
+        menuItems.add(new MenuItem(
+                AssetManager.getIcon("visibilityMenu"),
+                t.get("TC_MENU_VISIBILITY", uiPlayer),
+                (p) -> {
+                    openVisibilitySettingsMenu(p);
+                }));
+
+        if (uiPlayer.isAdmin())
+            menuItems.add(new MenuItem(
+                    AssetManager.getIcon("admin-menu"),
+                    t.get("TC_MENU_ADMIN", uiPlayer),
+                    (p) -> {
+                        openAdminMenu(p, (Player player) -> openMainMenu(player));
+                    }));
+
+        if (canClaimArea)
+            menuItems.add(new MenuItem(
+                    AssetManager.getIcon("claim-chunk"),
+                    t.get("TC_MENU_CLAIM", uiPlayer),
+                    (p) -> {
+                        Area createdArea = chunkClaimUtil.claimArea(p, area);
+                        if (createdArea != null) {
+                            p.sendYellMessage(t.get("TC_CLAIM_CONGRATULATION", p), 5, true);
+                            // Discord announcement
+                            String message = t.get("TC_DISCORD_AREA_CLAIMED", DiscordConnect.botLang())
+                                    .replace("PH_AREA_NAME", area.getName())
+                                    .replace("PH_CHUNK_POS", area.getStartChunkPosition().toString())
+                                    .replace("PH_PLAYER_NAME", Server.getLastKnownPlayerName(p.getDbID()));
+                            DiscordConnect.sendDiscordClaimAnnouncement(message);
+                            // Server announcement
+                            for (Player onlinePlayer : Server.getAllPlayers()) {
+                                if (!onlinePlayer.equals(p))
+                                    onlinePlayer.sendTextMessage(
+                                            t.get("TC_ANNOUNCEMENT_AREA_CLAIMED", onlinePlayer)
+                                                    .replace("PH_AREA_NAME", area.getName())
+                                                    .replace("PH_CHUNK_POS", area.getStartChunkPosition().toString())
+                                                    .replace("PH_PLAYER_NAME",
+                                                            Server.getLastKnownPlayerName(p.getDbID())));
+                            }
+                            updateAreaFramesForAllPlayers();
+                        }
+                        openMainMenu(p);
+                    }));
+        if (existingArea != null) {
+            menuItems.add(new MenuItem(
+                    AssetManager.getIcon("claim-chunk"),
+                    t.get("TC_MENU_AREA_OPTION", uiPlayer),
+                    (p) -> {
+                        openClaimOptionsMenu(p, (Player player) -> openMainMenu(player));
+                    }));
+        }
+
+        menuItems.add(MenuItem.closeMenu(uiPlayer));
+
+        PluginMenuManager.showMenu(uiPlayer, menuItems);
+    }
+
+}
