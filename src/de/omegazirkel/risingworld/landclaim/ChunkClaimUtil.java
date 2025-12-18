@@ -482,8 +482,6 @@ public class ChunkClaimUtil {
         List<Area> areasToRemove = new java.util.ArrayList<>();
         List<Vector3i> chunkInExtendedArea = new java.util.ArrayList<>();
         String defaultPermission = area.getDefaultPermission();
-        if (p.isAdmin())
-            p.sendTextMessage("defaultPErmission of zone " + area.getName() + " : " + defaultPermission);
 
         switch (dir) {
             case NORTH: // check all chunks with max(z) if their neighbour +1z is claimable
@@ -608,9 +606,6 @@ public class ChunkClaimUtil {
         long sumTimeInChunks = 0;
         for (Vector3i chunk : chunkInExtendedArea) {
             sumTimeInChunks += playerTimeInChunkInSeconds(p, chunk);
-            // if (p.isAdmin()) {
-            // p.sendTextMessage("Debug cell " + chunk);
-            // }
         }
 
         if (sumTimeInChunks < timeToClaimNeeded && !(p.isAdmin() && s.adminIgnoreTime)) {

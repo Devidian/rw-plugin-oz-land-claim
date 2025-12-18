@@ -137,11 +137,29 @@ public class AreaPermissionPanel extends UIElement {
     }
 
     private void setPermission(Area area, Integer playerDBID, String newPermission) {
+        String playerName = Server.getLastKnownPlayerName(playerDBID);
+
         if (newPermission != null && !newPermission.isEmpty()) {
             area.setPlayerPermission(playerDBID, newPermission);
-            uiPlayer.sendTextMessage("Player permission set to " + newPermission);
+            String permissionText = newPermission;
+            if (newPermission.equals(s.residentAreaPermission))
+                permissionText = t().get("TC_UI_PERMISSION_RESIDENT", uiPlayer);
+            if (newPermission.equals(s.friendAreaPermission))
+                permissionText = t().get("TC_UI_PERMISSION_FRIEND", uiPlayer);
+            if (newPermission.equals(s.defaultAreaPermission))
+                permissionText = t().get("TC_UI_PERMISSION_GUEST", uiPlayer);
+            if (newPermission.equals(s.prisonerAreaPermission))
+                permissionText = t().get("TC_UI_PERMISSION_PRISONER", uiPlayer);
+            if (newPermission.equals(s.exiledAreaPermission))
+                permissionText = t().get("TC_UI_PERMISSION_EXILED", uiPlayer);
+            uiPlayer.sendTextMessage(t().get("TC_UI_PLAYER_PERMISSION_SET", uiPlayer)
+                    .replace("PH_PLAYER_NAME", playerName)
+                    .replace("PH_PERMISSION", permissionText)
+                );
         } else {
             area.removePlayerPermission(playerDBID);
+            uiPlayer.sendTextMessage(t().get("TC_UI_PLAYER_PERMISSION_UNSET", uiPlayer)
+                    .replace("PH_PLAYER_NAME", playerName));
             uiPlayer.sendTextMessage("Player permission removed");
         }
     }
