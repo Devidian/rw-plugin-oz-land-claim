@@ -108,8 +108,9 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
         String command = cmdParts[0].toLowerCase();
 
         if (command.equals("/" + pluginCMD)) {
-            // Invalid number of arguments (0)
+            // no arguments = fallback and open menu
             if (cmdParts.length < 2) {
+                gui.openMainMenu(player);
                 return;
             }
             String option = cmdParts[1].toLowerCase();
