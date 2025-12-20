@@ -95,6 +95,11 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
     @Override
     public void onSettingsChanged(Path settingsPath) {
         s.initSettings(settingsPath.toString());
+        // set loglevels on all loggers (PluginSettings logger sets it's own)
+        logger().setLevel(s.logLevel);
+        ChunkClaimUtil.logger().setLevel(s.logLevel);
+        LandClaimChunkDatabase.logger().setLevel(s.logLevel);
+        PermissionFileUtil.logger().setLevel(s.logLevel);
     }
 
     @EventMethod

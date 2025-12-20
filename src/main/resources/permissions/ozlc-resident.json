@@ -20,6 +20,16 @@
     "removaltools": false,
     "terraintools": false
   },
+  "blueprint": {
+    "create": true,
+    "createown": true,
+    "maxelements": -1,
+    "maxsize": -1,
+    "place": true,
+    "placelimitsession": -1,
+    "placeterrain": true,
+    "placevegetation": true
+  },
   "general": {
     "changeblockshape": true,
     "changegamemode": false,

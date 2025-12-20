@@ -1,19 +1,21 @@
 package de.omegazirkel.risingworld.landclaim.ui;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import de.omegazirkel.risingworld.LandClaim;
 import de.omegazirkel.risingworld.landclaim.PluginSettings;
 import de.omegazirkel.risingworld.tools.I18n;
-import de.omegazirkel.risingworld.tools.ui.Dropdown;
-import de.omegazirkel.risingworld.tools.ui.DropdownOption;
+import de.omegazirkel.risingworld.tools.ui.CancelButton;
+import de.omegazirkel.risingworld.tools.ui.OZUIElement;
 import de.omegazirkel.risingworld.tools.ui.table.TableCell;
 import de.omegazirkel.risingworld.tools.ui.table.TableRow;
 import net.risingworld.api.Server;
 import net.risingworld.api.objects.Player;
 import net.risingworld.api.ui.UILabel;
+import net.risingworld.api.ui.style.Pivot;
+import net.risingworld.api.ui.style.Unit;
 
 public class PlayerPermissionRow {
 
@@ -50,23 +52,83 @@ public class PlayerPermissionRow {
             return new TableRow(Arrays.asList(cellName, cellUID, cellOwner));
         }
 
-        // Deprecated simple switch button friend / guest
-        // SwitchButton switchButton = new
-        // SwitchButton(currentPermission.equals(s.friendAreaPermission), callback);
-        // TableCell cellSwitch = new TableCell(switchButton, 20); // 20%
+        // List<DropdownOption> options = List.of(
+        // // new DropdownOption(s.ownerAreaPermission,
+        // t().get("TC_UI_PERMISSION_OWNER",
+        // // forPlayer)),
+        // new DropdownOption(s.residentAreaPermission,
+        // t().get("TC_UI_PERMISSION_RESIDENT", forPlayer)),
+        // new DropdownOption(s.friendAreaPermission, t().get("TC_UI_PERMISSION_FRIEND",
+        // forPlayer)),
+        // new DropdownOption(s.defaultAreaPermission, t().get("TC_UI_PERMISSION_GUEST",
+        // forPlayer)),
+        // new DropdownOption(s.prisonerAreaPermission,
+        // t().get("TC_UI_PERMISSION_PRISONER", forPlayer)),
+        // new DropdownOption(s.exiledAreaPermission, t().get("TC_UI_PERMISSION_EXILED",
+        // forPlayer)));
+        // Dropdown dropdown = new Dropdown(options, currentPermission, (selected) ->
+        // callback.accept(selected));
 
-        // TODO: new dropdown element to select permissions
-        List<DropdownOption> options = List.of(
-                // new DropdownOption(s.ownerAreaPermission, t().get("TC_UI_PERMISSION_OWNER", forPlayer)),
-                new DropdownOption(s.residentAreaPermission, t().get("TC_UI_PERMISSION_RESIDENT", forPlayer)),
-                new DropdownOption(s.friendAreaPermission, t().get("TC_UI_PERMISSION_FRIEND", forPlayer)),
-                new DropdownOption(s.defaultAreaPermission, t().get("TC_UI_PERMISSION_GUEST", forPlayer)),
-                new DropdownOption(s.prisonerAreaPermission, t().get("TC_UI_PERMISSION_PRISONER", forPlayer)),
-                new DropdownOption(s.exiledAreaPermission, t().get("TC_UI_PERMISSION_EXILED", forPlayer)));
-        Dropdown dropdown = new Dropdown(options, currentPermission, (selected) -> callback.accept(selected));
+        // TableCell cellDropdown = new TableCell(dropdown, 20); // 20%
 
-        TableCell cellDropdown = new TableCell(dropdown, 20); // 20%
+        // WORKAROUND fix dropdown!
+        Map<String, String> permissionLabelMap = Map.of(
+                // s.ownerAreaPermission, t().get("TC_UI_PERMISSION_OWNER", forPlayer),
+                s.residentAreaPermission, t().get("TC_UI_PERMISSION_RESIDENT", forPlayer),
+                s.friendAreaPermission, t().get("TC_UI_PERMISSION_FRIEND", forPlayer),
+                s.defaultAreaPermission, t().get("TC_UI_PERMISSION_GUEST", forPlayer),
+                s.prisonerAreaPermission, t().get("TC_UI_PERMISSION_PRISONER", forPlayer),
+                s.exiledAreaPermission, t().get("TC_UI_PERMISSION_EXILED", forPlayer));
 
-        return new TableRow(Arrays.asList(cellName, cellUID, cellDropdown));
+        // OZUIElement overlayBlocker = new OZUIElement();
+        // overlayBlocker.setPivot(Pivot.UpperLeft);
+        // overlayBlocker.setPosition(0, 0, true);
+        // overlayBlocker.setSize(100, 100, true);
+        // overlayBlocker.setBackgroundColor(0, 0, 0, 0.15f);
+        // overlayBlocker.setVisible(false);
+        // overlayBlocker.setClickable(true);
+        // overlayBlocker.setClickAction(event -> {
+        //     overlayBlocker.setVisible(false);
+        // });
+
+        OZUIElement selectPane = new OZUIElement();
+        selectPane.setBorder(2);
+        selectPane.setPivot(Pivot.MiddleLeft);
+        selectPane.setPosition(75, 50, true);
+        selectPane.setSize(10, 50, true);
+        selectPane.setVisible(false);
+        selectPane.setBackgroundColor(0, 0, 0, 0.85f);
+        selectPane.setBorderColor(1, 1, 1, 0.4f);
+        selectPane.setClickable(true);
+        selectPane.setClickAction(event -> {
+            selectPane.setVisible(false);
+        });
+        forPlayer.addUIElement(selectPane);
+
+        CancelButton permissionButton = new CancelButton(permissionLabelMap.get(currentPermission), event -> {
+            selectPane.setVisible(true);
+        });
+        permissionButton.setPivot(Pivot.MiddleCenter);
+        permissionButton.setPosition(50, 50, false);
+        permissionButton.setSize(98, 98, true);
+
+        Integer row = 0;
+        for (Map.Entry<String, String> entry : permissionLabelMap.entrySet()) {
+            CancelButton cb = new CancelButton(entry.getValue(), event -> {
+                selectPane.setVisible(false);
+                callback.accept(entry.getKey());
+                permissionButton.setText(entry.getValue());
+            });
+            cb.style.width.set(98, Unit.Percent);
+            cb.style.height.set(30, Unit.Pixel);
+            cb.setPivot(Pivot.UpperCenter);
+            cb.setPosition(50, 0, true);
+            cb.style.top.set(2 + (row++ * 32), Unit.Pixel);
+            selectPane.addChild(cb);
+        }
+
+        TableCell workaroundCell = new TableCell(permissionButton, 20);
+
+        return new TableRow(Arrays.asList(cellName, cellUID, workaroundCell));
     }
 }

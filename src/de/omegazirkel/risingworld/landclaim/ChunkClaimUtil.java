@@ -655,9 +655,9 @@ public class ChunkClaimUtil {
         extendedArea.setDefaultPermission(defaultPermission);
 
         // we need to transfer all permissions to the new area
-        Map<Integer, String> extendedAreaPermissions = extendedArea.getAllPlayerPermissions();
-        if (extendedAreaPermissions != null)
-            for (Map.Entry<Integer, String> entry : extendedAreaPermissions.entrySet()) {
+        Map<Integer, String> originAreaPermissions = area.getAllPlayerPermissions();
+        if (originAreaPermissions != null)
+            for (Map.Entry<Integer, String> entry : originAreaPermissions.entrySet()) {
                 extendedArea.setPlayerPermission(entry.getKey(), entry.getValue());
             }
 
