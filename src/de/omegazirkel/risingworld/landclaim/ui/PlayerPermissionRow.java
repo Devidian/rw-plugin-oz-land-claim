@@ -30,6 +30,7 @@ public class PlayerPermissionRow {
     public static TableRow build(
             Integer playerDBID,
             String currentPermission,
+            String defaultPermission,
             Consumer<String> callback,
             Player forPlayer) {
         String ownerName = Server.getLastKnownPlayerName(playerDBID);
@@ -133,6 +134,18 @@ public class PlayerPermissionRow {
             cb.style.top.set(2 + (row++ * 32), Unit.Pixel);
             selectPane.addChild(cb);
         }
+        String defaultLabel = areaPermissionLabelMap.get(defaultPermission);
+        CancelButton cb = new CancelButton(defaultLabel, event -> {
+            selectPane.setVisible(false);
+            callback.accept(defaultPermission);
+            permissionButton.setText(defaultLabel);
+        });
+        cb.style.width.set(98, Unit.Percent);
+        cb.style.height.set(30, Unit.Pixel);
+        cb.setPivot(Pivot.UpperCenter);
+        cb.setPosition(50, 0, true);
+        cb.style.top.set(2 + (row++ * 32), Unit.Pixel);
+        selectPane.addChild(cb);
 
         TableCell workaroundCell = new TableCell(permissionButton, 20);
 

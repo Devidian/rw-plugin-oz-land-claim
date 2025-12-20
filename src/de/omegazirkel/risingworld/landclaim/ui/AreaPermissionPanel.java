@@ -52,7 +52,7 @@ public class AreaPermissionPanel extends UIElement {
     private void setupPanelHeader(Area area, Player player) {
         UILabel title = new UILabel(
                 t().get("TC_UI_AREA_PERMISSIONS_TITLE", player)
-                        .replace("PH_AREA_NAME", area.getName()));
+                        .replace("PH_AREA_NAME", area.getName() != null ? area.getName() : "N/A"));
         title.setPivot(Pivot.UpperLeft);
         title.setPosition(2f, 2f, true);
         title.setFont(Font.DefaultBold);
@@ -113,6 +113,7 @@ public class AreaPermissionPanel extends UIElement {
                 TableRow row = PlayerPermissionRow.build(
                         uid,
                         permission,
+                        area.getDefaultPermission(),
                         newPermission -> setPermission(area, uid, newPermission), player);
                 table.addRow(row);
             }
@@ -123,6 +124,7 @@ public class AreaPermissionPanel extends UIElement {
                 continue;
             TableRow row = PlayerPermissionRow.build(
                     p.getDbID(),
+                    area.getDefaultPermission(),
                     area.getDefaultPermission(),
                     newPermission -> setPermission(area, p.getDbID(), newPermission), player);
             table.addRow(row);
@@ -138,8 +140,9 @@ public class AreaPermissionPanel extends UIElement {
 
     private void setPermission(Area area, Integer playerDBID, String newPermission) {
         String playerName = Server.getLastKnownPlayerName(playerDBID);
+        String areaDefault = area.getDefaultPermission();
 
-        if (newPermission != null && !newPermission.isEmpty()) {
+        if (newPermission != null && !newPermission.isEmpty() && !newPermission.equals(areaDefault)) {
             area.setPlayerPermission(playerDBID, newPermission);
             String permissionText = newPermission;
             if (newPermission.equals(s.residentAreaPermission))
@@ -154,8 +157,7 @@ public class AreaPermissionPanel extends UIElement {
                 permissionText = t().get("TC_UI_PERMISSION_EXILED", uiPlayer);
             uiPlayer.sendTextMessage(t().get("TC_UI_PLAYER_PERMISSION_SET", uiPlayer)
                     .replace("PH_PLAYER_NAME", playerName)
-                    .replace("PH_PERMISSION", permissionText)
-                );
+                    .replace("PH_PERMISSION", permissionText));
         } else {
             area.removePlayerPermission(playerDBID);
             uiPlayer.sendTextMessage(t().get("TC_UI_PLAYER_PERMISSION_UNSET", uiPlayer)

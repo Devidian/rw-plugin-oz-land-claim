@@ -1,10 +1,7 @@
 package de.omegazirkel.risingworld.landclaim;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import de.omegazirkel.risingworld.LandClaim;
@@ -23,7 +20,6 @@ import net.risingworld.api.objects.Player;
 import net.risingworld.api.ui.UIElement;
 import net.risingworld.api.ui.UITarget;
 import net.risingworld.api.utils.Vector3i;
-import net.risingworld.api.worldelements.Area3D;
 
 /**
  * LandClaimGUI
@@ -41,12 +37,12 @@ import net.risingworld.api.worldelements.Area3D;
  * | | - ✅: rename area
  * | | - ✅: manage permissions
  * | | - ✅: remove claim/area
- * | | - TODO: open special area menu
- * | | | - TODO: set current area to special area (white border)
- * | | | - TODO: set current area to arena (pvp) area (red border)
- * | | | - TODO: set current area to arena (rest) area (light green? border)
- * | | | - TODO: set current area to arena (trap) area (orange border)
- * | | | - TODO: open expand area menu (adjust expanding method for special
+ * | | - ✅: open special area menu
+ * | | | - ✅: set current area to special area (white border)
+ * | | | - ✅: set current area to arena (pvp) area (red border)
+ * | | | - ✅: set current area to arena (rest) area (light green? border)
+ * | | | - ✅: set current area to arena (trap) area (orange border)
+ * | | | - ✅: open expand area menu (adjust expanding method for special
  * areas)
  * | | - ✅: start repairmode
  * | | - TODO: mark for sale
@@ -80,25 +76,6 @@ public class LandClaimGUI {
     private static ChunkClaimUtil chunkClaimUtil;
     private static final I18n t = I18n.getInstance(LandClaim.name);
     private static final PluginSettings s = PluginSettings.getInstance();
-    private final Map<String, AreaColors> AREA_COLORS = new HashMap<>();
-
-    private LandClaimGUI() {
-        AREA_COLORS.put(s.specialRestAreaPermission,
-                new AreaColors(s.restAreaBorderColor, s.restAreaFrameColor));
-
-        AREA_COLORS.put(s.specialPvPAreaPermission,
-                new AreaColors(s.pvpAreaBorderColor, s.pvpAreaFrameColor));
-
-        AREA_COLORS.put(s.specialTrapAreaPermission,
-                new AreaColors(s.trapAreaBorderColor, s.trapAreaFrameColor));
-
-        AREA_COLORS.put(s.specialAreaPermission,
-                new AreaColors(s.specialAreaBorderColor, s.specialAreaFrameColor));
-
-        AREA_COLORS.put(s.defaultAreaPermission,
-                new AreaColors(s.otherAreaBorderColor, s.otherAreaFrameColor));
-
-    }
 
     public static LandClaimGUI getInstance(ChunkClaimUtil ccu, Plugin p) {
         chunkClaimUtil = ccu;
@@ -161,7 +138,7 @@ public class LandClaimGUI {
                                     // if claim succeeds close menu
                                     else {
                                         p.hideRadialMenu(false);
-                                        updateAreaFramesForAllPlayers();
+                                        Area3DUtils.updateAreaFramesForAllPlayers();
                                     }
                                 }
                             }, onCancel);
@@ -181,11 +158,20 @@ public class LandClaimGUI {
                     UIElement renameWindow = UIDialogFactory.getTextInput(p,
                             t.get("TC_DIALOG_AREA_RENAME_TITLE", p),
                             area.getName(), (String v) -> {
-                                area.setName(v);
-                                Server.addArea(area, true);
-                                p.sendTextMessage(t.get("TC_AREA_RENNAMED", p)
-                                        .replace("PH_AREA_NAME", v)
-                                        .replace("PH_OLD_NAME", currentName));
+                                if (v.isEmpty())
+                                    onCancel.accept(p);
+                                else {
+                                    area.setName(v);
+                                    // WORKAROUND direct SQL
+                                    if (LandClaim.wdbAreas != null) {
+                                        LandClaim.wdbAreas.executeUpdate(
+                                                "UPDATE areas SET name ='" + v + "' WHERE id=" + area.getID());
+                                    }
+                                    p.sendTextMessage(t.get("TC_AREA_RENNAMED", p)
+                                            .replace("PH_AREA_NAME", v)
+                                            .replace("PH_OLD_NAME",
+                                                    currentName != null ? currentName : "Unnamed Area"));
+                                }
                             }, onCancel);
 
                     p.addUIElement(renameWindow, UITarget.HUD);
@@ -207,7 +193,7 @@ public class LandClaimGUI {
                             (Boolean v) -> {
                                 if (v) {
                                     chunkClaimUtil.releaseArea(p, area);
-                                    updateAreaFramesForAllPlayers();
+                                    Area3DUtils.updateAreaFramesForAllPlayers();
                                     p.sendTextMessage(t.get("TC_DIALOG_AREA_RELEASE_SUCCESS", p));
                                 }
                             }, onCancel);
@@ -234,7 +220,7 @@ public class LandClaimGUI {
 
                     if (createdArea != null) {
                         createSpecialAreaAnnouncement(area, uiPlayer);
-                        updateAreaFramesForAllPlayers();
+                        Area3DUtils.updateAreaFramesForAllPlayers();
                     }
 
                     openSpecialAreaMenu(uiPlayer, onBack);
@@ -258,7 +244,7 @@ public class LandClaimGUI {
                                     Area expandedArea = chunkClaimUtil.expandClaim(area, direction, p);
                                     if (expandedArea != null) {
                                         expandClaimAnnouncement(expandedArea, p);
-                                        updateAreaFramesForAllPlayers();
+                                        Area3DUtils.updateAreaFramesForAllPlayers();
                                         openExpandAreaMenu(p, onBack);
                                     } else {
                                         // p.sendTextMessage(t.get("TC_DIALOG_AREA_EXPAND_FAILED", p));
@@ -283,134 +269,6 @@ public class LandClaimGUI {
                     p.hideRadialMenu(false);
 
                 });
-    }
-
-    public void updateCurrentChunkFrameForPlayer(Player player, Area area) {
-        Area3D chunkBorderArea = ((Area3D) player.getAttribute("currentAreaFrame"));
-        if (area == null) {
-            if (chunkBorderArea != null) {
-                player.removeGameObject(chunkBorderArea);
-                player.setAttribute("currentAreaFrame", null);
-                // if (player.isAdmin())
-                // player.sendTextMessage("debug:> currentAreaFrame removed");
-            }
-            return;
-        }
-        if (chunkBorderArea == null) {
-            chunkBorderArea = new Area3D(area);
-            // chunkBorderArea.setAlwaysVisible(true);
-            chunkBorderArea.setColor(s.currentChunkBorderColor);
-            chunkBorderArea.setFrameColor(s.currentChunkFrameColor);
-            chunkBorderArea.setFrameVisible(true);
-            player.setAttribute("currentAreaFrame", chunkBorderArea);
-            player.addGameObject(chunkBorderArea);
-            // if (player.isAdmin())
-            // player.sendTextMessage("debug:> currentAreaFrame added");
-        } else {
-            // ** WORKAROUND **
-            player.removeGameObject(chunkBorderArea);
-            chunkBorderArea = new Area3D(area);
-            chunkBorderArea.setColor(s.currentChunkBorderColor);
-            chunkBorderArea.setFrameColor(s.currentChunkFrameColor);
-            chunkBorderArea.setFrameVisible(true);
-            player.setAttribute("currentAreaFrame", chunkBorderArea);
-            player.addGameObject(chunkBorderArea);
-
-            // ** NULL POINTER EXCEPTIONS **
-            // Area current = chunkBorderArea.getArea();
-            // current.destroy();
-            // current.setStartPosition(area.getStartPosition());
-            // current.setEndPosition(area.getEndPosition());
-            // chunkBorderArea.setArea(current);
-
-            // ** NOT WORKING **
-            // chunkBorderArea.setArea(area);
-            // chunkBorderArea.updateCoordinates();
-        }
-    }
-
-    public void updateAreaFramesForAllPlayers() {
-        for (Player player : Server.getAllPlayers()) {
-            updateAreaFramesForPlayer(player);
-        }
-    }
-
-    public void updateAreaFramesForPlayer(Player player) {
-        Boolean showOwned = (Boolean) player.getAttribute("showOwnedAreaFrames");
-        Boolean showOther = (Boolean) player.getAttribute("showOtherAreaFrames");
-
-        // Get or create map
-        if (!player.hasAttribute("areaFrames")) {
-            player.setAttribute("areaFrames", new ConcurrentHashMap<Long, Area3D>());
-        }
-
-        @SuppressWarnings("unchecked")
-        ConcurrentHashMap<Long, Area3D> frames = (ConcurrentHashMap<Long, Area3D>) player.getAttribute("areaFrames");
-        if (frames == null) {
-            frames = new ConcurrentHashMap<>();
-            player.setAttribute("areaFrames", frames);
-        }
-        // remove frames not existing in the server db
-        for (Map.Entry<Long, Area3D> entry : new ConcurrentHashMap<>(frames).entrySet()) {
-            long areaId = entry.getKey();
-            Area3D existing = entry.getValue();
-            if (Server.getArea(areaId) == null) {
-                player.removeGameObject(existing);
-                frames.remove(areaId);
-            }
-        }
-
-        for (Area area : Server.getAllAreas()) {
-
-            long areaId = area.getID();
-            String areaPermission = area.getPlayerPermission(player);
-            boolean isOwner = areaPermission != null && areaPermission.equals(s.ownerAreaPermission);
-            boolean shouldShow = isOwner ? showOwned : showOther;
-
-            Area3D existing = frames.get(areaId);
-
-            // if (player.isAdmin()) {
-            // player.sendTextMessage("AreaID: " + areaId + " Owner: " + isOwner + "
-            // ShouldShow: " + shouldShow);
-            // player.sendTextMessage("Existing: " + existing);
-            // player.sendTextMessage("PlayerPermission: " +
-            // area.getPlayerPermission(player));
-            // player.sendTextMessage("OwnerAreaPermission: " +
-            // settings.ownerAreaPermission);
-            // }
-
-            if (shouldShow) {
-                // if it should be visible but does not exist → create
-                if (existing == null) {
-
-                    Area3D a3d = new Area3D(area);
-
-                    if (isOwner) {
-                        a3d.setColor(s.ownedAreaBorderColor);
-                        a3d.setFrameColor(s.ownedAreaFrameColor);
-                    } else {
-                        // TODO if for sale ...
-                        String defaultAreaPermission = area.getDefaultPermission();
-                        AreaColors colors = AREA_COLORS.getOrDefault(
-                                defaultAreaPermission,
-                                new AreaColors(s.otherAreaBorderColor, s.otherAreaFrameColor));
-
-                        a3d.setColor(colors.border());
-                        a3d.setFrameColor(colors.frame());
-                    }
-                    a3d.setFrameVisible(true);
-
-                    frames.put(areaId, a3d);
-                    player.addGameObject(a3d);
-                }
-            } else {
-                // if it should not be visible but exists → remove
-                if (existing != null) {
-                    player.removeGameObject(existing);
-                    frames.remove(areaId);
-                }
-            }
-        }
     }
 
     public void openSpecialAreaMenu(Player uiPlayer, Consumer<Player> onBack) {
@@ -470,19 +328,27 @@ public class LandClaimGUI {
                     AssetManager.getIcon("debug"),
                     t.get("TC_MENU_ADMIN_DEBUG", uiPlayer),
                     (p) -> {
-                        updateAreaFramesForPlayer(p);
+                        Area3DUtils.updateAreaFramesForPlayer(p);
                         chunkClaimUtil.idleChunk(p);
 
-                        long a = chunkClaimUtil.getPlayerClaimCount(p);
-                        long b = chunkClaimUtil.getPlayerMaxClaims(p);
-                        long c = chunkClaimUtil.playerTimeInChunkInSeconds(p, chunkPos);
-                        long d = chunkClaimUtil.getPlayerNextClaimTime(p);
+                        // long a = chunkClaimUtil.getPlayerClaimCount(p);
+                        // long b = chunkClaimUtil.getPlayerMaxClaims(p);
+                        // long c = chunkClaimUtil.playerTimeInChunkInSeconds(p, chunkPos);
+                        // long d = chunkClaimUtil.getPlayerNextClaimTime(p);
 
-                        p.sendTextMessage("you have claimed " + a + " of " + b + " chunks");
-                        p.sendTextMessage("you have spent " + c + " seconds in this chunk");
-                        p.sendTextMessage("your next claim requires " + d + " seconds in the nextchunk");
+                        // p.sendTextMessage("you have claimed " + a + " of " + b + " chunks");
+                        // p.sendTextMessage("you have spent " + c + " seconds in this chunk");
+                        // p.sendTextMessage("your next claim requires " + d + " seconds in the nextchunk");
                         // if we do not reopen the menu it seems to be frozen and unclickable
                         openAdminMenu(p, onBack);
+                        Area[] allAreas = Server.getAllAreas();
+                        if (allAreas != null)
+                            for (Area sa : allAreas) {
+                                p.sendTextMessage(
+                                        sa.getName() + " :: " + sa.getID() + " :: " + sa.getDefaultPermission());
+                            }
+                        else
+                            p.sendTextMessage("no areas found Server.getAllAreas() == null");
                     }));
             menuItems.add(new MenuItem(
                     AssetManager.getIcon("tools"),
@@ -611,7 +477,7 @@ public class LandClaimGUI {
                                 .replace("PH_CHUNK_POS", area.getStartChunkPosition().toString())
                                 .replace("PH_PLAYER_NAME", Server.getLastKnownPlayerName(player.getDbID())));
         }
-        updateAreaFramesForAllPlayers();
+        Area3DUtils.updateAreaFramesForAllPlayers();
     }
 
     public void openVisibilitySettingsMenu(Player uiPlayer) {
@@ -629,7 +495,7 @@ public class LandClaimGUI {
                     Vector3i chunkPos = p.getChunkPosition();
                     Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPos);
                     p.setAttribute("showCurrentChunkFrame", !showCurrentChunkFrame);
-                    updateCurrentChunkFrameForPlayer(p, showCurrentChunkFrame ? (Area) null : area);
+                    Area3DUtils.updateCurrentChunkFrameForPlayer(p, showCurrentChunkFrame ? (Area) null : area);
                     // if we do not reopen the menu it seems to be frozen and unclickable
                     openVisibilitySettingsMenu(p);
                 }));
@@ -642,7 +508,7 @@ public class LandClaimGUI {
                     p.setAttribute("showOwnedAreaFrames", !showOwnedAreaFrames);
                     // if we do not reopen the menu it seems to be frozen and unclickable
                     openVisibilitySettingsMenu(p);
-                    updateAreaFramesForPlayer(p);
+                    Area3DUtils.updateAreaFramesForPlayer(p);
                 }));
 
         menuItems.add(new MenuItem(
@@ -653,7 +519,7 @@ public class LandClaimGUI {
                     p.setAttribute("showOtherAreaFrames", !showOtherAreaFrames);
                     // if we do not reopen the menu it seems to be frozen and unclickable
                     openVisibilitySettingsMenu(p);
-                    updateAreaFramesForPlayer(p);
+                    Area3DUtils.updateAreaFramesForPlayer(p);
                 }));
 
         menuItems.add(MenuItem.closeMenu(uiPlayer));
@@ -714,7 +580,7 @@ public class LandClaimGUI {
                                                     .replace("PH_PLAYER_NAME",
                                                             Server.getLastKnownPlayerName(p.getDbID())));
                             }
-                            updateAreaFramesForAllPlayers();
+                            Area3DUtils.updateAreaFramesForAllPlayers();
                         }
                         openMainMenu(p);
                     }));

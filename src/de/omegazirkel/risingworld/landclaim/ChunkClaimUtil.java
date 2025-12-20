@@ -276,7 +276,7 @@ public class ChunkClaimUtil {
 
     public Area isAreaIntersecting(Area area) {
         for (Area a : Server.getAllAreas()) {
-            if (a.intersects(area)) {
+            if (a != null && a.intersects(area)) {
                 return a;
             }
         }
@@ -430,21 +430,26 @@ public class ChunkClaimUtil {
             return null;
         }
         long now = System.currentTimeMillis();
-        Server.addArea(area, true);
         area.setNameVisible(true);
         area.setDefaultPermission(defaultPermission);
 
         // only save owner if claim is a player-claim and not a special area
         if (ownerDBId != null && defaultPermission.equals(s.defaultAreaPermission)) {
             String ownerName = Server.getLastKnownPlayerName(ownerDBId);
-            String ownerUID = Server.getLastKnownPlayerUIDs(ownerName)[0];
-            area.setAttribute("ownerUID", ownerUID);
-            area.setAttribute("ownerDBID", ownerDBId);
             area.setName("Claimed by " + ownerName);
-            area.setPlayerPermission(ownerDBId, s.ownerAreaPermission);
             db.saveChunkClaim(p, area.getStartChunkPosition(), now, area.getID());
         } else {
             area.setName(defaultPermission + " area");
+        }
+        // we must set name BEFORE addArea
+        Server.addArea(area, true);
+        // we must set player permission AFTER addArea (because before it has no id in db??)
+        if (ownerDBId != null && defaultPermission.equals(s.defaultAreaPermission)){
+            String ownerName = Server.getLastKnownPlayerName(ownerDBId);
+            String ownerUID = Server.getLastKnownPlayerUIDs(ownerName)[0];
+            area.setAttribute("ownerUID", ownerUID);
+            area.setAttribute("ownerDBID", ownerDBId);
+            area.setPlayerPermission(ownerDBId, s.ownerAreaPermission);
         }
         return area;
     }
@@ -644,14 +649,14 @@ public class ChunkClaimUtil {
         // net.risingworld.api.objects.Area.INFINITE is null
         // area.set(extendedArea.getStartPosition(), extendedArea.getEndPosition());
         // WORKAROUND: we need to create a new area to avoid null pointer exception
+        extendedArea.setName(area.getName());
+        extendedArea.setNameVisible(true);
         Server.addArea(extendedArea, true);
         if (defaultPermission.equals(s.defaultAreaPermission)) {
             extendedArea.setPlayerPermission(p.getDbID(), s.ownerAreaPermission);
             extendedArea.setAttribute("ownerUID", p.getUID());
             extendedArea.setAttribute("ownerDBID", p.getDbID());
         }
-        extendedArea.setName(area.getName());
-        extendedArea.setNameVisible(true);
         extendedArea.setDefaultPermission(defaultPermission);
 
         // we need to transfer all permissions to the new area
@@ -740,6 +745,8 @@ public class ChunkClaimUtil {
         Server.removeArea(existingArea);
         for (Vector3i chunk : chunks) {
             Area newArea = getVirtualAreaFromChunkVector(chunk);
+            newArea.setName(existingArea.getName());
+            newArea.setNameVisible(true);
             Server.addArea(newArea, true);
             // set permissions from existing area
             Integer ownerId = 0;
@@ -755,8 +762,8 @@ public class ChunkClaimUtil {
             String[] ownerUIDS = Server.getLastKnownPlayerUIDs(ownerName);
             newArea.setAttribute("ownerUID", ownerUIDS[0]);
             newArea.setAttribute("ownerDBID", ownerId);
-            newArea.setNameVisible(true);
-            newArea.setName(existingArea.getName());
+            // newArea.setNameVisible(true);
+            // newArea.setName(existingArea.getName());
             newArea.setDefaultPermission(defaultPermission);
             db.saveChunkClaim(ownerUIDS[0], ownerId, chunk, System.currentTimeMillis(), newArea.getID());
         }

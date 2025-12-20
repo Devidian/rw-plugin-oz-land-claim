@@ -139,6 +139,9 @@ public class ChunkInfoController {
         Area existingArea = ccu.isAreaIntersecting(area);
         if (existingArea == null)
             return null;
+        String areaName = existingArea.getName();
+        if (areaName == null)
+            areaName = "N/A";
         String defaultPermission = existingArea.getDefaultPermission();
 
         if (defaultPermission == null || defaultPermission.equals(s.defaultAreaPermission)) {
@@ -148,19 +151,19 @@ public class ChunkInfoController {
         // we have a special area
         if (defaultPermission.equals(s.specialAreaPermission)) {
             return t().get("TC_CHUNKINFO_SPECIAL_AREA", player)
-                    .replace("PH_AREA_NAME", existingArea.getName());
+                    .replace("PH_AREA_NAME", areaName);
         }
         if (defaultPermission.equals(s.specialPvPAreaPermission)) {
             return t().get("TC_CHUNKINFO_SPECIAL_PVP_AREA", player)
-                    .replace("PH_AREA_NAME", existingArea.getName());
+                    .replace("PH_AREA_NAME", areaName);
         }
         if (defaultPermission.equals(s.specialRestAreaPermission)) {
             return t().get("TC_CHUNKINFO_SPECIAL_REST_AREA", player)
-                    .replace("PH_AREA_NAME", existingArea.getName());
+                    .replace("PH_AREA_NAME", areaName);
         }
         if (defaultPermission.equals(s.specialTrapAreaPermission)) {
             return t().get("TC_CHUNKINFO_SPECIAL_TRAP_AREA", player)
-                    .replace("PH_AREA_NAME", existingArea.getName());
+                    .replace("PH_AREA_NAME", areaName);
         }
         return null;
     }

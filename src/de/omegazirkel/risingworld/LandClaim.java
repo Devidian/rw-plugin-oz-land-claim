@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import de.omegazirkel.risingworld.landclaim.Area3DUtils;
 import de.omegazirkel.risingworld.landclaim.ChunkClaimUtil;
 import de.omegazirkel.risingworld.landclaim.DiscordConnect;
 import de.omegazirkel.risingworld.landclaim.LandClaimChunkDatabase;
@@ -21,6 +22,8 @@ import de.omegazirkel.risingworld.tools.ui.MenuItem;
 import de.omegazirkel.risingworld.tools.ui.PluginMenuManager;
 import net.risingworld.api.Plugin;
 import net.risingworld.api.Server;
+import net.risingworld.api.database.WorldDatabase;
+import net.risingworld.api.database.WorldDatabase.Target;
 import net.risingworld.api.events.EventMethod;
 import net.risingworld.api.events.Listener;
 import net.risingworld.api.events.player.PlayerCommandEvent;
@@ -44,6 +47,8 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
     private static LandClaimGUI gui;
     private static ChunkClaimUtil chunkClaimUtil;
     public static String name;
+    // only for workaround with area bugs
+    public static WorldDatabase wdbAreas;
 
     private LandClaimChunkDatabase database;
 
@@ -62,6 +67,7 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
         registerEventListener(this);
         s = PluginSettings.getInstance(this);
         database = new LandClaimChunkDatabase(new SQLite(this));
+        wdbAreas = this.getWorldDatabase(Target.Areas);
         chunkClaimUtil = new ChunkClaimUtil(database);
         gui = LandClaimGUI.getInstance(chunkClaimUtil, this);
         s.initSettings();
@@ -163,7 +169,7 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
 
     public void updatecurrentAreaFrameForPlayer(Player player, Vector3i chunkPosition) {
         Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPosition);
-        gui.updateCurrentChunkFrameForPlayer(player, area);
+        Area3DUtils.updateCurrentChunkFrameForPlayer(player, area);
     }
 
     @EventMethod
@@ -181,7 +187,7 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
         // if player has "showCurrentChunkFrame" enabled, show chunk area
         if (player.hasAttribute("showCurrentChunkFrame") && (Boolean) player.getAttribute("showCurrentChunkFrame")) {
             Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPos);
-            gui.updateCurrentChunkFrameForPlayer(player, area);
+            Area3DUtils.updateCurrentChunkFrameForPlayer(player, area);
         }
     }
 
