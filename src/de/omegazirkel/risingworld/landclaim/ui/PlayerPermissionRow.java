@@ -1,6 +1,7 @@
 package de.omegazirkel.risingworld.landclaim.ui;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -18,6 +19,7 @@ import net.risingworld.api.ui.style.Pivot;
 import net.risingworld.api.ui.style.Unit;
 
 public class PlayerPermissionRow {
+    private static final HashMap<Integer, OZUIElement> selectPanes = new HashMap<>();
 
     public static final PluginSettings s = PluginSettings.getInstance();
 
@@ -71,25 +73,21 @@ public class PlayerPermissionRow {
 
         // TableCell cellDropdown = new TableCell(dropdown, 20); // 20%
 
+        // area permissions
+        Map<String, String> areaPermissionLabelMap = Map.of(
+                s.defaultAreaPermission, t().get("TC_UI_PERMISSION_GUEST", forPlayer),
+                s.specialAreaPermission, t().get("TC_UI_PERMISSION_SPECIAL", forPlayer),
+                s.specialPvPAreaPermission, t().get("TC_UI_PERMISSION_PVP", forPlayer),
+                s.specialRestAreaPermission, t().get("TC_UI_PERMISSION_REST", forPlayer),
+                s.specialTrapAreaPermission, t().get("TC_UI_PERMISSION_TRAP", forPlayer));
+
         // WORKAROUND fix dropdown!
         Map<String, String> permissionLabelMap = Map.of(
                 // s.ownerAreaPermission, t().get("TC_UI_PERMISSION_OWNER", forPlayer),
                 s.residentAreaPermission, t().get("TC_UI_PERMISSION_RESIDENT", forPlayer),
                 s.friendAreaPermission, t().get("TC_UI_PERMISSION_FRIEND", forPlayer),
-                s.defaultAreaPermission, t().get("TC_UI_PERMISSION_GUEST", forPlayer),
                 s.prisonerAreaPermission, t().get("TC_UI_PERMISSION_PRISONER", forPlayer),
                 s.exiledAreaPermission, t().get("TC_UI_PERMISSION_EXILED", forPlayer));
-
-        // OZUIElement overlayBlocker = new OZUIElement();
-        // overlayBlocker.setPivot(Pivot.UpperLeft);
-        // overlayBlocker.setPosition(0, 0, true);
-        // overlayBlocker.setSize(100, 100, true);
-        // overlayBlocker.setBackgroundColor(0, 0, 0, 0.15f);
-        // overlayBlocker.setVisible(false);
-        // overlayBlocker.setClickable(true);
-        // overlayBlocker.setClickAction(event -> {
-        //     overlayBlocker.setVisible(false);
-        // });
 
         OZUIElement selectPane = new OZUIElement();
         selectPane.setBorder(2);
@@ -105,7 +103,16 @@ public class PlayerPermissionRow {
         });
         forPlayer.addUIElement(selectPane);
 
-        CancelButton permissionButton = new CancelButton(permissionLabelMap.get(currentPermission), event -> {
+        String buttonLabel = permissionLabelMap.get(currentPermission) == null
+                ? areaPermissionLabelMap.get(currentPermission)
+                : permissionLabelMap.get(currentPermission);
+
+        CancelButton permissionButton = new CancelButton(buttonLabel, event -> {
+            if (selectPanes.containsKey(forPlayer.getDbID())) {
+                selectPanes.get(forPlayer.getDbID()).setVisible(false);
+                selectPanes.remove(forPlayer.getDbID());
+            }
+            selectPanes.put(forPlayer.getDbID(), selectPane);
             selectPane.setVisible(true);
         });
         permissionButton.setPivot(Pivot.MiddleCenter);

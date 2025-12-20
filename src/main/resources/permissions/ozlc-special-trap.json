@@ -6,6 +6,16 @@
     "removeplayer": false,
     "setname": false
   },
+  "blueprint": {
+    "create": false,
+    "createown": false,
+    "maxelements": -1,
+    "maxsize": -1,
+    "place": false,
+    "placelimitsession": -1,
+    "placeterrain": false,
+    "placevegetation": false
+  },
   "creative": {
     "allrecipes": false,
     "areatools": false,
@@ -18,30 +28,59 @@
     "light": false,
     "placementtools": false,
     "removaltools": false,
-    "terraintools": false
+    "terraintools": false,
+    "watertools": false
   },
   "general": {
-    "changeblockshape": false,
+    "changeblockshape": true,
+    "changeclothes": true,
     "changegamemode": false,
+    "changeskin": true,
+    "crafting": true,
     "destroyitems": false,
+    "destroyownvehicles": true,
+    "destroyvehicles": false,
     "dropitems": true,
+    "edititems": false,
+    "editnpcs": false,
+    "editownitems": true,
+    "editownvehicles": true,
+    "editvehicles": false,
     "fixedspawn": false,
     "fly": false,
     "godmode": false,
+    "healthregeneration": 1.0,
     "instantdigging": false,
     "keepinventory": true,
-    "noclipping": false,
+    "noclipping": true,
     "nofalldamage": false,
     "nohungerthirst": false,
     "nostamina": false,
     "notemperature": false,
-    "pickupitems": false,
-    "placeitems": false,
-    "peacefulmode": false,
-    "pve": false,
+    "openinventory": true,
+    "pickupitems": true,
+    "placeitems": true,
+    "placevehicles": true,
+    "pve": true,
     "pvp": false,
+    "ridemounts": true,
     "unlockalldoors": false,
+    "useallchests": true,
+    "usealllights": true,
+    "useallobjects": true,
+    "useallvehicles": true,
     "voicechat": true
+  },
+  "image": {
+    "delete": false,
+    "deleteown": true,
+    "maxamount": -1,
+    "maxresolution": 512
+  },
+  "map": {
+    "allicons": false,
+    "createglobalmarker": false,
+    "createlocalmarker": true
   },
   "world": {
     "destroyconstructions": false,
@@ -61,9 +100,12 @@
     "placeobjects": false,
     "placeobjectsexception": [],
     "placeterrain": false,
-    "placevegetations": false
+    "placevegetations": false,
+    "undo": false
   },
   "forbidden": {
-    "items": []
+    "crafting": [],
+    "items": [],
+    "objects": []
   }
 }

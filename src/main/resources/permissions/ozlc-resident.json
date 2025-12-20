@@ -1,10 +1,10 @@
 {
   "area": {
-    "addplayer": false,
+    "addplayer": true,
     "canenter": true,
     "canleave": true,
-    "removeplayer": false,
-    "setname": false
+    "removeplayer": true,
+    "setname": true
   },
   "creative": {
     "allrecipes": false,
@@ -50,7 +50,12 @@
     "peacefulmode": true,
     "pve": true,
     "pvp": true,
-    "unlockalldoors": true,
+    "ridemounts": true,
+    "unlockalldoors": false,
+    "useallchests": true,
+    "usealllights": true,
+    "useallobjects": true,
+    "useallvehicles": true,
     "voicechat": true
   },
   "world": {

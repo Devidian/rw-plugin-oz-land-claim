@@ -173,13 +173,20 @@ public class LandClaimGUI {
     }
 
     private MenuItem menuItemRenameArea(Player player, Area area, Consumer<Player> onCancel) {
+        final String currentName = area.getName();
         return new MenuItem(
                 AssetManager.getIcon("rename"),
                 t.get("TC_MENU_AREA_RENAME", player),
                 (p) -> {
                     UIElement renameWindow = UIDialogFactory.getTextInput(p,
                             t.get("TC_DIALOG_AREA_RENAME_TITLE", p),
-                            area.getName(), (String v) -> area.setName(v), onCancel);
+                            area.getName(), (String v) -> {
+                                area.setName(v);
+                                Server.addArea(area, true);
+                                p.sendTextMessage(t.get("TC_AREA_RENNAMED", p)
+                                        .replace("PH_AREA_NAME", v)
+                                        .replace("PH_OLD_NAME", currentName));
+                            }, onCancel);
 
                     p.addUIElement(renameWindow, UITarget.HUD);
                     CursorManager.show(p);
@@ -582,6 +589,7 @@ public class LandClaimGUI {
                 onlinePlayer.sendTextMessage(
                         t.get("TC_ANNOUNCEMENT_AREA_EXPANDED", onlinePlayer)
                                 .replace("PH_AREA_NAME", area.getName())
+                                .replace("PH_CHUNK_POS", area.getStartChunkPosition().toString())
                                 .replace("PH_PLAYER_NAME", Server.getLastKnownPlayerName(player.getDbID())));
         }
     }

@@ -40,7 +40,12 @@
     "peacefulmode": true,
     "pve": false,
     "pvp": false,
+    "ridemounts": true,
     "unlockalldoors": false,
+    "useallchests": true,
+    "usealllights": true,
+    "useallobjects": true,
+    "useallvehicles": true,
     "voicechat": true
   },
   "world": {
