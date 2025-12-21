@@ -261,8 +261,10 @@ public class ChunkClaimUtil {
                 if (chunk.z > end.z)
                     end.z = chunk.z;
             }
-        Vector3f areaStart = new Vector3f(start.x * 32, start.y * 64, start.z * 32);
-        Vector3f areaEnd = new Vector3f(end.x * 32 + 31.999f, end.y * 64 + 63.999f, end.z * 32 + 31.999f);
+        Vector3f areaStart = new Vector3f(start.x * 32 + (start.x < 0 ? 31.99f : 0f), start.y * 64,
+                start.z * 32 + (start.z < 0 ? 31.99f : 0f));
+        Vector3f areaEnd = new Vector3f(end.x * 32 + (end.x < 0 ? 0.001f : 31.999f), end.y * 64 + 63.999f,
+                end.z * 32 + (end.z < 0 ? 0.001f : 31.999f));
         Area area = new Area(areaStart, areaEnd);
 
         // if (chunks.size() > 1)
@@ -443,8 +445,9 @@ public class ChunkClaimUtil {
         }
         // we must set name BEFORE addArea
         Server.addArea(area, true);
-        // we must set player permission AFTER addArea (because before it has no id in db??)
-        if (ownerDBId != null && defaultPermission.equals(s.defaultAreaPermission)){
+        // we must set player permission AFTER addArea (because before it has no id in
+        // db??)
+        if (ownerDBId != null && defaultPermission.equals(s.defaultAreaPermission)) {
             String ownerName = Server.getLastKnownPlayerName(ownerDBId);
             String ownerUID = Server.getLastKnownPlayerUIDs(ownerName)[0];
             area.setAttribute("ownerUID", ownerUID);

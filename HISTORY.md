@@ -15,5 +15,6 @@
 - fix: default-permissions in permissions panel from other area types are hidden now [0.1.5]
 - fix: use `area.setName` before `Server.addArea`, `area.setPlayerPermission` after [0.1.5]
 - fix: some more possible null pointer exceptions with area names [0.1.5]
+- fix: if x or z were negative area was miscalculated [0.1.6]
 
 ## [0.1.0] - 2025-12-18 | Initial release

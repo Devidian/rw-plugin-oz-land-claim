@@ -51,7 +51,7 @@
     "pve": true,
     "pvp": true,
     "ridemounts": true,
-    "unlockalldoors": false,
+    "unlockalldoors": true,
     "useallchests": true,
     "usealllights": true,
     "useallobjects": true,

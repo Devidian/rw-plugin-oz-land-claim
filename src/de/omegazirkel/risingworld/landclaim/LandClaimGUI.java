@@ -165,7 +165,8 @@ public class LandClaimGUI {
                                     // WORKAROUND direct SQL
                                     if (LandClaim.wdbAreas != null) {
                                         LandClaim.wdbAreas.executeUpdate(
-                                                "UPDATE areas SET name ='" + v + "' WHERE id=" + area.getID());
+                                                "UPDATE areas SET name ='" + v.replace("'", "''") + "' WHERE id="
+                                                        + area.getID());
                                     }
                                     p.sendTextMessage(t.get("TC_AREA_RENNAMED", p)
                                             .replace("PH_AREA_NAME", v)
@@ -338,7 +339,8 @@ public class LandClaimGUI {
 
                         // p.sendTextMessage("you have claimed " + a + " of " + b + " chunks");
                         // p.sendTextMessage("you have spent " + c + " seconds in this chunk");
-                        // p.sendTextMessage("your next claim requires " + d + " seconds in the nextchunk");
+                        // p.sendTextMessage("your next claim requires " + d + " seconds in the
+                        // nextchunk");
                         // if we do not reopen the menu it seems to be frozen and unclickable
                         openAdminMenu(p, onBack);
                         Area[] allAreas = Server.getAllAreas();
