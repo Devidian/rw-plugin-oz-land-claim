@@ -42,6 +42,8 @@
     "pvp": false,
     "ridemounts": true,
     "unlockalldoors": false,
+    "useallfurnaces": true,
+    "usealldoors": true,
     "useallchests": true,
     "usealllights": true,
     "useallobjects": true,

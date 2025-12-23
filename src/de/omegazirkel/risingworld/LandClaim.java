@@ -16,6 +16,7 @@ import de.omegazirkel.risingworld.tools.Colors;
 import de.omegazirkel.risingworld.tools.FileChangeListener;
 import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.OZLogger;
+import de.omegazirkel.risingworld.tools.PlayerSettings;
 import de.omegazirkel.risingworld.tools.db.SQLite;
 import de.omegazirkel.risingworld.tools.ui.AssetManager;
 import de.omegazirkel.risingworld.tools.ui.MenuItem;
@@ -49,8 +50,10 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
     public static String name;
     // only for workaround with area bugs
     public static WorldDatabase wdbAreas;
+    public static SQLite db;
+    public static PlayerSettings ps;
 
-    private LandClaimChunkDatabase database;
+    private LandClaimChunkDatabase lcDatabase;
 
     public static OZLogger logger() {
         return OZLogger.getInstance("OZ.LandClaim");
@@ -66,9 +69,12 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
         t = I18n.getInstance(this);
         registerEventListener(this);
         s = PluginSettings.getInstance(this);
-        database = new LandClaimChunkDatabase(new SQLite(this));
+        db = new SQLite(this);
+        ps = new PlayerSettings(db.getConnection());
+
+        lcDatabase = new LandClaimChunkDatabase(db);
         wdbAreas = this.getWorldDatabase(Target.Areas);
-        chunkClaimUtil = new ChunkClaimUtil(database);
+        chunkClaimUtil = new ChunkClaimUtil(lcDatabase);
         gui = LandClaimGUI.getInstance(chunkClaimUtil, this);
         s.initSettings();
         logger().setLevel(s.logLevel);
@@ -148,9 +154,11 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
                     break;
                 case "devmode":
                     if (player.isAdmin()) {
-                        player.setAttribute("developerMode",
-                                player.hasAttribute("developerMode") ? !(Boolean) player.getAttribute("developerMode")
-                                        : true);
+                        Boolean currentValue = player.hasAttribute("developerMode")
+                                ? (Boolean) player.getAttribute("developerMode")
+                                : false;
+                        player.setAttribute("developerMode", !currentValue);
+                        ps.setBoolean(player.getDbID(), "developerMode", !currentValue);
                     }
                     break;
                 case "open":
@@ -217,22 +225,26 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
         Vector3i chunkPos = player.getChunkPosition();
         eventLogger().debug("Player " + player.getName() + " connected to the server. Current chunk position: "
                 + chunkPos.toString());
+        Integer dbId = player.getDbID();
         // ensure values are set
         if (!player.hasAttribute("developerMode"))
-            player.setAttribute("developerMode", false);
+            player.setAttribute("developerMode", ps.getBoolean(dbId, "developerMode").orElse(false));
         if (!player.hasAttribute("showCurrentChunkFrame"))
-            player.setAttribute("showCurrentChunkFrame", false);
+            player.setAttribute("showCurrentChunkFrame", ps.getBoolean(dbId, "showCurrentChunkFrame").orElse(false));
         if (!player.hasAttribute("showOwnedAreaFrames"))
-            player.setAttribute("showOwnedAreaFrames", false);
+            player.setAttribute("showOwnedAreaFrames", ps.getBoolean(dbId, "showOwnedAreaFrames").orElse(false));
         if (!player.hasAttribute("showOtherAreaFrames"))
-            player.setAttribute("showOtherAreaFrames", false);
+            player.setAttribute("showOtherAreaFrames", ps.getBoolean(dbId, "showOtherAreaFrames").orElse(false));
+        if (!player.hasAttribute("enableClaimInfoOverlay"))
+            player.setAttribute("enableClaimInfoOverlay", ps.getBoolean(dbId, "enableClaimInfoOverlay").orElse(true));
         if (!player.hasAttribute("areaFrames"))
             player.setAttribute("areaFrames", new ConcurrentHashMap<Long, Area3D>());
-        if (!player.hasAttribute("enableClaimInfoOverlay"))
-            player.setAttribute("enableClaimInfoOverlay", true);
         if (!player.hasAttribute("currentAreaFrame"))
             player.setAttribute("currentAreaFrame", null);
 
+        // updated Area3D frames if needed
+        updatecurrentAreaFrameForPlayer(player);
+        Area3DUtils.updateAreaFramesForPlayer(player);
     }
 
     @EventMethod

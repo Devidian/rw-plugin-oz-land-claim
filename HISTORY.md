@@ -4,6 +4,9 @@
 
 ## [unreleased/patches]
 
+## [0.2.0] - 2025-12-24 | Persisting settings to SQLite
+
+- feat: settings are now persisted to SQLite [0.2.0]
 - feat: player gets message if area is renamed [0.1.4]
 - refactor: now `/lc` opens the menu too (instead of doing nothing) [0.1.2]
 - refactor: default area permissions adjusted [0.1.4]

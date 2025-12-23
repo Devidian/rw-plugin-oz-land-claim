@@ -497,6 +497,7 @@ public class LandClaimGUI {
                     Vector3i chunkPos = p.getChunkPosition();
                     Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPos);
                     p.setAttribute("showCurrentChunkFrame", !showCurrentChunkFrame);
+                    LandClaim.ps.setBoolean(p.getDbID(), "showCurrentChunkFrame",!showCurrentChunkFrame);
                     Area3DUtils.updateCurrentChunkFrameForPlayer(p, showCurrentChunkFrame ? (Area) null : area);
                     // if we do not reopen the menu it seems to be frozen and unclickable
                     openVisibilitySettingsMenu(p);
@@ -508,6 +509,7 @@ public class LandClaimGUI {
                         uiPlayer),
                 (p) -> {
                     p.setAttribute("showOwnedAreaFrames", !showOwnedAreaFrames);
+                    LandClaim.ps.setBoolean(p.getDbID(), "showOwnedAreaFrames",!showOwnedAreaFrames);
                     // if we do not reopen the menu it seems to be frozen and unclickable
                     openVisibilitySettingsMenu(p);
                     Area3DUtils.updateAreaFramesForPlayer(p);
@@ -519,6 +521,7 @@ public class LandClaimGUI {
                         uiPlayer),
                 (p) -> {
                     p.setAttribute("showOtherAreaFrames", !showOtherAreaFrames);
+                    LandClaim.ps.setBoolean(p.getDbID(), "showOtherAreaFrames",!showOtherAreaFrames);
                     // if we do not reopen the menu it seems to be frozen and unclickable
                     openVisibilitySettingsMenu(p);
                     Area3DUtils.updateAreaFramesForPlayer(p);
