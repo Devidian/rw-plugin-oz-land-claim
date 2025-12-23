@@ -190,13 +190,15 @@ public class ChunkClaimUtil {
             return false;
         }
 
-        // 4. Check minimum time spent in chunk
-        long time = db.getTotalChunkTime(p, area.getStartChunkPosition()) / 1000;
+        if (area != null) {
+            // 4. Check minimum time spent in chunk
+            long time = db.getTotalChunkTime(p, area.getStartChunkPosition()) / 1000;
 
-        if (time < getPlayerNextClaimTime(p) && !(p.isAdmin() && s.adminIgnoreTime)) {
-            if (callback != null)
-                callback.accept("spent more time");
-            return false;
+            if (time < getPlayerNextClaimTime(p) && !(p.isAdmin() && s.adminIgnoreTime)) {
+                if (callback != null)
+                    callback.accept("spent more time");
+                return false;
+            }
         }
 
         return true;
@@ -292,6 +294,8 @@ public class ChunkClaimUtil {
      * @return
      */
     private boolean isSingleChunkArea(Area area) {
+        if (area == null)
+            return false;
         Vector3i start = area.getStartChunkPosition();
         Vector3i end = area.getEndChunkPosition();
         return start.x == end.x && start.z == end.z && start.y == end.y;
@@ -484,6 +488,8 @@ public class ChunkClaimUtil {
      * Attempts to expand an area in a direction. Checks ALL affected chunks.
      */
     public Area expandClaim(Area area, Direction dir, Player p) {
+        if (area == null)
+            return null;
         Vector3i startChunk = area.getStartChunkPosition();
         Vector3i endChunk = area.getEndChunkPosition();
         List<Vector3i> chunks = areaToChunks(area);
@@ -693,8 +699,8 @@ public class ChunkClaimUtil {
                     area.removePlayerPermission(entry.getKey());
                 }
             // 2. remove area from server
-            Server.removeArea(area);
             String areaName = area.getName() == null ? "Unnamed Area" : area.getName();
+            Server.removeArea(area);
 
             p.sendTextMessage(t().get("TC_AREA_RELEASE_AREA", p).replace("PH_AREA_NAME", areaName));
             // remove area and claim information from database

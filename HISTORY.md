@@ -16,5 +16,6 @@
 - fix: use `area.setName` before `Server.addArea`, `area.setPlayerPermission` after [0.1.5]
 - fix: some more possible null pointer exceptions with area names [0.1.5]
 - fix: if x or z were negative area was miscalculated [0.1.6]
+- fix: possible null pointer exceptions [0.1.7]
 
 ## [0.1.0] - 2025-12-18 | Initial release
