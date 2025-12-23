@@ -243,7 +243,8 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
             player.setAttribute("currentAreaFrame", null);
 
         // updated Area3D frames if needed
-        updatecurrentAreaFrameForPlayer(player);
+        if ((Boolean) player.getAttribute("showCurrentChunkFrame"))
+            updatecurrentAreaFrameForPlayer(player);
         Area3DUtils.updateAreaFramesForPlayer(player);
     }
 

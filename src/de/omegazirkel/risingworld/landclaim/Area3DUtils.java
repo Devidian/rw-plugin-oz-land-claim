@@ -126,6 +126,7 @@ public class Area3DUtils {
     }
 
     public static void updateCurrentChunkFrameForPlayer(Player player, Area area) {
+        
         Area3D chunkBorderArea = ((Area3D) player.getAttribute("currentAreaFrame"));
         if (area == null) {
             if (chunkBorderArea != null) {
