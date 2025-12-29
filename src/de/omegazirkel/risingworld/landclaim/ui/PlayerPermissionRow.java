@@ -3,7 +3,6 @@ package de.omegazirkel.risingworld.landclaim.ui;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import de.omegazirkel.risingworld.LandClaim;
 import de.omegazirkel.risingworld.landclaim.PluginSettings;
@@ -13,7 +12,9 @@ import de.omegazirkel.risingworld.tools.ui.OZUIElement;
 import de.omegazirkel.risingworld.tools.ui.table.TableCell;
 import de.omegazirkel.risingworld.tools.ui.table.TableRow;
 import net.risingworld.api.Server;
+import net.risingworld.api.callbacks.Callback;
 import net.risingworld.api.objects.Player;
+import net.risingworld.api.ui.UIElement;
 import net.risingworld.api.ui.UILabel;
 import net.risingworld.api.ui.style.Pivot;
 import net.risingworld.api.ui.style.Unit;
@@ -31,8 +32,9 @@ public class PlayerPermissionRow {
             Integer playerDBID,
             String currentPermission,
             String defaultPermission,
-            Consumer<String> callback,
-            Player forPlayer) {
+            Callback<String> callback,
+            Player forPlayer,
+            UIElement parentOverlay) {
         String ownerName = Server.getLastKnownPlayerName(playerDBID);
         String[] ownerUID = Server.getLastKnownPlayerUIDs(ownerName);
         String uidLabelText = "DBID: " + playerDBID;
@@ -102,7 +104,8 @@ public class PlayerPermissionRow {
         selectPane.setClickAction(event -> {
             selectPane.setVisible(false);
         });
-        forPlayer.addUIElement(selectPane);
+        parentOverlay.addChild(selectPane);
+        // forPlayer.addUIElement(selectPane);
 
         String buttonLabel = permissionLabelMap.get(currentPermission) == null
                 ? areaPermissionLabelMap.get(currentPermission)
@@ -124,7 +127,7 @@ public class PlayerPermissionRow {
         for (Map.Entry<String, String> entry : permissionLabelMap.entrySet()) {
             CancelButton cb = new CancelButton(entry.getValue(), event -> {
                 selectPane.setVisible(false);
-                callback.accept(entry.getKey());
+                callback.onCall(entry.getKey());
                 permissionButton.setText(entry.getValue());
             });
             cb.style.width.set(98, Unit.Percent);
@@ -137,7 +140,7 @@ public class PlayerPermissionRow {
         String defaultLabel = areaPermissionLabelMap.get(defaultPermission);
         CancelButton cb = new CancelButton(defaultLabel, event -> {
             selectPane.setVisible(false);
-            callback.accept(defaultPermission);
+            callback.onCall(defaultPermission);
             permissionButton.setText(defaultLabel);
         });
         cb.style.width.set(98, Unit.Percent);

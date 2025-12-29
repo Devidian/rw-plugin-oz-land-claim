@@ -4,6 +4,14 @@
 
 ## [unreleased/patches]
 
+## [0.3.0] - 2025-12-28 | Changed Consumer to Callback
+
+[BREAKING]
+
+- build: needs OZ Tools v0.13.0+
+- refactor: added PermissionOverlay (fixes issue with permission selector stay open)
+- refactor: replaced Consumer with Callback (java -> rw api)
+
 ## [0.2.0] - 2025-12-24 | Persisting settings to SQLite
 
 - feat: settings are now persisted to SQLite [0.2.0]

@@ -1,7 +1,5 @@
 package de.omegazirkel.risingworld.landclaim.ui;
 
-import java.util.function.Consumer;
-
 import de.omegazirkel.risingworld.LandClaim;
 import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.ui.ButtonFactory;
@@ -9,6 +7,7 @@ import de.omegazirkel.risingworld.tools.ui.CancelButton;
 import de.omegazirkel.risingworld.tools.ui.CursorManager;
 import de.omegazirkel.risingworld.tools.ui.DangerButton;
 import de.omegazirkel.risingworld.tools.ui.OkButton;
+import net.risingworld.api.callbacks.Callback;
 import net.risingworld.api.objects.Player;
 import net.risingworld.api.ui.UIElement;
 import net.risingworld.api.ui.UILabel;
@@ -34,8 +33,8 @@ public class UIDialogFactory {
             Player player,
             String title,
             String i18nId,
-            Consumer<Boolean> onOk,
-            Consumer<Player> onCancel) {
+            Callback<Boolean> onOk,
+            Callback<Player> onCancel) {
 
         // --- Window ---
         UIElement window = getDialogWindow();
@@ -57,7 +56,7 @@ public class UIDialogFactory {
         DangerButton btnOk = ButtonFactory.danger(t.get("TC_UI_BTN_YES", player), event -> {
             player.removeUIElement(window);
             CursorManager.hide(player);
-            onOk.accept(true);
+            onOk.onCall(true);
         });
 
         btnOk.setPivot(Pivot.LowerRight);
@@ -67,7 +66,7 @@ public class UIDialogFactory {
         OkButton btnCancel = ButtonFactory.ok(t.get("TC_UI_BTN_NO", player), event -> {
             player.removeUIElement(window);
             CursorManager.hide(player);
-            onCancel.accept(player);
+            onCancel.onCall(player);
         });
 
         btnCancel.setPivot(Pivot.LowerLeft);
@@ -81,8 +80,8 @@ public class UIDialogFactory {
             Player player,
             String title,
             String i18nId,
-            Consumer<Boolean> onOk,
-            Consumer<Player> onCancel) {
+            Callback<Boolean> onOk,
+            Callback<Player> onCancel) {
 
         // --- Window ---
         UIElement window = getDialogWindow();
@@ -104,7 +103,7 @@ public class UIDialogFactory {
         OkButton btnOk = ButtonFactory.ok(t.get("TC_UI_BTN_YES", player), event -> {
             player.removeUIElement(window);
             CursorManager.hide(player);
-            onOk.accept(true);
+            onOk.onCall(true);
         });
 
         btnOk.setPivot(Pivot.LowerRight);
@@ -114,7 +113,7 @@ public class UIDialogFactory {
         CancelButton btnCancel = ButtonFactory.cancel(t.get("TC_UI_BTN_NO", player), event -> {
             player.removeUIElement(window);
             CursorManager.hide(player);
-            onCancel.accept(player);
+            onCancel.onCall(player);
         });
 
         btnCancel.setPivot(Pivot.LowerLeft);
@@ -128,8 +127,8 @@ public class UIDialogFactory {
             Player player,
             String title,
             String defaultText,
-            Consumer<String> onOk,
-            Consumer<Player> onCancel) {
+            Callback<String> onOk,
+            Callback<Player> onCancel) {
 
         // --- Window ---
         UIElement window = getDialogWindow();
@@ -160,7 +159,7 @@ public class UIDialogFactory {
             txt.getCurrentText(player, (String text) -> {
                 player.removeUIElement(window);
                 CursorManager.hide(player);
-                onOk.accept(text.trim());
+                onOk.onCall(text.trim());
             });
         });
 
@@ -171,7 +170,7 @@ public class UIDialogFactory {
         CancelButton btnCancel = ButtonFactory.cancel(t.get("TC_UI_BTN_CANCEL", player), event -> {
             player.removeUIElement(window);
             CursorManager.hide(player);
-            onCancel.accept(player);
+            onCancel.onCall(player);
         });
 
         btnCancel.setPivot(Pivot.LowerLeft);

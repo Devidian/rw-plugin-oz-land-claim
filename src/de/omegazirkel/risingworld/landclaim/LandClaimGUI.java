@@ -2,11 +2,10 @@ package de.omegazirkel.risingworld.landclaim;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 import de.omegazirkel.risingworld.LandClaim;
 import de.omegazirkel.risingworld.landclaim.ChunkClaimUtil.Direction;
-import de.omegazirkel.risingworld.landclaim.ui.AreaPermissionPanel;
+import de.omegazirkel.risingworld.landclaim.ui.PermissionOverlay;
 import de.omegazirkel.risingworld.landclaim.ui.UIDialogFactory;
 import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.ui.AssetManager;
@@ -15,6 +14,7 @@ import de.omegazirkel.risingworld.tools.ui.MenuItem;
 import de.omegazirkel.risingworld.tools.ui.PluginMenuManager;
 import net.risingworld.api.Plugin;
 import net.risingworld.api.Server;
+import net.risingworld.api.callbacks.Callback;
 import net.risingworld.api.objects.Area;
 import net.risingworld.api.objects.Player;
 import net.risingworld.api.ui.UIElement;
@@ -120,7 +120,7 @@ public class LandClaimGUI {
         return instance;
     }
 
-    private MenuItem menuItemSplitArea(Player uiPlayer, Area area, Consumer<Player> onCancel) {
+    private MenuItem menuItemSplitArea(Player uiPlayer, Area area, Callback<Player> onCancel) {
         return new MenuItem(
                 AssetManager.getIcon("grid"),
                 t.get("TC_MENU_AREA_SPLIT", uiPlayer),
@@ -134,7 +134,7 @@ public class LandClaimGUI {
                             (Boolean v) -> {
                                 if (v) {
                                     if (!chunkClaimUtil.splitClaim(area, p))
-                                        onCancel.accept(p);
+                                        onCancel.onCall(p);
                                     // if claim succeeds close menu
                                     else {
                                         p.hideRadialMenu(false);
@@ -149,7 +149,7 @@ public class LandClaimGUI {
                 });
     }
 
-    private MenuItem menuItemRenameArea(Player player, Area area, Consumer<Player> onCancel) {
+    private MenuItem menuItemRenameArea(Player player, Area area, Callback<Player> onCancel) {
         final String currentName = area.getName();
         return new MenuItem(
                 AssetManager.getIcon("rename"),
@@ -159,7 +159,7 @@ public class LandClaimGUI {
                             t.get("TC_DIALOG_AREA_RENAME_TITLE", p),
                             area.getName(), (String v) -> {
                                 if (v.isEmpty())
-                                    onCancel.accept(p);
+                                    onCancel.onCall(p);
                                 else {
                                     area.setName(v);
                                     // WORKAROUND direct SQL
@@ -182,7 +182,7 @@ public class LandClaimGUI {
                 });
     }
 
-    private MenuItem menuItemRemoveArea(Player player, Area area, Consumer<Player> onCancel) {
+    private MenuItem menuItemRemoveArea(Player player, Area area, Callback<Player> onCancel) {
         return new MenuItem(
                 AssetManager.getIcon("square-minus"),
                 t.get("TC_MENU_AREA_RELEASE", player),
@@ -212,7 +212,7 @@ public class LandClaimGUI {
             String labelKey,
             Area area,
             String permission,
-            Consumer<Player> onBack) {
+            Callback<Player> onBack) {
         return new MenuItem(
                 AssetManager.getIcon(iconKey),
                 t.get(labelKey, uiPlayer),
@@ -229,7 +229,7 @@ public class LandClaimGUI {
     }
 
     private MenuItem menuItemExpandArea(Player player, Area area, Direction direction, String iconKey, String labelKey,
-            Consumer<Player> onCancel, Consumer<Player> onBack) {
+            Callback<Player> onCancel, Callback<Player> onBack) {
         return new MenuItem(
                 AssetManager.getIcon(iconKey),
                 t.get(labelKey, player),
@@ -260,26 +260,34 @@ public class LandClaimGUI {
                 });
     }
 
-    private MenuItem menuItemPermissionManager(Player player, Area area, Consumer<Player> onResponse) {
+    private MenuItem menuItemPermissionManager(Player player, Area area, Callback<Player> onResponse) {
         return new MenuItem(
                 AssetManager.getIcon("users-gear"),
                 t.get("TC_MENU_AREA_PERMISSIONS", player),
                 (p) -> {
-                    new AreaPermissionPanel(area, p, onResponse);
+                    UIElement overlay = (UIElement) p.getAttribute("landclaim-overlay");
+                    if(overlay != null){
+                        p.removeUIElement(overlay);
+                        CursorManager.hide(p);
+                    }
+                    PermissionOverlay permissionOverlay = new PermissionOverlay(area, p, onResponse);
+                    p.addUIElement(permissionOverlay, UITarget.HUD);
+                    CursorManager.show(p);
+                    p.setAttribute("landclaim-overlay", permissionOverlay);
 
                     p.hideRadialMenu(false);
 
                 });
     }
 
-    public void openSpecialAreaMenu(Player uiPlayer, Consumer<Player> onBack) {
+    public void openSpecialAreaMenu(Player uiPlayer, Callback<Player> onBack) {
         List<MenuItem> menuItems = new ArrayList<>();
 
         Vector3i chunkPos = uiPlayer.getChunkPosition();
         Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPos);
         Area existingArea = chunkClaimUtil.isAreaIntersecting(area);
 
-        Consumer<Player> onBackReopen = (Player player) -> openSpecialAreaMenu(player, onBack);
+        Callback<Player> onBackReopen = (Player player) -> openSpecialAreaMenu(player, onBack);
 
         if (existingArea == null) {
             // special areas
@@ -308,7 +316,7 @@ public class LandClaimGUI {
         PluginMenuManager.showMenu(uiPlayer, menuItems);
     }
 
-    public void openAdminMenu(Player uiPlayer, Consumer<Player> onBack) {
+    public void openAdminMenu(Player uiPlayer, Callback<Player> onBack) {
         Boolean developerMode = (Boolean) uiPlayer.getAttribute("developerMode");
         Vector3i chunkPos = uiPlayer.getChunkPosition();
         Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPos);
@@ -321,7 +329,7 @@ public class LandClaimGUI {
 
         List<MenuItem> menuItems = new ArrayList<>();
 
-        Consumer<Player> onBackReopen = (Player player) -> openAdminMenu(player, onBack);
+        Callback<Player> onBackReopen = (Player player) -> openAdminMenu(player, onBack);
 
         if (developerMode) {
 
@@ -384,7 +392,7 @@ public class LandClaimGUI {
         PluginMenuManager.showMenu(uiPlayer, menuItems);
     }
 
-    public void openClaimOptionsMenu(Player uiPlayer, Consumer<Player> onBack) {
+    public void openClaimOptionsMenu(Player uiPlayer, Callback<Player> onBack) {
         List<MenuItem> menuItems = new ArrayList<>();
         Vector3i chunkPos = uiPlayer.getChunkPosition();
         Area existingArea = chunkClaimUtil.isAreaIntersecting(ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPos));
@@ -393,7 +401,7 @@ public class LandClaimGUI {
         boolean isOwner = areaPermission != null && areaPermission.equals(s.ownerAreaPermission);
         Integer chunkCount = existingArea == null ? 0 : ChunkClaimUtil.areaToChunks(existingArea).size();
 
-        Consumer<Player> onBackReopen = (Player player) -> openClaimOptionsMenu(player, onBack);
+        Callback<Player> onBackReopen = (Player player) -> openClaimOptionsMenu(player, onBack);
 
         if (isOwner) {
             menuItems.add(new MenuItem(
@@ -416,13 +424,13 @@ public class LandClaimGUI {
         PluginMenuManager.showMenu(uiPlayer, menuItems);
     }
 
-    public void openExpandAreaMenu(Player uiPlayer, Consumer<Player> onBack) {
+    public void openExpandAreaMenu(Player uiPlayer, Callback<Player> onBack) {
         List<MenuItem> menuItems = new ArrayList<>();
         Vector3i chunkPos = uiPlayer.getChunkPosition();
         Area virtualArea = ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPos);
         Area existingArea = chunkClaimUtil.isAreaIntersecting(virtualArea);
 
-        Consumer<Player> onBackReopen = (Player player) -> openExpandAreaMenu(player, onBack);
+        Callback<Player> onBackReopen = (Player player) -> openExpandAreaMenu(player, onBack);
 
         if (existingArea != null) {
             menuItems.add(menuItemExpandArea(uiPlayer, existingArea, Direction.NORTH, "compass-north",

@@ -2,7 +2,6 @@ package de.omegazirkel.risingworld.landclaim.ui;
 
 import java.util.Arrays;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import de.omegazirkel.risingworld.LandClaim;
 import de.omegazirkel.risingworld.landclaim.PluginSettings;
@@ -13,6 +12,7 @@ import de.omegazirkel.risingworld.tools.ui.OZUIElement;
 import de.omegazirkel.risingworld.tools.ui.table.TableRow;
 import de.omegazirkel.risingworld.tools.ui.table.TableScrollView;
 import net.risingworld.api.Server;
+import net.risingworld.api.callbacks.Callback;
 import net.risingworld.api.objects.Area;
 import net.risingworld.api.objects.Player;
 import net.risingworld.api.ui.UIElement;
@@ -31,7 +31,7 @@ public class AreaPermissionPanel extends UIElement {
 
     private Player uiPlayer;
 
-    public AreaPermissionPanel(Area area, Player player, Consumer<Player> onClose) {
+    public AreaPermissionPanel(Area area, Player player, Callback<Player> onClose, UIElement parentOverlay) {
         this.setPivot(Pivot.MiddleCenter);
         this.setPosition(50f, 50f, true);
         this.setSize(50, 50, true);
@@ -42,11 +42,8 @@ public class AreaPermissionPanel extends UIElement {
         this.uiPlayer = player;
 
         setupPanelHeader(area, player);
-        setupPanelBody(area, player);
+        setupPanelBody(area, player, parentOverlay);
         setupPanelFooter(area, player, onClose);
-
-        player.addUIElement(this);
-        CursorManager.show(player);
     }
 
     private void setupPanelHeader(Area area, Player player) {
@@ -97,7 +94,7 @@ public class AreaPermissionPanel extends UIElement {
 
     }
 
-    private void setupPanelBody(Area area, Player player) {
+    private void setupPanelBody(Area area, Player player, UIElement parentOverlay) {
 
         TableScrollView table = new TableScrollView(
                 Arrays.asList(t().get("TC_UI_TH_LABEL_NAME", player), t().get("TC_UI_TH_LABEL_UID", player),
@@ -114,7 +111,7 @@ public class AreaPermissionPanel extends UIElement {
                         uid,
                         permission,
                         area.getDefaultPermission(),
-                        newPermission -> setPermission(area, uid, newPermission), player);
+                        newPermission -> setPermission(area, uid, newPermission), player, parentOverlay);
                 table.addRow(row);
             }
         // 2. create a list of online users
@@ -126,7 +123,7 @@ public class AreaPermissionPanel extends UIElement {
                     p.getDbID(),
                     area.getDefaultPermission(),
                     area.getDefaultPermission(),
-                    newPermission -> setPermission(area, p.getDbID(), newPermission), player);
+                    newPermission -> setPermission(area, p.getDbID(), newPermission), player, parentOverlay);
             table.addRow(row);
         }
         OZUIElement body = new OZUIElement();
@@ -166,12 +163,10 @@ public class AreaPermissionPanel extends UIElement {
         }
     }
 
-    private void setupPanelFooter(Area area, Player player, Consumer<Player> onClose) {
+    private void setupPanelFooter(Area area, Player player, Callback<Player> onClose) {
         // button should remove this panel from player and call onClose
         CancelButton cb = new CancelButton(t().get("TC_UI_BTN_CLOSE", player), event -> {
-            player.removeUIElement(this);
-            CursorManager.hide(player);
-            onClose.accept(player);
+            onClose.onCall(player);
         });
         cb.setPivot(Pivot.LowerCenter);
         cb.setPosition(50f, 99f, true);

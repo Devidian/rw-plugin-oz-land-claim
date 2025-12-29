@@ -3,7 +3,6 @@ package de.omegazirkel.risingworld.landclaim;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 
 import de.omegazirkel.risingworld.LandClaim;
 import de.omegazirkel.risingworld.entities.LandClaimChunkInfo;
@@ -11,6 +10,7 @@ import de.omegazirkel.risingworld.interfaces.ChunkDatabase;
 import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.OZLogger;
 import net.risingworld.api.Server;
+import net.risingworld.api.callbacks.Callback;
 import net.risingworld.api.objects.Area;
 import net.risingworld.api.objects.Player;
 import net.risingworld.api.utils.Vector3f;
@@ -157,16 +157,15 @@ public class ChunkClaimUtil {
      * Determines if a player can claim this Area.
      * A claimable area must consist of only 1 chunk
      */
-    public boolean canPlayerClaimArea(Player p, Area area, Consumer<String> callback) {
+    public boolean canPlayerClaimArea(Player p, Area area, Callback<String> callback) {
 
         // 1. Check if player reached max claims
         long current = getPlayerClaimCount(p);
         long maxAllowed = getPlayerMaxClaims(p);
 
-        // FIXME use translation
         if (!isSingleChunkArea(area)) {
             if (callback != null)
-                callback.accept("Claim area size exceeded (only 1 chunk)");
+                callback.onCall(t().get("TC_CLAIM_ERROR_SIZE", p));
             return false;
         }
 
@@ -174,7 +173,7 @@ public class ChunkClaimUtil {
         Area existing = isAreaIntersecting(area);
         if (existing != null) {
             if (callback != null)
-                callback.accept("is occupied");
+                callback.onCall(t().get("TC_CLAIM_ERROR_OCCUPIED", p));
             return false;
         }
 
@@ -186,7 +185,7 @@ public class ChunkClaimUtil {
         // 3. Check max claims reached
         if (current >= maxAllowed && !(p.isAdmin() && s.adminIgnoreLimit)) {
             if (callback != null)
-                callback.accept("maximum reached");
+                callback.onCall(t().get("TC_CLAIM_ERROR_MAX_REACHED", p));
             return false;
         }
 
@@ -196,7 +195,7 @@ public class ChunkClaimUtil {
 
             if (time < getPlayerNextClaimTime(p) && !(p.isAdmin() && s.adminIgnoreTime)) {
                 if (callback != null)
-                    callback.accept("spent more time");
+                    callback.onCall(t().get("TC_CLAIM_ERROR_TIME", p));
                 return false;
             }
         }
