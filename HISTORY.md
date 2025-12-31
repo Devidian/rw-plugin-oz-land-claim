@@ -4,6 +4,8 @@
 
 ## [unreleased/patches]
 
+- fix: botLang is null when Discord Connect is not found [v0.3.1]
+
 ## [0.3.0] - 2025-12-28 | Changed Consumer to Callback
 
 [BREAKING]

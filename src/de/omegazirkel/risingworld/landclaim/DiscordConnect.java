@@ -10,7 +10,8 @@ public class DiscordConnect {
     private static Plugin pluginRef = null;
     private static final PluginSettings s = PluginSettings.getInstance();
     public static final String botLang(){
-        return (String) callPluginMethod("getBotLanguage", null, null);
+        String lang = (String) callPluginMethod("getBotLanguage", null, null);
+        return lang != null ?  lang : "en";
     }
 
     public static void init(Plugin plugin) {
