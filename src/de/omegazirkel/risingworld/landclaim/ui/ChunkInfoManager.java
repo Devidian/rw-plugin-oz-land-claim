@@ -66,11 +66,11 @@ public class ChunkInfoManager implements Listener {
             }
 
             // update
-            boolean keep = controller.update();
+            controller.update();
 
-            if (!keep) {
-                it.remove();
-            }
+            // if (!keep) {
+            //     it.remove();
+            // }
         }
     }
 }

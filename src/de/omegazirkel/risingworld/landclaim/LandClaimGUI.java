@@ -317,7 +317,7 @@ public class LandClaimGUI {
     }
 
     public void openAdminMenu(Player uiPlayer, Callback<Player> onBack) {
-        Boolean developerMode = (Boolean) uiPlayer.getAttribute("developerMode");
+        Boolean developerMode = (Boolean) uiPlayer.getAttribute("oz.landclaim.developerMode");
         Vector3i chunkPos = uiPlayer.getChunkPosition();
         Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPos);
         Area existingArea = chunkClaimUtil.isAreaIntersecting(area);
@@ -491,9 +491,9 @@ public class LandClaimGUI {
     }
 
     public void openVisibilitySettingsMenu(Player uiPlayer) {
-        Boolean showCurrentChunkFrame = (Boolean) uiPlayer.getAttribute("showCurrentChunkFrame");
-        Boolean showOwnedAreaFrames = (Boolean) uiPlayer.getAttribute("showOwnedAreaFrames");
-        Boolean showOtherAreaFrames = (Boolean) uiPlayer.getAttribute("showOtherAreaFrames");
+        Boolean showCurrentChunkFrame = (Boolean) uiPlayer.getAttribute("oz.landclaim.showCurrentChunkFrame");
+        Boolean showOwnedAreaFrames = (Boolean) uiPlayer.getAttribute("oz.landclaim.showOwnedAreaFrames");
+        Boolean showOtherAreaFrames = (Boolean) uiPlayer.getAttribute("oz.landclaim.showOtherAreaFrames");
 
         List<MenuItem> menuItems = new ArrayList<>();
 
@@ -504,8 +504,8 @@ public class LandClaimGUI {
                 (p) -> {
                     Vector3i chunkPos = p.getChunkPosition();
                     Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPos);
-                    p.setAttribute("showCurrentChunkFrame", !showCurrentChunkFrame);
-                    LandClaim.ps.setBoolean(p.getDbID(), "showCurrentChunkFrame",!showCurrentChunkFrame);
+                    p.setAttribute("oz.landclaim.showCurrentChunkFrame", !showCurrentChunkFrame);
+                    LandClaim.ps.setBoolean(p.getDbID(), "oz.landclaim.showCurrentChunkFrame",!showCurrentChunkFrame);
                     Area3DUtils.updateCurrentChunkFrameForPlayer(p, showCurrentChunkFrame ? (Area) null : area);
                     // if we do not reopen the menu it seems to be frozen and unclickable
                     openVisibilitySettingsMenu(p);
@@ -516,8 +516,8 @@ public class LandClaimGUI {
                 t.get(showOwnedAreaFrames ? "TC_MENU_VISIBILITY_OWNED_HIDE" : "TC_MENU_VISIBILITY_OWNED_SHOW",
                         uiPlayer),
                 (p) -> {
-                    p.setAttribute("showOwnedAreaFrames", !showOwnedAreaFrames);
-                    LandClaim.ps.setBoolean(p.getDbID(), "showOwnedAreaFrames",!showOwnedAreaFrames);
+                    p.setAttribute("oz.landclaim.showOwnedAreaFrames", !showOwnedAreaFrames);
+                    LandClaim.ps.setBoolean(p.getDbID(), "oz.landclaim.showOwnedAreaFrames",!showOwnedAreaFrames);
                     // if we do not reopen the menu it seems to be frozen and unclickable
                     openVisibilitySettingsMenu(p);
                     Area3DUtils.updateAreaFramesForPlayer(p);
@@ -528,8 +528,8 @@ public class LandClaimGUI {
                 t.get(showOtherAreaFrames ? "TC_MENU_VISIBILITY_OTHER_HIDE" : "TC_MENU_VISIBILITY_OTHER_SHOW",
                         uiPlayer),
                 (p) -> {
-                    p.setAttribute("showOtherAreaFrames", !showOtherAreaFrames);
-                    LandClaim.ps.setBoolean(p.getDbID(), "showOtherAreaFrames",!showOtherAreaFrames);
+                    p.setAttribute("oz.landclaim.showOtherAreaFrames", !showOtherAreaFrames);
+                    LandClaim.ps.setBoolean(p.getDbID(), "oz.landclaim.showOtherAreaFrames",!showOtherAreaFrames);
                     // if we do not reopen the menu it seems to be frozen and unclickable
                     openVisibilitySettingsMenu(p);
                     Area3DUtils.updateAreaFramesForPlayer(p);

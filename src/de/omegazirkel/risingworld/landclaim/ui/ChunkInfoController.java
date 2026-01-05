@@ -34,12 +34,14 @@ public class ChunkInfoController {
 
     public boolean update() {
         // overlay is opt-out by default
-        Boolean enabled = player.hasAttribute("enableClaimInfoOverlay")
-                ? (Boolean) player.getAttribute("enableClaimInfoOverlay")
+        Boolean enabled = player.hasAttribute("oz.landclaim.enableClaimInfoOverlay")
+                ? (Boolean) player.getAttribute("oz.landclaim.enableClaimInfoOverlay")
                 : true;
         if (!enabled) {
-            overlay.remove(player);
-            return false;
+            overlay.hide(player);
+            return enabled;
+        } else {
+            overlay.refresh(player);
         }
 
         String text = computeDisplay();

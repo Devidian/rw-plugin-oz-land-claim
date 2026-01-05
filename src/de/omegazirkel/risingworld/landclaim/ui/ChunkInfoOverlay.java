@@ -40,7 +40,17 @@ public class ChunkInfoOverlay {
         root.style.width.set(Math.max(minWidth, (text.length() * fontSize) + 30), Unit.Pixel);
     }
 
-    public void remove(Player player) {
+    public void refresh(Player player) {
+        // we dont know if the element is already shown or not
+        hide(player);
+        show(player);
+    }
+
+    public void show(Player player) {
+        player.addUIElement(root);
+    }
+
+    public void hide(Player player) {
         player.removeUIElement(root);
     }
 }
