@@ -78,7 +78,7 @@ public class LandClaimChunkDatabase implements ChunkDatabase {
                         + " WHERE player_uuid=" + q(playerId)
                         + " AND claimed_at > 0;")) {
 
-            if (rs.next()) {
+            if (rs != null && rs.next()) {
                 return rs.getInt("c");
             }
         } catch (Exception e) {
@@ -102,7 +102,7 @@ public class LandClaimChunkDatabase implements ChunkDatabase {
                         + " AND chunk_y=" + chunk.y
                         + " AND chunk_z=" + chunk.z + ";")) {
 
-            if (result.next()) {
+            if (result != null && result.next()) {
                 return new LandClaimChunkInfo(
                         new Vector3i(
                                 result.getInt("chunk_x"),

@@ -4,6 +4,8 @@
 
 ## [unreleased/patches]
 
+- fix: rs / result = null error message.
+
 ## [0.4.0] - 2026-01-05 | Player plugin settings implemented
 
 - feat: player plugin settings implemented
