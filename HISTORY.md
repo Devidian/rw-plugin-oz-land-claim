@@ -5,6 +5,8 @@
 ## [unreleased/patches]
 
 - fix: rs / result = null error message.
+- fix: expand areas with negative x/z
+- fix: prevent expand area to claim special areas
 
 ## [0.4.0] - 2026-01-05 | Player plugin settings implemented
 

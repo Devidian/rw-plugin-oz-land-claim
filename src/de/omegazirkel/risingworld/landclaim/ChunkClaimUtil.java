@@ -247,25 +247,54 @@ public class ChunkClaimUtil {
         Vector3i start = chunks.get(0).copy();
         Vector3i end = chunks.get(0).copy();
 
+        Boolean negX = false;
+        Boolean negZ = false;
+        // check if any x/z is negative
+        for (Vector3i chunk : chunks) {
+            if (chunk.x < 0)
+                negX = true;
+            if (chunk.z < 0)
+                negZ = true;
+        }
+
         if (chunks.size() > 1)
             for (Vector3i chunk : chunks) {
-                if (chunk.x < start.x)
-                    start.x = chunk.x;
+                // X
+                if (!negX) {
+                    if (chunk.x < start.x)
+                        start.x = chunk.x;
+                    if (chunk.x > end.x)
+                        end.x = chunk.x;
+                } else {
+                    if (chunk.x > start.x)
+                        start.x = chunk.x;
+                    if (chunk.x < end.x)
+                        end.x = chunk.x;
+                }
+                // Z
+                if (!negZ) {
+                    if (chunk.z < start.z)
+                        start.z = chunk.z;
+                    if (chunk.z > end.z)
+                        end.z = chunk.z;
+                } else {
+                    if (chunk.z > start.z)
+                        start.z = chunk.z;
+                    if (chunk.z < end.z)
+                        end.z = chunk.z;
+                }
+                // Y
                 if (chunk.y < start.y)
                     start.y = chunk.y;
-                if (chunk.z < start.z)
-                    start.z = chunk.z;
-                if (chunk.x > end.x)
-                    end.x = chunk.x;
                 if (chunk.y > end.y)
                     end.y = chunk.y;
-                if (chunk.z > end.z)
-                    end.z = chunk.z;
             }
-        Vector3f areaStart = new Vector3f(start.x * 32 + (start.x < 0 ? 31.99f : 0f), start.y * 64,
-                start.z * 32 + (start.z < 0 ? 31.99f : 0f));
-        Vector3f areaEnd = new Vector3f(end.x * 32 + (end.x < 0 ? 0.001f : 31.999f), end.y * 64 + 63.999f,
-                end.z * 32 + (end.z < 0 ? 0.001f : 31.999f));
+        float startX = negX ? (start.x + 1) * 32 - 0.01f : (start.x * 32);
+        float startZ = negZ ? (start.z + 1) * 32 - 0.01f : (start.z * 32);
+        float endX = negX ? end.x * 32 + 0.001f : (end.x + 1) * 32 - 0.001f;
+        float endZ = negZ ? end.z * 32 + 0.001f : (end.z + 1) * 32 - 0.001f;
+        Vector3f areaStart = new Vector3f(startX, start.y * 64, startZ);
+        Vector3f areaEnd = new Vector3f(endX, (end.y + 1) * 64 - 0.001f, endZ);
         Area area = new Area(areaStart, areaEnd);
 
         // if (chunks.size() > 1)
@@ -274,6 +303,8 @@ public class ChunkClaimUtil {
         // area.setName("New Chunk Area @ " + start.toString());
         // area.setNameVisible(true);
         // area.setDefaultPermission(s.defaultAreaPermission);
+        // Server.findNearestPlayer(areaEnd).sendTextMessage(areaStart.toString() + " -
+        // " + areaEnd.toString());
         return area;
     }
 
@@ -466,6 +497,13 @@ public class ChunkClaimUtil {
 
     private boolean helperCheckForClaim(Vector3i chunk, Player p) {
         List<LandClaimChunkInfo> infoList = db.getChunkInfoListByChunk(chunk);
+        Area intersectingArea = isAreaIntersecting(getVirtualAreaFromChunkVector(chunk));
+        if (intersectingArea != null && !intersectingArea.getDefaultPermission().equals(s.defaultAreaPermission)) {
+            // Area is special area or other non-default area, prevent claiming
+            p.sendTextMessage(t().get("TC_CLAIM_ERROR_SPECIAL_AREA", p)
+                    .replace("PH_CHUNK_POS", chunk.toString() + ""));
+            return false;
+        }
         // check if chunk is claimed by another user
         for (LandClaimChunkInfo info : infoList) {
             if (info.isOwnedBy(p.getUID())) {
@@ -495,6 +533,11 @@ public class ChunkClaimUtil {
         List<Area> areasToRemove = new java.util.ArrayList<>();
         List<Vector3i> chunkInExtendedArea = new java.util.ArrayList<>();
         String defaultPermission = area.getDefaultPermission();
+
+        // ISSUE: Sector 0 -1 cant expand North/south correctly
+        // example chunk: 94 1 -24, worldPart: 5 -2
+        // pos: 3016 113 -747
+        // ISSUE: Sector -1 0 cant expand East/West correctly
 
         switch (dir) {
             case NORTH: // check all chunks with max(z) if their neighbour +1z is claimable
