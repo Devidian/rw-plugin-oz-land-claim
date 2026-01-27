@@ -1,4 +1,4 @@
-package de.omegazirkel.risingworld.entities;
+package de.omegazirkel.risingworld.landclaim.db.entities;
 
 import net.risingworld.api.utils.Vector3i;
 
@@ -8,12 +8,12 @@ public class LandClaimChunkInfo {
     public final String world;
     public final Vector3i chunkPos;
 
-    public final long totalTimeMs;
-    public final long lastSeenMs;
-    public final long claimedAtMs;
+    public long totalTimeMs;
+    public long lastSeenMs;
+    public long claimedAtMs;
     // for area attributes if claimed
-    public final long areaID;
-    public final int price;
+    public long areaID;
+    public int price;
 
     public LandClaimChunkInfo(
             Vector3i chunkPos, long timeSpent,
@@ -31,17 +31,54 @@ public class LandClaimChunkInfo {
         this.playerDBID = playerDBID;
     }
 
+    // getter
+    public Vector3i getChunk() {
+        return chunkPos;
+    }
+
+    public long getTotalTimeMs() {
+        return totalTimeMs;
+    }
+
+    public long getLastSeen() {
+        return lastSeenMs;
+    }
+
+    public long getClaimedAt() {
+        return claimedAtMs;
+    }
+
+    public String getPlayerUuid() {
+        return playerUID;
+    }
+
+    public String getWorld() {
+        return world;
+    }
+
+    public int getPrice() {
+        return price;
+    }
+
+    public long getAreaId() {
+        return areaID;
+    }
+
+    public Integer getPlayerDbId() {
+        return playerDBID;
+    }
+
     // Utils
 
     public boolean isClaimed() {
         return claimedAtMs > 0;
     }
 
-    public boolean isOwnedBy(Integer playerDBID){
+    public boolean isOwnedBy(Integer playerDBID) {
         return this.playerDBID.equals(playerDBID);
     }
 
-    public boolean isOwnedBy(String playerUID){
+    public boolean isOwnedBy(String playerUID) {
         return this.playerUID.equals(playerUID);
     }
 

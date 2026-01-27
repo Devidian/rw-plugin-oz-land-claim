@@ -4,6 +4,10 @@
 
 ## [unreleased/patches]
 
+## [0.5.0] - 2026-01-27 | Database interface refactoring
+
+- refactor: now using new database interface from OZTools with caching
+  - to prevent sql exceptions due to closed statements for example
 - fix: rs / result = null error message.
 - fix: expand areas with negative x/z
 - fix: prevent expand area to claim special areas

@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import de.omegazirkel.risingworld.LandClaim;
-import de.omegazirkel.risingworld.entities.LandClaimChunkInfo;
-import de.omegazirkel.risingworld.interfaces.ChunkDatabase;
+import de.omegazirkel.risingworld.landclaim.db.LandClaimChunkService;
+import de.omegazirkel.risingworld.landclaim.db.entities.LandClaimChunkInfo;
 import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.OZLogger;
 import net.risingworld.api.Server;
@@ -22,7 +22,7 @@ import net.risingworld.api.utils.Vector3i;
  */
 public class ChunkClaimUtil {
 
-    private final ChunkDatabase db;
+    private final LandClaimChunkService service;
     private static final PluginSettings s = PluginSettings.getInstance();
 
     private static final I18n t() {
@@ -33,8 +33,8 @@ public class ChunkClaimUtil {
         return LandClaim.logger();
     }
 
-    public ChunkClaimUtil(ChunkDatabase db) {
-        this.db = db;
+    public ChunkClaimUtil(LandClaimChunkService lccService) {
+        this.service = lccService;
     }
 
     // ---------------------------------------------------------
@@ -69,7 +69,7 @@ public class ChunkClaimUtil {
         if (start != null) {
             long duration = System.currentTimeMillis() - start;
             // Save time spent in this chunk to DB
-            db.saveChunkTime(p, chunk, duration);
+            service.saveChunkTime(p, chunk, duration);
         }
     }
 
@@ -86,7 +86,7 @@ public class ChunkClaimUtil {
             // only save time if duration is at least 5 seconds
             if (duration > 5000) {
                 currentChunks.put(chunk, now);
-                db.saveChunkTime(p, chunk, duration);
+                service.saveChunkTime(p, chunk, duration);
             } else
                 currentChunks.put(chunk, start);
         }
@@ -134,11 +134,11 @@ public class ChunkClaimUtil {
      * Returns weighted sum of player's claims (1 weight per chunk).
      */
     public int getPlayerClaimCount(Player p) {
-        return db.getTotalClaimWeight(p);
+        return service.getTotalClaimWeight(p);
     }
 
     public long playerTimeInChunkInMs(Player p, Vector3i chunk) {
-        return db.getTotalChunkTime(p, chunk);
+        return service.getTotalChunkTime(p, chunk);
     }
 
     public long playerTimeInChunkInSeconds(Player p, Vector3i chunk) {
@@ -191,7 +191,7 @@ public class ChunkClaimUtil {
 
         if (area != null) {
             // 4. Check minimum time spent in chunk
-            long time = db.getTotalChunkTime(p, area.getStartChunkPosition()) / 1000;
+            long time = service.getTotalChunkTime(p, area.getStartChunkPosition()) / 1000;
 
             if (time < getPlayerNextClaimTime(p) && !(p.isAdmin() && s.adminIgnoreTime)) {
                 if (callback != null)
@@ -337,7 +337,7 @@ public class ChunkClaimUtil {
 
     public void syncAndRepairAreas() {
         // 1. check all claimed chunks if areas exist
-        List<LandClaimChunkInfo> infoList = db.getChunkInfoListClaimed();
+        List<LandClaimChunkInfo> infoList = service.getChunkInfoListClaimed();
 
         if (!infoList.isEmpty())
             for (LandClaimChunkInfo info : infoList) {
@@ -358,18 +358,18 @@ public class ChunkClaimUtil {
                     va.setAttribute("ownerUID", playerUID);
                     va.setAttribute("ownerDBID", playerDBID);
 
-                    db.saveChunkClaim(playerUID, playerDBID, info.chunkPos, info.claimedAtMs, va.getID());
+                    service.saveChunkClaim(playerUID, playerDBID, info.chunkPos, info.claimedAtMs, va.getID());
                 } else if (playerPermission != null && !playerPermission.equals(s.ownerAreaPermission)) {
                     // case 2: area exists but ownership is wrong
                     logger().warn("Player " + va.getName() + "is not owner of " + areaId);
                     // remove claim
-                    db.saveChunkClaim(playerUID, playerDBID, info.chunkPos, 0, 0);
+                    service.saveChunkClaim(playerUID, playerDBID, info.chunkPos, 0, 0);
                 } else if (info.areaID == 0) {
                     // case 3: areaID is missing
                     logger().warn("LCCI " + areaId + " is missing areaID");
 
                     // use existing to fix
-                    db.saveChunkClaim(playerUID, playerDBID, info.chunkPos, info.claimedAtMs, existing.getID());
+                    service.saveChunkClaim(playerUID, playerDBID, info.chunkPos, info.claimedAtMs, existing.getID());
                 }
             }
 
@@ -377,7 +377,7 @@ public class ChunkClaimUtil {
         for (Area a : Server.getAllAreas()) {
             // get LandClaimChunkInfo for area
             List<Vector3i> chunks = areaToChunks(a);
-            List<LandClaimChunkInfo> infoAreaList = db.getChunkInfoListByArea(a.getID());
+            List<LandClaimChunkInfo> infoAreaList = service.getChunkInfoListByArea(a.getID());
             // get all permissions from area to check who is owner
             Map<Integer, String> permissions = a.getAllPlayerPermissions();
             if (permissions == null) {
@@ -443,7 +443,7 @@ public class ChunkClaimUtil {
                         if (!infoAreaList.isEmpty())
                             claimedAt = infoAreaList.get(0).claimedAtMs;
                         logger().warn("Area chunk " + chunk + " synced with database");
-                        db.saveChunkClaim(ownerUID, ownerDbId, chunk, claimedAt, a.getID());
+                        service.saveChunkClaim(ownerUID, ownerDbId, chunk, claimedAt, a.getID());
                     }
                 }
             }
@@ -473,7 +473,7 @@ public class ChunkClaimUtil {
         if (ownerDBId != null && defaultPermission.equals(s.defaultAreaPermission)) {
             String ownerName = Server.getLastKnownPlayerName(ownerDBId);
             area.setName("Claimed by " + ownerName);
-            db.saveChunkClaim(p, area.getStartChunkPosition(), now, area.getID());
+            service.saveChunkClaim(p, area.getStartChunkPosition(), now, area.getID());
         } else {
             area.setName(defaultPermission + " area");
         }
@@ -496,7 +496,7 @@ public class ChunkClaimUtil {
     // ---------------------------------------------------------
 
     private boolean helperCheckForClaim(Vector3i chunk, Player p) {
-        List<LandClaimChunkInfo> infoList = db.getChunkInfoListByChunk(chunk);
+        List<LandClaimChunkInfo> infoList = service.getChunkInfoListByChunk(chunk);
         Area intersectingArea = isAreaIntersecting(getVirtualAreaFromChunkVector(chunk));
         if (intersectingArea != null && !intersectingArea.getDefaultPermission().equals(s.defaultAreaPermission)) {
             // Area is special area or other non-default area, prevent claiming
@@ -635,7 +635,7 @@ public class ChunkClaimUtil {
 
         // check chunks for combined areas and split if needed
         for (Vector3i chunk : chunkInExtendedArea) {
-            List<LandClaimChunkInfo> infoList = db.getChunkInfoListByChunk(chunk);
+            List<LandClaimChunkInfo> infoList = service.getChunkInfoListByChunk(chunk);
             for (LandClaimChunkInfo info : infoList) {
                 // if this chunk belongs to the area that should be expanded ignore loop
                 if (info.areaID == area.getID())
@@ -719,7 +719,7 @@ public class ChunkClaimUtil {
 
         // last step: set claim status in database for all chunks
         for (Vector3i chunk : chunkInExtendedArea) {
-            db.saveChunkClaim(p, chunk, System.currentTimeMillis(), extendedArea.getID());
+            service.saveChunkClaim(p, chunk, System.currentTimeMillis(), extendedArea.getID());
         }
 
         // area.destroy();
@@ -746,14 +746,14 @@ public class ChunkClaimUtil {
 
             p.sendTextMessage(t().get("TC_AREA_RELEASE_AREA", p).replace("PH_AREA_NAME", areaName));
             // remove area and claim information from database
-            List<LandClaimChunkInfo> infoList = db.getChunkInfoListByArea(area.getID());
+            List<LandClaimChunkInfo> infoList = service.getChunkInfoListByArea(area.getID());
             for (LandClaimChunkInfo info : infoList) {
                 Player owner = Server.getPlayerByUID(info.playerUID);
                 p.sendTextMessage(t().get("TC_AREA_RELEASE_CHUNK", p)
                         .replace("PH_AREA_NAME", areaName)
                         .replace("PH_CHUNK_POS", info.chunkPos.toString())
                         .replace("PH_PLAYER_NAME", owner.getName()));
-                db.saveChunkClaim(owner, info.chunkPos, 0, 0);
+                service.saveChunkClaim(owner, info.chunkPos, 0, 0);
             }
             // Discord announcement
             String message = t().get("TC_DISCORD_AREA_RELEASED", DiscordConnect.botLang())
@@ -816,7 +816,7 @@ public class ChunkClaimUtil {
             // newArea.setNameVisible(true);
             // newArea.setName(existingArea.getName());
             newArea.setDefaultPermission(defaultPermission);
-            db.saveChunkClaim(ownerUIDS[0], ownerId, chunk, System.currentTimeMillis(), newArea.getID());
+            service.saveChunkClaim(ownerUIDS[0], ownerId, chunk, System.currentTimeMillis(), newArea.getID());
         }
 
         p.sendTextMessage(t().get("TC_AREA_SPLIT", p)
