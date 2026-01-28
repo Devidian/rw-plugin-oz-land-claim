@@ -220,6 +220,7 @@ public class LandClaimChunkService {
         byArea.clear();
         claimedChunks.clear();
         claimCountByPlayer.clear();
+        store.loadAll();
 
         for (LandClaimChunkInfo info : store.values()) {
             index(info);
