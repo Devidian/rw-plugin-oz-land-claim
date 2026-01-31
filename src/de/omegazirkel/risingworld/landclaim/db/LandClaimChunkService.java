@@ -116,6 +116,12 @@ public class LandClaimChunkService {
             info.totalTimeMs += milliseconds;
             info.lastSeenMs = System.currentTimeMillis();
             markDirty(info);
+        } else {
+            // new entry
+            info = new LandClaimChunkInfo(chunk, milliseconds, System.currentTimeMillis(), 0, player.getUID(), world, 0, 0, player.getDbID());
+            store.put(key, info);
+            index(info);
+            markDirty(info);
         }
     }
 
