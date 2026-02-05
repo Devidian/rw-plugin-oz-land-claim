@@ -7,13 +7,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import de.omegazirkel.risingworld.LandClaim;
 import de.omegazirkel.risingworld.landclaim.db.LandClaimChunkService;
 import de.omegazirkel.risingworld.landclaim.db.entities.LandClaimChunkInfo;
+import de.omegazirkel.risingworld.tools.AreaUtils;
 import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.OZLogger;
 import net.risingworld.api.Server;
 import net.risingworld.api.callbacks.Callback;
 import net.risingworld.api.objects.Area;
 import net.risingworld.api.objects.Player;
-import net.risingworld.api.utils.Vector3f;
 import net.risingworld.api.utils.Vector3i;
 
 /**
@@ -211,7 +211,7 @@ public class ChunkClaimUtil {
      * Converts a chunk coordinate into an Area
      */
     public static Area getVirtualAreaFromChunkVector(Vector3i chunkPosition) {
-        return chunksToArea(List.of(chunkPosition));
+        return AreaUtils.getVirtualAreaFromChunkVector(chunkPosition);
     }
 
     /**
@@ -244,77 +244,11 @@ public class ChunkClaimUtil {
      * @return
      */
     public static Area chunksToArea(List<Vector3i> chunks) {
-        Vector3i start = chunks.get(0).copy();
-        Vector3i end = chunks.get(0).copy();
-
-        Boolean negX = false;
-        Boolean negZ = false;
-        // check if any x/z is negative
-        for (Vector3i chunk : chunks) {
-            if (chunk.x < 0)
-                negX = true;
-            if (chunk.z < 0)
-                negZ = true;
-        }
-
-        if (chunks.size() > 1)
-            for (Vector3i chunk : chunks) {
-                // X
-                if (!negX) {
-                    if (chunk.x < start.x)
-                        start.x = chunk.x;
-                    if (chunk.x > end.x)
-                        end.x = chunk.x;
-                } else {
-                    if (chunk.x > start.x)
-                        start.x = chunk.x;
-                    if (chunk.x < end.x)
-                        end.x = chunk.x;
-                }
-                // Z
-                if (!negZ) {
-                    if (chunk.z < start.z)
-                        start.z = chunk.z;
-                    if (chunk.z > end.z)
-                        end.z = chunk.z;
-                } else {
-                    if (chunk.z > start.z)
-                        start.z = chunk.z;
-                    if (chunk.z < end.z)
-                        end.z = chunk.z;
-                }
-                // Y
-                if (chunk.y < start.y)
-                    start.y = chunk.y;
-                if (chunk.y > end.y)
-                    end.y = chunk.y;
-            }
-        float startX = negX ? (start.x + 1) * 32 - 0.01f : (start.x * 32);
-        float startZ = negZ ? (start.z + 1) * 32 - 0.01f : (start.z * 32);
-        float endX = negX ? end.x * 32 + 0.001f : (end.x + 1) * 32 - 0.001f;
-        float endZ = negZ ? end.z * 32 + 0.001f : (end.z + 1) * 32 - 0.001f;
-        Vector3f areaStart = new Vector3f(startX, start.y * 64, startZ);
-        Vector3f areaEnd = new Vector3f(endX, (end.y + 1) * 64 - 0.001f, endZ);
-        Area area = new Area(areaStart, areaEnd);
-
-        // if (chunks.size() > 1)
-        // area.setName("New Multichunk Area");
-        // else
-        // area.setName("New Chunk Area @ " + start.toString());
-        // area.setNameVisible(true);
-        // area.setDefaultPermission(s.defaultAreaPermission);
-        // Server.findNearestPlayer(areaEnd).sendTextMessage(areaStart.toString() + " -
-        // " + areaEnd.toString());
-        return area;
+        return AreaUtils.chunksToArea(chunks);
     }
 
     public Area isAreaIntersecting(Area area) {
-        for (Area a : Server.getAllAreas()) {
-            if (a != null && a.intersects(area)) {
-                return a;
-            }
-        }
-        return null;
+        return AreaUtils.isAreaIntersecting(area);
     }
 
     /**

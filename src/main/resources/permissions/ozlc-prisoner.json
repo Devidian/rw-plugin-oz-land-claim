@@ -40,6 +40,7 @@
     "peacefulmode": false,
     "pve": false,
     "pvp": false,
+    "ridemounts": false,
     "unlockalldoors": false,
     "voicechat": true
   },

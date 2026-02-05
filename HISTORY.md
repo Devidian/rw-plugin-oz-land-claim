@@ -4,11 +4,21 @@
 
 ## [unreleased/patches]
 
+## [0.6.0] - 2026-02-05 | Moved utility methods to OZTools
+
+- refactor: ChunkClaimUtil internally using `OZTools.AreaUtils`
+  - `chunksToArea` redirected to `AreaUtils.chunksToArea`
+  - `isAreaIntersecting` redirected to `AreaUtils.isAreaIntersecting`
+  - `getVirtualAreaFromChunkVector` redirected to `AreaUtils.getVirtualAreaFromChunkVector`
+  - this is done because these methods can now be used in other plugins
 - refactor: changed default permissions [0.5.2]
-  - ozlc-owner.general.editnpc is now true
-  - ozlc-resident.general.editnpc is now true
+  - ozlc-owner.general.editnpc is now `true`
+  - ozlc-resident.general.editnpc is now `true`
+  - ozlc-prisoner.general_ridemounts is now `false`
 - fix: no db entry was created for new chunks [0.5.2]
 - fix: cache was cleared before indexing [0.5.1]
+
+BREAKING: due to refactoring it is mandatory to install OZTools `>= 0.16.0`
 
 ## [0.5.0] - 2026-01-27 | Database interface refactoring
 
