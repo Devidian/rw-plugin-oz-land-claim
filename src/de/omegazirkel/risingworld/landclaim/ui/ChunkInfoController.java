@@ -106,10 +106,10 @@ public class ChunkInfoController {
 
     private String getOwnerName() {
         String ownerName = null;
-        Area area = ccu.isAreaIntersecting(ChunkClaimUtil.getVirtualAreaFromChunkVector(player.getChunkPosition()));
-        if (area == null)
+        Area currentArea = player.getCurrentArea();
+        if (currentArea == null)
             return "No area found";
-        Map<Integer, String> areaPermissions = area.getAllPlayerPermissions();
+        Map<Integer, String> areaPermissions = currentArea.getAllPlayerPermissions();
         if (areaPermissions != null)
             for (Map.Entry<Integer, String> entry : areaPermissions.entrySet()) {
                 if (s.ownerAreaPermission.equals(entry.getValue())) {
@@ -124,27 +124,24 @@ public class ChunkInfoController {
     }
 
     private boolean isClaimed() {
-        Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(getChunkPos());
-        Area existingArea = ccu.isAreaIntersecting(area);
-        return existingArea != null;
+        Area currentArea = player.getCurrentArea();
+        return currentArea != null;
     }
 
     private boolean isOwner() {
-        Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(getChunkPos());
-        Area existingArea = ccu.isAreaIntersecting(area);
-        String areaPermission = existingArea == null ? null : existingArea.getPlayerPermission(player);
+        Area currentArea = player.getCurrentArea();
+        String areaPermission = currentArea == null ? null : currentArea.getPlayerPermission(player);
         return areaPermission != null && areaPermission.equals(s.ownerAreaPermission);
     }
 
     private String handleSpecialArea() {
-        Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(getChunkPos());
-        Area existingArea = ccu.isAreaIntersecting(area);
-        if (existingArea == null)
+        Area currentArea = player.getCurrentArea();
+        if (currentArea == null)
             return null;
-        String areaName = existingArea.getName();
+        String areaName = currentArea.getName();
         if (areaName == null)
             areaName = "N/A";
-        String defaultPermission = existingArea.getDefaultPermission();
+        String defaultPermission = currentArea.getDefaultPermission();
 
         if (defaultPermission == null || defaultPermission.equals(s.defaultAreaPermission)) {
             // no special area

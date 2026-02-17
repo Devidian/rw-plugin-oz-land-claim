@@ -266,7 +266,7 @@ public class LandClaimGUI {
                 t.get("TC_MENU_AREA_PERMISSIONS", player),
                 (p) -> {
                     UIElement overlay = (UIElement) p.getAttribute("landclaim-overlay");
-                    if(overlay != null){
+                    if (overlay != null) {
                         p.removeUIElement(overlay);
                         CursorManager.hide(p);
                     }
@@ -283,25 +283,24 @@ public class LandClaimGUI {
     public void openSpecialAreaMenu(Player uiPlayer, Callback<Player> onBack) {
         List<MenuItem> menuItems = new ArrayList<>();
 
-        Vector3i chunkPos = uiPlayer.getChunkPosition();
-        Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPos);
-        Area existingArea = chunkClaimUtil.isAreaIntersecting(area);
+        Area currentArea = uiPlayer.getCurrentArea();
 
         Callback<Player> onBackReopen = (Player player) -> openSpecialAreaMenu(player, onBack);
 
-        if (existingArea == null) {
+        if (currentArea == null) {
             // special areas
-            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "icon-star", "TC_MENU_SPECIAL_AREA_CREATE", area,
+            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "icon-star", "TC_MENU_SPECIAL_AREA_CREATE", currentArea,
                     s.specialAreaPermission, onBack));
-            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "sword", "TC_MENU_SPECIAL_AREA_PVP", area,
+            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "sword", "TC_MENU_SPECIAL_AREA_PVP", currentArea,
                     s.specialPvPAreaPermission, onBack));
-            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "bed", "TC_MENU_SPECIAL_AREA_REST", area,
+            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "bed", "TC_MENU_SPECIAL_AREA_REST", currentArea,
                     s.specialRestAreaPermission, onBack));
-            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "user-forbidden", "TC_MENU_SPECIAL_AREA_TRAP", area,
-                    s.specialTrapAreaPermission, onBack));
+            menuItems
+                    .add(menuItemCreateSpecialArea(uiPlayer, "user-forbidden", "TC_MENU_SPECIAL_AREA_TRAP", currentArea,
+                            s.specialTrapAreaPermission, onBack));
         }
         // show extend menu if area exist
-        if (existingArea != null) {
+        if (currentArea != null) {
             menuItems.add(new MenuItem(
                     AssetManager.getIcon("resize"),
                     t.get("TC_MENU_AREA_EXPAND_OPTION", uiPlayer),
@@ -318,14 +317,10 @@ public class LandClaimGUI {
 
     public void openAdminMenu(Player uiPlayer, Callback<Player> onBack) {
         Boolean developerMode = (Boolean) uiPlayer.getAttribute("oz.landclaim.developerMode");
-        Vector3i chunkPos = uiPlayer.getChunkPosition();
-        Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPos);
-        Area existingArea = chunkClaimUtil.isAreaIntersecting(area);
-        String defaultPermission = existingArea == null ? null : existingArea.getDefaultPermission();
+        Area currentArea = uiPlayer.getCurrentArea();
+        String defaultPermission = currentArea == null ? null : currentArea.getDefaultPermission();
         Boolean isDefaultArea = defaultPermission != null && defaultPermission.equals(s.defaultAreaPermission);
-        Integer chunkCount = existingArea == null ? 0 : ChunkClaimUtil.areaToChunks(existingArea).size();
-        // Boolean isSpecialArea = !isDefaultArea && defaultPermission != null
-        // && defaultPermission.startsWith("ozlc-special");
+        Integer chunkCount = currentArea == null ? 0 : ChunkClaimUtil.areaToChunks(currentArea).size();
 
         List<MenuItem> menuItems = new ArrayList<>();
 
@@ -339,16 +334,6 @@ public class LandClaimGUI {
                     (p) -> {
                         Area3DUtils.updateAreaFramesForPlayer(p);
                         chunkClaimUtil.idleChunk(p);
-
-                        // long a = chunkClaimUtil.getPlayerClaimCount(p);
-                        // long b = chunkClaimUtil.getPlayerMaxClaims(p);
-                        // long c = chunkClaimUtil.playerTimeInChunkInSeconds(p, chunkPos);
-                        // long d = chunkClaimUtil.getPlayerNextClaimTime(p);
-
-                        // p.sendTextMessage("you have claimed " + a + " of " + b + " chunks");
-                        // p.sendTextMessage("you have spent " + c + " seconds in this chunk");
-                        // p.sendTextMessage("your next claim requires " + d + " seconds in the
-                        // nextchunk");
                         // if we do not reopen the menu it seems to be frozen and unclickable
                         openAdminMenu(p, onBack);
                         Area[] allAreas = Server.getAllAreas();
@@ -373,10 +358,10 @@ public class LandClaimGUI {
                         openAdminMenu(p, onBack);
                     }));
         }
-        if (existingArea != null) {
-            menuItems.add(menuItemRenameArea(uiPlayer, existingArea, onBackReopen));
-            menuItems.add(menuItemPermissionManager(uiPlayer, existingArea, onBackReopen));
-            menuItems.add(menuItemRemoveArea(uiPlayer, existingArea, onBackReopen));
+        if (currentArea != null) {
+            menuItems.add(menuItemRenameArea(uiPlayer, currentArea, onBackReopen));
+            menuItems.add(menuItemPermissionManager(uiPlayer, currentArea, onBackReopen));
+            menuItems.add(menuItemRemoveArea(uiPlayer, currentArea, onBackReopen));
         }
         if (!isDefaultArea)
             menuItems.add(new MenuItem(
@@ -384,7 +369,7 @@ public class LandClaimGUI {
                     t.get("TC_MENU_SPECIAL_AREA", uiPlayer),
                     (p) -> openSpecialAreaMenu(p, onBackReopen)));
         if (chunkCount > 1)
-            menuItems.add(menuItemSplitArea(uiPlayer, existingArea, onBackReopen));
+            menuItems.add(menuItemSplitArea(uiPlayer, currentArea, onBackReopen));
 
         menuItems.add(MenuItem.closeMenu(uiPlayer));
         menuItems.add(MenuItem.backMenu(uiPlayer, onBack));
@@ -394,12 +379,11 @@ public class LandClaimGUI {
 
     public void openClaimOptionsMenu(Player uiPlayer, Callback<Player> onBack) {
         List<MenuItem> menuItems = new ArrayList<>();
-        Vector3i chunkPos = uiPlayer.getChunkPosition();
-        Area existingArea = chunkClaimUtil.isAreaIntersecting(ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPos));
+        Area currentArea = uiPlayer.getCurrentArea();
 
-        String areaPermission = existingArea == null ? null : existingArea.getPlayerPermission(uiPlayer);
+        String areaPermission = currentArea == null ? null : currentArea.getPlayerPermission(uiPlayer);
         boolean isOwner = areaPermission != null && areaPermission.equals(s.ownerAreaPermission);
-        Integer chunkCount = existingArea == null ? 0 : ChunkClaimUtil.areaToChunks(existingArea).size();
+        Integer chunkCount = currentArea == null ? 0 : ChunkClaimUtil.areaToChunks(currentArea).size();
 
         Callback<Player> onBackReopen = (Player player) -> openClaimOptionsMenu(player, onBack);
 
@@ -411,11 +395,11 @@ public class LandClaimGUI {
                         openExpandAreaMenu(p, onBackReopen);
                     }));
             if (chunkCount > 1)
-                menuItems.add(menuItemSplitArea(uiPlayer, existingArea, onBackReopen));
+                menuItems.add(menuItemSplitArea(uiPlayer, currentArea, onBackReopen));
 
-            menuItems.add(menuItemPermissionManager(uiPlayer, existingArea, onBackReopen));
-            menuItems.add(menuItemRenameArea(uiPlayer, existingArea, onBackReopen));
-            menuItems.add(menuItemRemoveArea(uiPlayer, existingArea, onBackReopen));
+            menuItems.add(menuItemPermissionManager(uiPlayer, currentArea, onBackReopen));
+            menuItems.add(menuItemRenameArea(uiPlayer, currentArea, onBackReopen));
+            menuItems.add(menuItemRemoveArea(uiPlayer, currentArea, onBackReopen));
         }
 
         menuItems.add(MenuItem.closeMenu(uiPlayer));
@@ -426,24 +410,22 @@ public class LandClaimGUI {
 
     public void openExpandAreaMenu(Player uiPlayer, Callback<Player> onBack) {
         List<MenuItem> menuItems = new ArrayList<>();
-        Vector3i chunkPos = uiPlayer.getChunkPosition();
-        Area virtualArea = ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPos);
-        Area existingArea = chunkClaimUtil.isAreaIntersecting(virtualArea);
+        Area currentArea = uiPlayer.getCurrentArea();
 
         Callback<Player> onBackReopen = (Player player) -> openExpandAreaMenu(player, onBack);
 
-        if (existingArea != null) {
-            menuItems.add(menuItemExpandArea(uiPlayer, existingArea, Direction.NORTH, "compass-north",
+        if (currentArea != null) {
+            menuItems.add(menuItemExpandArea(uiPlayer, currentArea, Direction.NORTH, "compass-north",
                     "TC_MENU_AREA_EXPAND_NORTH", onBackReopen, onBackReopen));
-            menuItems.add(menuItemExpandArea(uiPlayer, existingArea, Direction.EAST, "compass-east",
+            menuItems.add(menuItemExpandArea(uiPlayer, currentArea, Direction.EAST, "compass-east",
                     "TC_MENU_AREA_EXPAND_EAST", onBackReopen, onBackReopen));
-            menuItems.add(menuItemExpandArea(uiPlayer, existingArea, Direction.SOUTH, "compass-south",
+            menuItems.add(menuItemExpandArea(uiPlayer, currentArea, Direction.SOUTH, "compass-south",
                     "TC_MENU_AREA_EXPAND_SOUTH", onBackReopen, onBackReopen));
-            menuItems.add(menuItemExpandArea(uiPlayer, existingArea, Direction.WEST, "compass-west",
+            menuItems.add(menuItemExpandArea(uiPlayer, currentArea, Direction.WEST, "compass-west",
                     "TC_MENU_AREA_EXPAND_WEST", onBackReopen, onBackReopen));
-            menuItems.add(menuItemExpandArea(uiPlayer, existingArea, Direction.UP, "up", "TC_MENU_AREA_EXPAND_UP",
+            menuItems.add(menuItemExpandArea(uiPlayer, currentArea, Direction.UP, "up", "TC_MENU_AREA_EXPAND_UP",
                     onBackReopen, onBackReopen));
-            menuItems.add(menuItemExpandArea(uiPlayer, existingArea, Direction.DOWN, "down",
+            menuItems.add(menuItemExpandArea(uiPlayer, currentArea, Direction.DOWN, "down",
                     "TC_MENU_AREA_EXPAND_DOWN", onBackReopen, onBackReopen));
         }
         menuItems.add(MenuItem.closeMenu(uiPlayer));
@@ -505,7 +487,7 @@ public class LandClaimGUI {
                     Vector3i chunkPos = p.getChunkPosition();
                     Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPos);
                     p.setAttribute("oz.landclaim.showCurrentChunkFrame", !showCurrentChunkFrame);
-                    LandClaim.ps.setBoolean(p.getDbID(), "oz.landclaim.showCurrentChunkFrame",!showCurrentChunkFrame);
+                    LandClaim.ps.setBoolean(p.getDbID(), "oz.landclaim.showCurrentChunkFrame", !showCurrentChunkFrame);
                     Area3DUtils.updateCurrentChunkFrameForPlayer(p, showCurrentChunkFrame ? (Area) null : area);
                     // if we do not reopen the menu it seems to be frozen and unclickable
                     openVisibilitySettingsMenu(p);
@@ -517,7 +499,7 @@ public class LandClaimGUI {
                         uiPlayer),
                 (p) -> {
                     p.setAttribute("oz.landclaim.showOwnedAreaFrames", !showOwnedAreaFrames);
-                    LandClaim.ps.setBoolean(p.getDbID(), "oz.landclaim.showOwnedAreaFrames",!showOwnedAreaFrames);
+                    LandClaim.ps.setBoolean(p.getDbID(), "oz.landclaim.showOwnedAreaFrames", !showOwnedAreaFrames);
                     // if we do not reopen the menu it seems to be frozen and unclickable
                     openVisibilitySettingsMenu(p);
                     Area3DUtils.updateAreaFramesForPlayer(p);
@@ -529,7 +511,7 @@ public class LandClaimGUI {
                         uiPlayer),
                 (p) -> {
                     p.setAttribute("oz.landclaim.showOtherAreaFrames", !showOtherAreaFrames);
-                    LandClaim.ps.setBoolean(p.getDbID(), "oz.landclaim.showOtherAreaFrames",!showOtherAreaFrames);
+                    LandClaim.ps.setBoolean(p.getDbID(), "oz.landclaim.showOtherAreaFrames", !showOtherAreaFrames);
                     // if we do not reopen the menu it seems to be frozen and unclickable
                     openVisibilitySettingsMenu(p);
                     Area3DUtils.updateAreaFramesForPlayer(p);
@@ -542,15 +524,8 @@ public class LandClaimGUI {
     }
 
     public void openMainMenu(Player uiPlayer) {
-        Vector3i chunkPos = uiPlayer.getChunkPosition();
-        Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPos);
-        Boolean canClaimArea = chunkClaimUtil.canPlayerClaimArea(uiPlayer, area, null);
-        Area existingArea = chunkClaimUtil.isAreaIntersecting(area);
-
-        // String areaPermission = existingArea == null ? null :
-        // existingArea.getPlayerPermission(player);
-        // boolean isOwner = areaPermission != null &&
-        // areaPermission.equals(s.ownerAreaPermission);
+        Area currentArea = uiPlayer.getCurrentArea();
+        Boolean canClaimArea = chunkClaimUtil.canPlayerClaimArea(uiPlayer, currentArea, null);
 
         List<MenuItem> menuItems = new ArrayList<>();
 
@@ -574,13 +549,13 @@ public class LandClaimGUI {
                     AssetManager.getIcon("claim-chunk"),
                     t.get("TC_MENU_CLAIM", uiPlayer),
                     (p) -> {
-                        Area createdArea = chunkClaimUtil.claimArea(p, area);
+                        Area createdArea = chunkClaimUtil.claimArea(p, currentArea);
                         if (createdArea != null) {
                             p.sendYellMessage(t.get("TC_CLAIM_CONGRATULATION", p), 5, true);
                             // Discord announcement
                             String message = t.get("TC_DISCORD_AREA_CLAIMED", DiscordConnect.botLang())
-                                    .replace("PH_AREA_NAME", area.getName())
-                                    .replace("PH_CHUNK_POS", area.getStartChunkPosition().toString())
+                                    .replace("PH_AREA_NAME", currentArea.getName())
+                                    .replace("PH_CHUNK_POS", currentArea.getStartChunkPosition().toString())
                                     .replace("PH_PLAYER_NAME", Server.getLastKnownPlayerName(p.getDbID()));
                             DiscordConnect.sendDiscordClaimAnnouncement(message);
                             // Server announcement
@@ -588,8 +563,8 @@ public class LandClaimGUI {
                                 if (!onlinePlayer.equals(p))
                                     onlinePlayer.sendTextMessage(
                                             t.get("TC_ANNOUNCEMENT_AREA_CLAIMED", onlinePlayer)
-                                                    .replace("PH_AREA_NAME", area.getName())
-                                                    .replace("PH_CHUNK_POS", area.getStartChunkPosition().toString())
+                                                    .replace("PH_AREA_NAME", currentArea.getName())
+                                                    .replace("PH_CHUNK_POS", currentArea.getStartChunkPosition().toString())
                                                     .replace("PH_PLAYER_NAME",
                                                             Server.getLastKnownPlayerName(p.getDbID())));
                             }
@@ -597,7 +572,7 @@ public class LandClaimGUI {
                         }
                         openMainMenu(p);
                     }));
-        if (existingArea != null) {
+        if (currentArea != null) {
             menuItems.add(new MenuItem(
                     AssetManager.getIcon("claim-chunk"),
                     t.get("TC_MENU_AREA_OPTION", uiPlayer),

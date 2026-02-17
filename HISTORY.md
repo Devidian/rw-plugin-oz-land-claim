@@ -4,6 +4,9 @@
 
 ## [unreleased/patches]
 
+- refactor: used `player.getCurrentArea();` where possible [0.6.1]
+  - this will reduce Server.getAllAreas calls
+
 ## [0.6.0] - 2026-02-05 | Moved utility methods to OZTools
 
 - refactor: ChunkClaimUtil internally using `OZTools.AreaUtils`
