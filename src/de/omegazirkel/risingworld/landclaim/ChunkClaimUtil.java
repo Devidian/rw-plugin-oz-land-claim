@@ -258,8 +258,9 @@ public class ChunkClaimUtil {
      * @return
      */
     private boolean isSingleChunkArea(Area area) {
+        // no area = no chunks (also not > 1 chunk)
         if (area == null)
-            return false;
+            return true;
         Vector3i start = area.getStartChunkPosition();
         Vector3i end = area.getEndChunkPosition();
         return start.x == end.x && start.z == end.z && start.y == end.y;

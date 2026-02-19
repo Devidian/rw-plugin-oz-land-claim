@@ -6,6 +6,8 @@
 
 - refactor: used `player.getCurrentArea();` where possible [0.6.1]
   - this will reduce Server.getAllAreas calls
+- fix: impossible to claim because `null` area results in false for singleChunkCheck [0.6.2]
+- fix: wrong area used for claim method (`null` area from `uiPlayer.getCurrentArea();`)
 
 ## [0.6.0] - 2026-02-05 | Moved utility methods to OZTools
 

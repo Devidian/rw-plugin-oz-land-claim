@@ -549,13 +549,13 @@ public class LandClaimGUI {
                     AssetManager.getIcon("claim-chunk"),
                     t.get("TC_MENU_CLAIM", uiPlayer),
                     (p) -> {
-                        Area createdArea = chunkClaimUtil.claimArea(p, currentArea);
+                        Area createdArea = chunkClaimUtil.claimArea(p, ChunkClaimUtil.getVirtualAreaFromChunkVector(uiPlayer.getChunkPosition()));
                         if (createdArea != null) {
                             p.sendYellMessage(t.get("TC_CLAIM_CONGRATULATION", p), 5, true);
                             // Discord announcement
                             String message = t.get("TC_DISCORD_AREA_CLAIMED", DiscordConnect.botLang())
-                                    .replace("PH_AREA_NAME", currentArea.getName())
-                                    .replace("PH_CHUNK_POS", currentArea.getStartChunkPosition().toString())
+                                    .replace("PH_AREA_NAME", createdArea.getName())
+                                    .replace("PH_CHUNK_POS", createdArea.getStartChunkPosition().toString())
                                     .replace("PH_PLAYER_NAME", Server.getLastKnownPlayerName(p.getDbID()));
                             DiscordConnect.sendDiscordClaimAnnouncement(message);
                             // Server announcement
@@ -563,8 +563,8 @@ public class LandClaimGUI {
                                 if (!onlinePlayer.equals(p))
                                     onlinePlayer.sendTextMessage(
                                             t.get("TC_ANNOUNCEMENT_AREA_CLAIMED", onlinePlayer)
-                                                    .replace("PH_AREA_NAME", currentArea.getName())
-                                                    .replace("PH_CHUNK_POS", currentArea.getStartChunkPosition().toString())
+                                                    .replace("PH_AREA_NAME", createdArea.getName())
+                                                    .replace("PH_CHUNK_POS", createdArea.getStartChunkPosition().toString())
                                                     .replace("PH_PLAYER_NAME",
                                                             Server.getLastKnownPlayerName(p.getDbID())));
                             }
