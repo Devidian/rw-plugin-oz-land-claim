@@ -54,6 +54,7 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
     public static String name;
     // only for workaround with area bugs
     public static WorldDatabase wdbAreas;
+    public static WorldDatabase wdbPlayers;
     public static Connection sqliteCon;
     public static PlayerSettings ps;
 
@@ -86,6 +87,7 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
         llcs = new LandClaimChunkService(lccStore);
 
         wdbAreas = this.getWorldDatabase(Target.Areas);
+        wdbPlayers = this.getWorldDatabase(Target.Players);
         chunkClaimUtil = new ChunkClaimUtil(llcs);
         gui = LandClaimGUI.getInstance(chunkClaimUtil, this);
         s.initSettings();

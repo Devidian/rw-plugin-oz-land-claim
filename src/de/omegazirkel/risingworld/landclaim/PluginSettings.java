@@ -30,6 +30,7 @@ public class PluginSettings {
         public Integer claimProtectionBaseTimeDays = 7;
         public double claimProtectionExtraTimeScale = 5;
         public Boolean enableWelcomeMessage = true;
+        public Integer recentlyOnlinePermissionListHours = 24;
 
         public Integer claimBaseCost = 100;
         public double claimSaleFee = 0.01;
@@ -146,6 +147,8 @@ public class PluginSettings {
                         logLevel = settings.getProperty("logLevel", "ALL");
                         enableWelcomeMessage = settings.getProperty("enableWelcomeMessage", "false")
                                         .contentEquals("true");
+                        recentlyOnlinePermissionListHours = Integer
+                                        .parseInt(settings.getProperty("recentlyOnlinePermissionListHours", "24"));
                         // admin only settings
                         adminIgnoreLimit = settings.getProperty("adminIgnoreLimit", "false").contentEquals("true");
                         adminIgnoreTime = settings.getProperty("adminIgnoreTime", "false").contentEquals("true");

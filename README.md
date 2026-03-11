@@ -27,6 +27,7 @@ This plugin requires the **OmegaZirkel Tools** plugin to be installed.
 - **Claim Protection:** Protect inactive players' areas from being claimed by others for a configurable amount of time.
 - **Admin Tools:** Includes commands for repairing and managing zones.
 - **UI-based Permissions:** Manage who has access to your claimed areas directly in-game.
+- **Recently Online Players:** The permission UI can also list players who were online recently, even if they are offline now.
 
 ## Commands
 
@@ -52,6 +53,7 @@ All settings can be adjusted in the `settings.properties` file located in the pl
 | `claimProtectionExtraTimeScale` | `5`     | A multiplier for playtime to extend claim protection. `DaysOffline > BaseTime + (PlayTimeDays * Scale)`.       |
 | `enableClaimAnnouncement`       | `true`  | If `true`, a message is broadcast to all players when a chunk is claimed.                                      |
 | `enableWelcomeMessage`          | `true`  | If `true`, players receive a welcome message from the plugin upon login.                                       |
+| `recentlyOnlinePermissionListHours` | `24` | Lists players in the area permission UI if they were online within the last configured number of hours. `0` disables this. |
 
 ### Color Configuration
 

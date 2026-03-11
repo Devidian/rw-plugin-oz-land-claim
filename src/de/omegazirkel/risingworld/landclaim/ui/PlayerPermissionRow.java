@@ -36,6 +36,10 @@ public class PlayerPermissionRow {
             Player forPlayer,
             UIElement parentOverlay) {
         String ownerName = Server.getLastKnownPlayerName(playerDBID);
+        if (ownerName == null || ownerName.isBlank()) {
+            ownerName = "Unknown Player #" + playerDBID;
+        }
+
         String[] ownerUID = Server.getLastKnownPlayerUIDs(ownerName);
         String uidLabelText = "DBID: " + playerDBID;
         if (ownerUID != null && ownerUID.length > 0)

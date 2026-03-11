@@ -1,11 +1,14 @@
 package de.omegazirkel.risingworld.landclaim.ui;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import de.omegazirkel.risingworld.LandClaim;
 import de.omegazirkel.risingworld.landclaim.PluginSettings;
 import de.omegazirkel.risingworld.tools.I18n;
+import de.omegazirkel.risingworld.tools.PlayerDatabaseHelper;
 import de.omegazirkel.risingworld.tools.ui.CancelButton;
 import de.omegazirkel.risingworld.tools.ui.OZUIElement;
 import de.omegazirkel.risingworld.tools.ui.table.TableRow;
@@ -99,30 +102,43 @@ public class AreaPermissionPanel extends UIElement {
                 Arrays.asList(t().get("TC_UI_TH_LABEL_NAME", player), t().get("TC_UI_TH_LABEL_UID", player),
                         t().get("TC_UI_TH_LABEL_PERMISSION", player)),
                 Arrays.asList(40f, 40f, 20f));
+
+        LinkedHashMap<Integer, String> permissionCandidates = new LinkedHashMap<>();
         Map<Integer, String> allPlayerPermissions = area.getAllPlayerPermissions();
-        // 1. create a list of users from areapermission
+
+        // 1. players with explicit area permissions
         if (allPlayerPermissions != null)
             for (Map.Entry<Integer, String> entry : allPlayerPermissions.entrySet()) {
-                int uid = entry.getKey();
-                String permission = entry.getValue();
-
-                TableRow row = PlayerPermissionRow.build(
-                        uid,
-                        permission,
-                        area.getDefaultPermission(),
-                        newPermission -> setPermission(area, uid, newPermission), player, parentOverlay);
-                table.addRow(row);
+                permissionCandidates.put(entry.getKey(), entry.getValue());
             }
-        // 2. create a list of online users
+
+        // 2. currently online players
         for (Player p : Server.getAllPlayers()) {
-            // skip players that are listed in areapermission
-            if (area.getPlayerPermission(p) != null)
-                continue;
+            permissionCandidates.putIfAbsent(p.getDbID(), area.getDefaultPermission());
+        }
+
+        // 3. recently seen players from the Rising World players database
+        if (s.recentlyOnlinePermissionListHours != null && s.recentlyOnlinePermissionListHours > 0) {
+            long cutoffEpochSeconds = (System.currentTimeMillis() / 1000L)
+                    - (s.recentlyOnlinePermissionListHours.longValue() * 3600L);
+            List<Integer> recentlySeenPlayerDbIds = PlayerDatabaseHelper.findPlayersSeenSince(
+                    LandClaim.wdbPlayers,
+                    cutoffEpochSeconds);
+            for (Integer playerDbId : recentlySeenPlayerDbIds) {
+                if (playerDbId != null && playerDbId > 0) {
+                    permissionCandidates.putIfAbsent(playerDbId, area.getDefaultPermission());
+                }
+            }
+        }
+
+        for (Map.Entry<Integer, String> entry : permissionCandidates.entrySet()) {
+            int uid = entry.getKey();
+            String permission = entry.getValue();
             TableRow row = PlayerPermissionRow.build(
-                    p.getDbID(),
+                    uid,
+                    permission,
                     area.getDefaultPermission(),
-                    area.getDefaultPermission(),
-                    newPermission -> setPermission(area, p.getDbID(), newPermission), player, parentOverlay);
+                    newPermission -> setPermission(area, uid, newPermission), player, parentOverlay);
             table.addRow(row);
         }
         OZUIElement body = new OZUIElement();
