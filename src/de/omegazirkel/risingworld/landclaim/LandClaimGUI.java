@@ -288,15 +288,16 @@ public class LandClaimGUI {
         Callback<Player> onBackReopen = (Player player) -> openSpecialAreaMenu(player, onBack);
 
         if (currentArea == null) {
+            Area virtualArea = ChunkClaimUtil.getVirtualAreaFromChunkVector(uiPlayer.getChunkPosition());
             // special areas
-            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "icon-star", "TC_MENU_SPECIAL_AREA_CREATE", currentArea,
+            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "icon-star", "TC_MENU_SPECIAL_AREA_CREATE", virtualArea,
                     s.specialAreaPermission, onBack));
-            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "sword", "TC_MENU_SPECIAL_AREA_PVP", currentArea,
+            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "sword", "TC_MENU_SPECIAL_AREA_PVP", virtualArea,
                     s.specialPvPAreaPermission, onBack));
-            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "bed", "TC_MENU_SPECIAL_AREA_REST", currentArea,
+            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "bed", "TC_MENU_SPECIAL_AREA_REST", virtualArea,
                     s.specialRestAreaPermission, onBack));
             menuItems
-                    .add(menuItemCreateSpecialArea(uiPlayer, "user-forbidden", "TC_MENU_SPECIAL_AREA_TRAP", currentArea,
+                    .add(menuItemCreateSpecialArea(uiPlayer, "user-forbidden", "TC_MENU_SPECIAL_AREA_TRAP", virtualArea,
                             s.specialTrapAreaPermission, onBack));
         }
         // show extend menu if area exist

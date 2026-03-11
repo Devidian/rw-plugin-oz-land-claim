@@ -27,6 +27,7 @@ Use OZTools `0.17.0` or newer with this release.
 - **Claim Limits:** Control how many chunks a player can claim based on playtime.
 - **Claim Protection:** Protect inactive players' areas from being claimed by others for a configurable amount of time.
 - **Admin Tools:** Includes commands for repairing and managing zones.
+- **Special Zones for Admins:** Admins can create special zones such as default special, PvP, rest, and trap zones directly from the UI.
 - **UI-based Permissions:** Manage who has access to your claimed areas directly in-game.
 - **Recently Online Players:** The permission UI can also list players who were online recently, even if they are offline now.
 - **Permission Status Column:** The permission UI shows whether listed players are currently online or offline.
@@ -87,6 +88,10 @@ Uicons by [Flaticon]("https://www.flaticon.com/uicons")
 ---
 
 _This README was partially generated and improved by Gemini Code Assist._
+
+## Release Notes
+
+- `0.7.1`: fixed admin special-zone creation when no current area existed in the selected chunk.
 
 ## Contributor Workflow
 

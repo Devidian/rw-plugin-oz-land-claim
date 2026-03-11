@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.7.1] - 2026-03-11 | Patch release
+
+- fix: admins can create special zones again even when no current area exists in the selected chunk
+
 ## [0.7.0] - 2026-03-11 | Area permission activity list
 
 - docs: standardize agent prompts, PR checklist, and runtime smoke-test guidance
