@@ -4,6 +4,9 @@
 
 ## [unreleased/patches]
 
+- docs: standardize agent prompts, PR checklist, and runtime smoke-test guidance
+- build: add API verification helper and stricter CI/release validation flow
+
 - refactor: used `player.getCurrentArea();` where possible [0.6.1]
   - this will reduce Server.getAllAreas calls
 - fix: impossible to claim because `null` area results in false for singleChunkCheck [0.6.2]
