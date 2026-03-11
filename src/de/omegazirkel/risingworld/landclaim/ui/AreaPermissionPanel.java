@@ -122,7 +122,7 @@ public class AreaPermissionPanel extends UIElement {
             long cutoffEpochSeconds = (System.currentTimeMillis() / 1000L)
                     - (s.recentlyOnlinePermissionListHours.longValue() * 3600L);
             List<Integer> recentlySeenPlayerDbIds = PlayerDatabaseHelper.findPlayersSeenSince(
-                    LandClaim.wdbPlayers,
+                    LandClaim.getInstance(),
                     cutoffEpochSeconds);
             for (Integer playerDbId : recentlySeenPlayerDbIds) {
                 if (playerDbId != null && playerDbId > 0) {

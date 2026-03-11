@@ -44,6 +44,7 @@ import net.risingworld.api.worldelements.Area3D;
 
 public class LandClaim extends Plugin implements Listener, FileChangeListener {
     static final String pluginCMD = "lc";
+    private static LandClaim instance;
     private ChunkInfoManager chunkInfoManager;
 
     static final Colors c = Colors.getInstance();
@@ -69,8 +70,13 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
         return OZLogger.getInstance("OZ.LandClaim.Events");
     }
 
+    public static LandClaim getInstance() {
+        return instance;
+    }
+
     @Override
     public void onEnable() {
+        instance = this;
         name = this.getDescription("name");
         t = I18n.getInstance(this);
         registerEventListener(this);
