@@ -2,17 +2,20 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
-## [unreleased/patches]
+## [0.7.0] - 2026-03-11 | Area permission activity list
 
 - docs: standardize agent prompts, PR checklist, and runtime smoke-test guidance
 - build: add API verification helper and stricter CI/release validation flow
 - feat: include recently online players in the area permission list via configurable Players-DB lookup
 - feat: show online or offline status in the area permission table
+- build: package only `README.md` and `HISTORY.md` into release artifacts
 
 - refactor: used `player.getCurrentArea();` where possible [0.6.1]
   - this will reduce Server.getAllAreas calls
 - fix: impossible to claim because `null` area results in false for singleChunkCheck [0.6.2]
 - fix: wrong area used for claim method (`null` area from `uiPlayer.getCurrentArea();`)
+
+BREAKING: this release requires OZTools `>= 0.17.0`
 
 ## [0.6.0] - 2026-02-05 | Moved utility methods to OZTools
 

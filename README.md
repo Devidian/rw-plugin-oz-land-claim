@@ -7,6 +7,7 @@ Server administrators can configure almost all aspects of the plugin to their li
 ## Prerequisites
 
 This plugin requires the **OmegaZirkel Tools** plugin to be installed.
+Use OZTools `0.17.0` or newer with this release.
 
 1. Download the latest `oz-tools-....zip` from the [OZ-Tools](https://github.com/Devidian/rw-plugin-oz-tools/releases) Releases Page.
 2. Place the downloaded `.zip` file into your server's `Plugins` folder and extract it.
@@ -28,6 +29,7 @@ This plugin requires the **OmegaZirkel Tools** plugin to be installed.
 - **Admin Tools:** Includes commands for repairing and managing zones.
 - **UI-based Permissions:** Manage who has access to your claimed areas directly in-game.
 - **Recently Online Players:** The permission UI can also list players who were online recently, even if they are offline now.
+- **Permission Status Column:** The permission UI shows whether listed players are currently online or offline.
 
 ## Commands
 
