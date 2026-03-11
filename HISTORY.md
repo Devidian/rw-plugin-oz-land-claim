@@ -7,6 +7,7 @@
 - docs: standardize agent prompts, PR checklist, and runtime smoke-test guidance
 - build: add API verification helper and stricter CI/release validation flow
 - feat: include recently online players in the area permission list via configurable Players-DB lookup
+- feat: show online or offline status in the area permission table
 
 - refactor: used `player.getCurrentArea();` where possible [0.6.1]
   - this will reduce Server.getAllAreas calls

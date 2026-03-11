@@ -99,9 +99,12 @@ public class AreaPermissionPanel extends UIElement {
     private void setupPanelBody(Area area, Player player, UIElement parentOverlay) {
 
         TableScrollView table = new TableScrollView(
-                Arrays.asList(t().get("TC_UI_TH_LABEL_NAME", player), t().get("TC_UI_TH_LABEL_UID", player),
+                Arrays.asList(
+                        t().get("TC_UI_TH_LABEL_NAME", player),
+                        t().get("TC_UI_TH_LABEL_UID", player),
+                        t().get("TC_UI_TH_LABEL_STATUS", player),
                         t().get("TC_UI_TH_LABEL_PERMISSION", player)),
-                Arrays.asList(40f, 40f, 20f));
+                Arrays.asList(30f, 35f, 15f, 20f));
 
         LinkedHashMap<Integer, String> permissionCandidates = new LinkedHashMap<>();
         Map<Integer, String> allPlayerPermissions = area.getAllPlayerPermissions();
@@ -134,8 +137,10 @@ public class AreaPermissionPanel extends UIElement {
         for (Map.Entry<Integer, String> entry : permissionCandidates.entrySet()) {
             int uid = entry.getKey();
             String permission = entry.getValue();
+            boolean isOnline = Server.getPlayerByDbID(uid) != null;
             TableRow row = PlayerPermissionRow.build(
                     uid,
+                    isOnline,
                     permission,
                     area.getDefaultPermission(),
                     newPermission -> setPermission(area, uid, newPermission), player, parentOverlay);

@@ -30,6 +30,7 @@ public class PlayerPermissionRow {
 
     public static TableRow build(
             Integer playerDBID,
+            boolean isOnline,
             String currentPermission,
             String defaultPermission,
             Callback<String> callback,
@@ -47,9 +48,14 @@ public class PlayerPermissionRow {
 
         UILabel nameLabel = new UILabel(ownerName);
         UILabel uidLabel = new UILabel(uidLabelText);
+        UILabel statusLabel = new UILabel(
+                isOnline
+                        ? "<color=#44dd44>" + t().get("TC_UI_STATUS_ONLINE", forPlayer) + "</color>"
+                        : "<color=#dd4444>" + t().get("TC_UI_STATUS_OFFLINE", forPlayer) + "</color>");
 
-        TableCell cellUID = new TableCell(uidLabel, 40); // 40%
-        TableCell cellName = new TableCell(nameLabel, 40); // 40%
+        TableCell cellName = new TableCell(nameLabel, 30);
+        TableCell cellUID = new TableCell(uidLabel, 35);
+        TableCell cellStatus = new TableCell(statusLabel, 15);
 
         if (currentPermission == null) {
             currentPermission = "";
@@ -57,8 +63,8 @@ public class PlayerPermissionRow {
 
         if (currentPermission.equals(s.ownerAreaPermission)) {
             UILabel ownerLabel = new UILabel(t().get("TC_UI_PERMISSION_OWNER", forPlayer));
-            TableCell cellOwner = new TableCell(ownerLabel, 20); // 20%
-            return new TableRow(Arrays.asList(cellName, cellUID, cellOwner));
+            TableCell cellOwner = new TableCell(ownerLabel, 20);
+            return new TableRow(Arrays.asList(cellName, cellUID, cellStatus, cellOwner));
         }
 
         // List<DropdownOption> options = List.of(
@@ -156,6 +162,6 @@ public class PlayerPermissionRow {
 
         TableCell workaroundCell = new TableCell(permissionButton, 20);
 
-        return new TableRow(Arrays.asList(cellName, cellUID, workaroundCell));
+        return new TableRow(Arrays.asList(cellName, cellUID, cellStatus, workaroundCell));
     }
 }

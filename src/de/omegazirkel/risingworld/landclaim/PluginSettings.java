@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
+import de.omegazirkel.risingworld.LandClaim;
 import de.omegazirkel.risingworld.tools.OZLogger;
 import net.risingworld.api.Plugin;
 import net.risingworld.api.utils.ColorRGBA;
@@ -18,7 +19,7 @@ public class PluginSettings {
         private static Plugin plugin;
 
         private static OZLogger logger() {
-                return OZLogger.getInstance("OZ.LandClaim.Settings");
+                return LandClaim.logger();
         }
 
         // Public settings

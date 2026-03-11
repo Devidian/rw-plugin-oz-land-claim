@@ -208,7 +208,8 @@
                                 <resource>
                                     <directory>${basedir}</directory>
                                     <includes>
-                                        <include>*.md</include>
+                                        <include>README.md</include>
+                                        <include>HISTORY.md</include>
                                     </includes>
                                 </resource>
                             </resources>

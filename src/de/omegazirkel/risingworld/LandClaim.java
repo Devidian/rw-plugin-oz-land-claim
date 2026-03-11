@@ -67,7 +67,7 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
     }
 
     public static OZLogger eventLogger() {
-        return OZLogger.getInstance("OZ.LandClaim.Events");
+        return logger();
     }
 
     public static LandClaim getInstance() {
