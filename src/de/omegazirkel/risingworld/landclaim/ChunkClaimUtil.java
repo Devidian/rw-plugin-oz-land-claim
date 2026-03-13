@@ -653,8 +653,16 @@ public class ChunkClaimUtil {
             }
 
         // last step: set claim status in database for all chunks
-        for (Vector3i chunk : chunkInExtendedArea) {
-            service.saveChunkClaim(p, chunk, System.currentTimeMillis(), extendedArea.getID());
+        if (defaultPermission.equals(s.defaultAreaPermission)) {
+            for (Vector3i chunk : chunkInExtendedArea) {
+                service.saveChunkClaim(p, chunk, System.currentTimeMillis(), extendedArea.getID());
+            }
+        }
+        // remove claim status if it is a special area
+        else {
+            for (Vector3i chunk : chunkInExtendedArea) {
+                service.saveChunkClaim(p, chunk, 0, 0);
+            }
         }
 
         // area.destroy();

@@ -246,7 +246,7 @@ public class LandClaimGUI {
                                     if (expandedArea != null) {
                                         expandClaimAnnouncement(expandedArea, p);
                                         Area3DUtils.updateAreaFramesForAllPlayers();
-                                        openExpandAreaMenu(p, onBack);
+                                        openExpandAreaMenu(p, onBack, expandedArea);
                                     } else {
                                         // p.sendTextMessage(t.get("TC_DIALOG_AREA_EXPAND_FAILED", p));
                                     }
@@ -410,8 +410,14 @@ public class LandClaimGUI {
     }
 
     public void openExpandAreaMenu(Player uiPlayer, Callback<Player> onBack) {
+        openExpandAreaMenu(uiPlayer, onBack, null);
+    }
+
+    public void openExpandAreaMenu(Player uiPlayer, Callback<Player> onBack, Area targetArea) {
         List<MenuItem> menuItems = new ArrayList<>();
         Area currentArea = uiPlayer.getCurrentArea();
+        if (targetArea != null)
+            currentArea = targetArea;
 
         Callback<Player> onBackReopen = (Player player) -> openExpandAreaMenu(player, onBack);
 
@@ -550,7 +556,8 @@ public class LandClaimGUI {
                     AssetManager.getIcon("claim-chunk"),
                     t.get("TC_MENU_CLAIM", uiPlayer),
                     (p) -> {
-                        Area createdArea = chunkClaimUtil.claimArea(p, ChunkClaimUtil.getVirtualAreaFromChunkVector(uiPlayer.getChunkPosition()));
+                        Area createdArea = chunkClaimUtil.claimArea(p,
+                                ChunkClaimUtil.getVirtualAreaFromChunkVector(uiPlayer.getChunkPosition()));
                         if (createdArea != null) {
                             p.sendYellMessage(t.get("TC_CLAIM_CONGRATULATION", p), 5, true);
                             // Discord announcement
@@ -565,7 +572,8 @@ public class LandClaimGUI {
                                     onlinePlayer.sendTextMessage(
                                             t.get("TC_ANNOUNCEMENT_AREA_CLAIMED", onlinePlayer)
                                                     .replace("PH_AREA_NAME", createdArea.getName())
-                                                    .replace("PH_CHUNK_POS", createdArea.getStartChunkPosition().toString())
+                                                    .replace("PH_CHUNK_POS",
+                                                            createdArea.getStartChunkPosition().toString())
                                                     .replace("PH_PLAYER_NAME",
                                                             Server.getLastKnownPlayerName(p.getDbID())));
                             }

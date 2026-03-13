@@ -2,6 +2,12 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.7.2] - 2026-03-13 | Fix special areas and expanding areas
+
+- fix: special zones are marked as owned for admins (they must not)
+  - existing areas will be cleaned when expanded again.
+- fix: expanding an area is not returning to the expand menu again (player.getCurrentArea()=null)
+
 ## [0.7.1] - 2026-03-11 | Patch release
 
 - fix: admins can create special zones again even when no current area exists in the selected chunk
