@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [unreleased]
+
+- build: align bundled PluginAPI jar and Maven dependency version
+
 ## [0.7.2] - 2026-03-13 | Fix special areas and expanding areas
 
 - fix: special zones are marked as owned for admins (they must not)
