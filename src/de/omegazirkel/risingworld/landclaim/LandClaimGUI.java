@@ -163,11 +163,11 @@ public class LandClaimGUI {
                                 else {
                                     area.setName(v);
                                     // WORKAROUND direct SQL
-                                    if (LandClaim.wdbAreas != null) {
-                                        LandClaim.wdbAreas.executeUpdate(
-                                                "UPDATE areas SET name ='" + v.replace("'", "''") + "' WHERE id="
-                                                        + area.getID());
-                                    }
+                                    // if (LandClaim.wdbAreas != null) {
+                                    //     LandClaim.wdbAreas.executeUpdate(
+                                    //             "UPDATE areas SET name ='" + v.replace("'", "''") + "' WHERE id="
+                                    //                     + area.getID());
+                                    // }
                                     p.sendTextMessage(t.get("TC_AREA_RENNAMED", p)
                                             .replace("PH_AREA_NAME", v)
                                             .replace("PH_OLD_NAME",

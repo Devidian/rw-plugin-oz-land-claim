@@ -5,6 +5,7 @@
 ## [unreleased]
 
 - build: align bundled PluginAPI jar and Maven dependency version
+- refactor: remove obsolete area update and direct SQL workarounds
 
 ## [0.7.2] - 2026-03-13 | Fix special areas and expanding areas
 

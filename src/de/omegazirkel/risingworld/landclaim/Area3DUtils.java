@@ -19,7 +19,8 @@ public class Area3DUtils {
     private static void fillColorMap(Boolean refresh) {
         if (!AREA_COLORS.isEmpty() && !refresh)
             return;
-        // might be useful if colors were changed in settings but might never be relevant
+        // might be useful if colors were changed in settings but might never be
+        // relevant
         if (refresh)
             AREA_COLORS.clear();
 
@@ -56,7 +57,8 @@ public class Area3DUtils {
         }
 
         @SuppressWarnings("unchecked")
-        ConcurrentHashMap<Long, Area3D> frames = (ConcurrentHashMap<Long, Area3D>) player.getAttribute("oz.landclaim.areaFrames");
+        ConcurrentHashMap<Long, Area3D> frames = (ConcurrentHashMap<Long, Area3D>) player
+                .getAttribute("oz.landclaim.areaFrames");
         if (frames == null) {
             frames = new ConcurrentHashMap<>();
             player.setAttribute("oz.landclaim.areaFrames", frames);
@@ -80,16 +82,6 @@ public class Area3DUtils {
             boolean shouldShow = isOwner ? showOwned : showOther;
 
             Area3D existing = frames.get(areaId);
-
-            // if (player.isAdmin()) {
-            // player.sendTextMessage("AreaID: " + areaId + " Owner: " + isOwner + "
-            // ShouldShow: " + shouldShow);
-            // player.sendTextMessage("Existing: " + existing);
-            // player.sendTextMessage("PlayerPermission: " +
-            // area.getPlayerPermission(player));
-            // player.sendTextMessage("OwnerAreaPermission: " +
-            // settings.ownerAreaPermission);
-            // }
 
             if (shouldShow) {
                 // if it should be visible but does not exist → create
@@ -126,47 +118,24 @@ public class Area3DUtils {
     }
 
     public static void updateCurrentChunkFrameForPlayer(Player player, Area area) {
-        
+
         Area3D chunkBorderArea = ((Area3D) player.getAttribute("oz.landclaim.currentAreaFrame"));
         if (area == null) {
             if (chunkBorderArea != null) {
                 player.removeGameObject(chunkBorderArea);
                 player.setAttribute("oz.landclaim.currentAreaFrame", null);
-                // if (player.isAdmin())
-                // player.sendTextMessage("debug:> currentAreaFrame removed");
             }
             return;
         }
         if (chunkBorderArea == null) {
             chunkBorderArea = new Area3D(area);
-            // chunkBorderArea.setAlwaysVisible(true);
             chunkBorderArea.setColor(s.currentChunkBorderColor);
             chunkBorderArea.setFrameColor(s.currentChunkFrameColor);
             chunkBorderArea.setFrameVisible(true);
             player.setAttribute("oz.landclaim.currentAreaFrame", chunkBorderArea);
             player.addGameObject(chunkBorderArea);
-            // if (player.isAdmin())
-            // player.sendTextMessage("debug:> currentAreaFrame added");
         } else {
-            // ** WORKAROUND **
-            player.removeGameObject(chunkBorderArea);
-            chunkBorderArea = new Area3D(area);
-            chunkBorderArea.setColor(s.currentChunkBorderColor);
-            chunkBorderArea.setFrameColor(s.currentChunkFrameColor);
-            chunkBorderArea.setFrameVisible(true);
-            player.setAttribute("oz.landclaim.currentAreaFrame", chunkBorderArea);
-            player.addGameObject(chunkBorderArea);
-
-            // ** NULL POINTER EXCEPTIONS **
-            // Area current = chunkBorderArea.getArea();
-            // current.destroy();
-            // current.setStartPosition(area.getStartPosition());
-            // current.setEndPosition(area.getEndPosition());
-            // chunkBorderArea.setArea(current);
-
-            // ** NOT WORKING **
-            // chunkBorderArea.setArea(area);
-            // chunkBorderArea.updateCoordinates();
+            chunkBorderArea.setArea(area);
         }
     }
 }

@@ -619,7 +619,7 @@ public class ChunkClaimUtil {
         // }
 
         // we remove all areas before createing the new one
-        Server.removeArea(area);
+        // Server.removeArea(area);
         for (Area a : areasToRemove) {
             Server.removeArea(a);
             // a.destroy();
@@ -633,29 +633,29 @@ public class ChunkClaimUtil {
         // area.setEndPosition(extendedArea.getEndPosition());
         // ERROR: java.lang.NullPointerException =>
         // net.risingworld.api.objects.Area.INFINITE is null
-        // area.set(extendedArea.getStartPosition(), extendedArea.getEndPosition());
+        area.set(extendedArea.getStartPosition(), extendedArea.getEndPosition());
         // WORKAROUND: we need to create a new area to avoid null pointer exception
-        extendedArea.setName(area.getName());
-        extendedArea.setNameVisible(true);
-        Server.addArea(extendedArea, true);
-        if (defaultPermission.equals(s.defaultAreaPermission)) {
-            extendedArea.setPlayerPermission(p.getDbID(), s.ownerAreaPermission);
-            extendedArea.setAttribute("ownerUID", p.getUID());
-            extendedArea.setAttribute("ownerDBID", p.getDbID());
-        }
-        extendedArea.setDefaultPermission(defaultPermission);
+        // extendedArea.setName(area.getName());
+        // extendedArea.setNameVisible(true);
+        // Server.addArea(extendedArea, true);
+        // if (defaultPermission.equals(s.defaultAreaPermission)) {
+        //     extendedArea.setPlayerPermission(p.getDbID(), s.ownerAreaPermission);
+        //     extendedArea.setAttribute("ownerUID", p.getUID());
+        //     extendedArea.setAttribute("ownerDBID", p.getDbID());
+        // }
+        // extendedArea.setDefaultPermission(defaultPermission);
 
         // we need to transfer all permissions to the new area
-        Map<Integer, String> originAreaPermissions = area.getAllPlayerPermissions();
-        if (originAreaPermissions != null)
-            for (Map.Entry<Integer, String> entry : originAreaPermissions.entrySet()) {
-                extendedArea.setPlayerPermission(entry.getKey(), entry.getValue());
-            }
+        // Map<Integer, String> originAreaPermissions = area.getAllPlayerPermissions();
+        // if (originAreaPermissions != null)
+        //     for (Map.Entry<Integer, String> entry : originAreaPermissions.entrySet()) {
+        //         extendedArea.setPlayerPermission(entry.getKey(), entry.getValue());
+        //     }
 
         // last step: set claim status in database for all chunks
         if (defaultPermission.equals(s.defaultAreaPermission)) {
             for (Vector3i chunk : chunkInExtendedArea) {
-                service.saveChunkClaim(p, chunk, System.currentTimeMillis(), extendedArea.getID());
+                service.saveChunkClaim(p, chunk, System.currentTimeMillis(), area.getID());
             }
         }
         // remove claim status if it is a special area
@@ -666,7 +666,7 @@ public class ChunkClaimUtil {
         }
 
         // area.destroy();
-        return extendedArea;
+        return area;
     }
 
     public enum Direction {
