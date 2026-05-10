@@ -2,7 +2,7 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
-## [unreleased]
+## [0.7.3] - 2026-05-10 | PluginAPI alignment and area workaround cleanup
 
 - build: align bundled PluginAPI jar and Maven dependency version
 - refactor: remove obsolete area update and direct SQL workarounds
