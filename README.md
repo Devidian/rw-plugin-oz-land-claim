@@ -95,7 +95,7 @@ _This README was partially generated and improved by Gemini Code Assist._
 
 ## Contributor Workflow
 
-- Review `AGENTS.md`, `PLANS.md`, and the role prompts in `agent-prompts/` before making structural changes.
+- Review `AGENTS.md`, `PLANS.md`, `.codex/agents.toml`, and `.codex/skills/` before making structural changes.
 - Verify Rising World API usage with `scripts/verify-plugin-api.sh` when adding or changing API calls.
 - Run `mvn -B -DskipTests package` and `mvn -B test` before release-facing changes are merged.
 - Use `RUNTIME_TESTING.md` and `scripts/docker-runtime-smoke.sh <PluginFolderName>` for runtime smoke tests when behavior changes need server validation.
