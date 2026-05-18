@@ -16,11 +16,23 @@ import net.risingworld.api.callbacks.Callback;
 import net.risingworld.api.objects.Player;
 import net.risingworld.api.ui.UIElement;
 import net.risingworld.api.ui.UILabel;
+import net.risingworld.api.ui.style.Font;
 import net.risingworld.api.ui.style.Pivot;
+import net.risingworld.api.ui.style.TextAnchor;
 import net.risingworld.api.ui.style.Unit;
 
 public class PlayerPermissionRow {
     private static final HashMap<Integer, OZUIElement> selectPanes = new HashMap<>();
+    private static final int OPTION_HEIGHT = 30;
+    private static final int OPTION_GAP = 2;
+    private static final int OPTION_COUNT = 5;
+    private static final int SELECT_PANE_PADDING = 4;
+    private static final int SELECT_PANE_HEADER_HEIGHT = 28;
+    private static final int OPTION_TOP_OFFSET = SELECT_PANE_PADDING + SELECT_PANE_HEADER_HEIGHT + OPTION_GAP;
+    private static final int SELECT_PANE_HEIGHT = OPTION_TOP_OFFSET
+            + (OPTION_COUNT * (OPTION_HEIGHT + OPTION_GAP))
+            + SELECT_PANE_PADDING;
+    private static final float SELECT_PANE_TOP_PERCENT = 31f;
 
     public static final PluginSettings s = PluginSettings.getInstance();
 
@@ -104,18 +116,27 @@ public class PlayerPermissionRow {
 
         OZUIElement selectPane = new OZUIElement();
         selectPane.setBorder(2);
-        selectPane.setPivot(Pivot.MiddleLeft);
-        selectPane.setPosition(75, 50, true);
-        selectPane.setSize(10, 50, true);
+        selectPane.setPivot(Pivot.UpperRight);
+        selectPane.setPosition(94, SELECT_PANE_TOP_PERCENT, true);
+        selectPane.style.width.set(12, Unit.Percent);
+        selectPane.style.height.set(SELECT_PANE_HEIGHT, Unit.Pixel);
         selectPane.setVisible(false);
         selectPane.setBackgroundColor(0, 0, 0, 0.85f);
-        selectPane.setBorderColor(1, 1, 1, 0.4f);
+        selectPane.setBorderColor(0.95f, 0.75f, 0.25f, 0.6f);
         selectPane.setClickable(true);
         selectPane.setClickAction(event -> {
             selectPane.setVisible(false);
         });
-        parentOverlay.addChild(selectPane);
-        // forPlayer.addUIElement(selectPane);
+
+        UILabel selectPaneTitle = new UILabel(ownerName);
+        selectPaneTitle.setPivot(Pivot.UpperCenter);
+        selectPaneTitle.setPosition(50, SELECT_PANE_PADDING, true);
+        selectPaneTitle.style.width.set(96, Unit.Percent);
+        selectPaneTitle.style.height.set(SELECT_PANE_HEADER_HEIGHT, Unit.Pixel);
+        selectPaneTitle.setFont(Font.DefaultBold);
+        selectPaneTitle.setFontSize(14);
+        selectPaneTitle.setTextAlign(TextAnchor.MiddleCenter);
+        selectPane.addChild(selectPaneTitle);
 
         String buttonLabel = permissionLabelMap.get(currentPermission) == null
                 ? areaPermissionLabelMap.get(currentPermission)
@@ -124,9 +145,12 @@ public class PlayerPermissionRow {
         CancelButton permissionButton = new CancelButton(buttonLabel, event -> {
             if (selectPanes.containsKey(forPlayer.getDbID())) {
                 selectPanes.get(forPlayer.getDbID()).setVisible(false);
+                selectPanes.get(forPlayer.getDbID()).removeFromParent();
                 selectPanes.remove(forPlayer.getDbID());
             }
             selectPanes.put(forPlayer.getDbID(), selectPane);
+            selectPane.removeFromParent();
+            parentOverlay.addChild(selectPane);
             selectPane.setVisible(true);
         });
         permissionButton.setPivot(Pivot.MiddleCenter);
@@ -141,10 +165,10 @@ public class PlayerPermissionRow {
                 permissionButton.setText(entry.getValue());
             });
             cb.style.width.set(98, Unit.Percent);
-            cb.style.height.set(30, Unit.Pixel);
+            cb.style.height.set(OPTION_HEIGHT, Unit.Pixel);
             cb.setPivot(Pivot.UpperCenter);
             cb.setPosition(50, 0, true);
-            cb.style.top.set(2 + (row++ * 32), Unit.Pixel);
+            cb.style.top.set(OPTION_TOP_OFFSET + (row++ * (OPTION_HEIGHT + OPTION_GAP)), Unit.Pixel);
             selectPane.addChild(cb);
         }
         String defaultLabel = areaPermissionLabelMap.get(defaultPermission);
@@ -154,10 +178,10 @@ public class PlayerPermissionRow {
             permissionButton.setText(defaultLabel);
         });
         cb.style.width.set(98, Unit.Percent);
-        cb.style.height.set(30, Unit.Pixel);
+        cb.style.height.set(OPTION_HEIGHT, Unit.Pixel);
         cb.setPivot(Pivot.UpperCenter);
         cb.setPosition(50, 0, true);
-        cb.style.top.set(2 + (row++ * 32), Unit.Pixel);
+        cb.style.top.set(OPTION_TOP_OFFSET + (row++ * (OPTION_HEIGHT + OPTION_GAP)), Unit.Pixel);
         selectPane.addChild(cb);
 
         TableCell workaroundCell = new TableCell(permissionButton, 20);

@@ -639,18 +639,18 @@ public class ChunkClaimUtil {
         // extendedArea.setNameVisible(true);
         // Server.addArea(extendedArea, true);
         // if (defaultPermission.equals(s.defaultAreaPermission)) {
-        //     extendedArea.setPlayerPermission(p.getDbID(), s.ownerAreaPermission);
-        //     extendedArea.setAttribute("ownerUID", p.getUID());
-        //     extendedArea.setAttribute("ownerDBID", p.getDbID());
+        // extendedArea.setPlayerPermission(p.getDbID(), s.ownerAreaPermission);
+        // extendedArea.setAttribute("ownerUID", p.getUID());
+        // extendedArea.setAttribute("ownerDBID", p.getDbID());
         // }
         // extendedArea.setDefaultPermission(defaultPermission);
 
         // we need to transfer all permissions to the new area
         // Map<Integer, String> originAreaPermissions = area.getAllPlayerPermissions();
         // if (originAreaPermissions != null)
-        //     for (Map.Entry<Integer, String> entry : originAreaPermissions.entrySet()) {
-        //         extendedArea.setPlayerPermission(entry.getKey(), entry.getValue());
-        //     }
+        // for (Map.Entry<Integer, String> entry : originAreaPermissions.entrySet()) {
+        // extendedArea.setPlayerPermission(entry.getKey(), entry.getValue());
+        // }
 
         // last step: set claim status in database for all chunks
         if (defaultPermission.equals(s.defaultAreaPermission)) {
@@ -692,10 +692,11 @@ public class ChunkClaimUtil {
             List<LandClaimChunkInfo> infoList = service.getChunkInfoListByArea(area.getID());
             for (LandClaimChunkInfo info : infoList) {
                 Player owner = Server.getPlayerByUID(info.playerUID);
-                p.sendTextMessage(t().get("TC_AREA_RELEASE_CHUNK", p)
-                        .replace("PH_AREA_NAME", areaName)
-                        .replace("PH_CHUNK_POS", info.chunkPos.toString())
-                        .replace("PH_PLAYER_NAME", owner.getName()));
+                if (p.isAdmin())
+                    p.sendTextMessage(t().get("TC_AREA_RELEASE_CHUNK", p)
+                            .replace("PH_AREA_NAME", areaName)
+                            .replace("PH_CHUNK_POS", info.chunkPos.toString())
+                            .replace("PH_PLAYER_NAME", owner.getName()));
                 service.saveChunkClaim(owner, info.chunkPos, 0, 0);
             }
             // Discord announcement

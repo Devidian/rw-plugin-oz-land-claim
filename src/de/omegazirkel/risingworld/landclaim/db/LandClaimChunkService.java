@@ -103,6 +103,20 @@ public class LandClaimChunkService {
         return new ArrayList<>(claimedChunks);
     }
 
+    public List<LandClaimChunkInfo> getClaimedChunkInfoListByPlayer(String playerUuid) {
+        Set<LandClaimChunkInfo> set = byPlayer.get(playerUuid);
+        if (set == null) {
+            return List.of();
+        }
+        List<LandClaimChunkInfo> result = new ArrayList<>();
+        for (LandClaimChunkInfo info : set) {
+            if (info.isClaimed()) {
+                result.add(info);
+            }
+        }
+        return result;
+    }
+
     public List<LandClaimChunkInfo> getChunkInfoListByArea(long areaId) {
         Set<LandClaimChunkInfo> set = byArea.get(areaId);
         return set == null ? List.of() : new ArrayList<>(set);
@@ -138,6 +152,8 @@ public class LandClaimChunkService {
         } else if (wasClaimed && !isClaimed) {
             claimedChunks.remove(info);
             adjustClaimCount(info.playerUID, false);
+        } else if (isClaimed) {
+            claimedChunks.add(info);
         }
 
         if (oldAreaId != info.areaID) {
@@ -159,18 +175,37 @@ public class LandClaimChunkService {
         LandClaimChunkKey key = new LandClaimChunkKey(playerId, world, chunk);
         LandClaimChunkInfo info = store.get(key);
 
-        if (info != null) {
-            synchronized (info) {
-                long oldClaimedAt = info.claimedAtMs;
-                long oldAreaId = info.areaID;
+        if (info == null && claimedAt <= 0) {
+            return;
+        }
 
-                info.claimedAtMs = claimedAt;
-                info.areaID = areaID;
-                info.lastSeenMs = System.currentTimeMillis();
+        if (info == null) {
+            info = new LandClaimChunkInfo(
+                    chunk,
+                    0,
+                    System.currentTimeMillis(),
+                    claimedAt,
+                    playerId,
+                    world,
+                    0,
+                    areaID,
+                    playerDBID == null ? 0 : playerDBID);
+            store.put(key, info);
+            index(info);
+            markDirty(info);
+            return;
+        }
 
-                updateClaimIndexes(info, oldClaimedAt, oldAreaId);
-                markDirty(info);
-            }
+        synchronized (info) {
+            long oldClaimedAt = info.claimedAtMs;
+            long oldAreaId = info.areaID;
+
+            info.claimedAtMs = claimedAt;
+            info.areaID = areaID;
+            info.lastSeenMs = System.currentTimeMillis();
+
+            updateClaimIndexes(info, oldClaimedAt, oldAreaId);
+            markDirty(info);
         }
     }
 
@@ -201,7 +236,8 @@ public class LandClaimChunkService {
 
         // update existing
         synchronized (existing) {
-            boolean wasClaimed = existing.claimedAtMs > 0;
+            long oldClaimedAt = existing.claimedAtMs;
+            long oldAreaId = existing.areaID;
 
             existing.totalTimeMs += info.totalTimeMs;
             existing.lastSeenMs = info.lastSeenMs;
@@ -209,11 +245,8 @@ public class LandClaimChunkService {
             existing.areaID = info.areaID;
             existing.price = info.price;
 
-            boolean isClaimed = existing.claimedAtMs > 0;
-
-            if (wasClaimed != isClaimed) {
-                adjustClaimCount(existing.playerUID, isClaimed);
-            }
+            updateClaimIndexes(existing, oldClaimedAt, oldAreaId);
+            markDirty(existing);
         }
 
         return existing;
@@ -240,6 +273,7 @@ public class LandClaimChunkService {
         byChunk.computeIfAbsent(info.chunkPos, k -> ConcurrentHashMap.newKeySet()).add(info);
 
         if (info.claimedAtMs > 0) {
+            claimedChunks.add(info);
             adjustClaimCount(info.playerUID, true);
         }
         if (info.areaID > 0) {

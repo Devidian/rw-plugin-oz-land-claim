@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import de.omegazirkel.risingworld.landclaim.Area3DUtils;
+import de.omegazirkel.risingworld.landclaim.ClaimCleanupService;
 import de.omegazirkel.risingworld.landclaim.ChunkClaimUtil;
 import de.omegazirkel.risingworld.landclaim.DiscordConnect;
 import de.omegazirkel.risingworld.landclaim.LandClaimGUI;
@@ -14,6 +15,7 @@ import de.omegazirkel.risingworld.landclaim.PluginSettings;
 import de.omegazirkel.risingworld.landclaim.db.LandClaimChunkService;
 import de.omegazirkel.risingworld.landclaim.db.LandClaimChunkStore;
 import de.omegazirkel.risingworld.landclaim.ui.ChunkInfoManager;
+import de.omegazirkel.risingworld.landclaim.ui.LandClaimPlayerPluginData;
 import de.omegazirkel.risingworld.landclaim.ui.LandClaimPlayerPluginSettings;
 import de.omegazirkel.risingworld.tools.Colors;
 import de.omegazirkel.risingworld.tools.FileChangeListener;
@@ -27,8 +29,6 @@ import de.omegazirkel.risingworld.tools.ui.PlayerPluginSettingsOverlay;
 import de.omegazirkel.risingworld.tools.ui.PluginMenuManager;
 import net.risingworld.api.Plugin;
 import net.risingworld.api.Server;
-import net.risingworld.api.database.WorldDatabase;
-import net.risingworld.api.database.WorldDatabase.Target;
 import net.risingworld.api.events.EventMethod;
 import net.risingworld.api.events.Listener;
 import net.risingworld.api.events.player.PlayerCommandEvent;
@@ -52,6 +52,7 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
     private static PluginSettings s;
     private static LandClaimGUI gui;
     private static ChunkClaimUtil chunkClaimUtil;
+    private static ClaimCleanupService cleanupService;
     public static String name;
     // only for workaround with area bugs
     // public static WorldDatabase wdbAreas;
@@ -95,8 +96,9 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
         // wdbAreas = this.getWorldDatabase(Target.Areas);
         // wdbPlayers = this.getWorldDatabase(Target.Players);
         chunkClaimUtil = new ChunkClaimUtil(llcs);
-        gui = LandClaimGUI.getInstance(chunkClaimUtil, this);
         s.initSettings();
+        cleanupService = new ClaimCleanupService(llcs, s);
+        gui = LandClaimGUI.getInstance(chunkClaimUtil, cleanupService, this);
         logger().setLevel(s.logLevel);
         ensureDefaultPermissionFiles();
 
@@ -114,7 +116,10 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
         chunkInfoManager.start();
 
         // register plugin settings
-        PlayerPluginSettingsOverlay.registerPlayerPluginSettings(new LandClaimPlayerPluginSettings());
+        PlayerPluginSettingsOverlay.registerPlayerPluginSettings(new LandClaimPlayerPluginSettings(getDescription("version")));
+        PlayerPluginSettingsOverlay.registerPlayerPluginData(new LandClaimPlayerPluginData(getDescription("version")));
+
+        scheduleAutoClaimRemoval();
 
         logger().info("✅ " + this.getName() + " Plugin is enabled version:" + this.getDescription("version"));
     }
@@ -136,6 +141,27 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
         logger().setLevel(s.logLevel);
         ChunkClaimUtil.logger().setLevel(s.logLevel);
         PermissionFileUtil.logger().setLevel(s.logLevel);
+    }
+
+    private void scheduleAutoClaimRemoval() {
+        if (!s.enableAutoClaimRemoval) {
+            return;
+        }
+        float delaySeconds = Math.max(0, s.autoClaimRemovalDelaySeconds);
+        executeDelayed(delaySeconds, () -> {
+            ClaimCleanupService.AutoRemovalResult result = cleanupService
+                    .removeInactiveOwners(Math.max(0, s.autoClaimRemovalInactiveDays));
+            if (result.ownersRemoved() > 0) {
+                Area3DUtils.updateAreaFramesForAllPlayers();
+            }
+            logger().info("Auto claim removal checked inactive owners. Owners removed: "
+                    + result.ownersRemoved() + ", claims removed: " + result.claimsRemoved());
+            String message = t.get("TC_DISCORD_AUTO_CLAIM_REMOVAL", DiscordConnect.botLang())
+                    .replace("PH_OWNER_COUNT", String.valueOf(result.ownersRemoved()))
+                    .replace("PH_CLAIM_COUNT", String.valueOf(result.claimsRemoved()))
+                    .replace("PH_DAYS", String.valueOf(result.inactiveDays()));
+            DiscordConnect.sendDiscordReleaseAccouncement(message);
+        });
     }
 
     @EventMethod
@@ -178,11 +204,10 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
                     break;
                 case "devmode":
                     if (player.isAdmin()) {
-                        Boolean currentValue = player.hasAttribute("oz.landclaim.developerMode")
-                                ? (Boolean) player.getAttribute("oz.landclaim.developerMode")
-                                : false;
-                        player.setAttribute("oz.landclaim.developerMode", !currentValue);
-                        ps.setBoolean(player.getDbID(), "oz.landclaim.developerMode", !currentValue);
+                        boolean currentValue = LandClaimPlayerPluginSettings.booleanValue(player,
+                                LandClaimPlayerPluginSettings.DEVELOPER_MODE_KEY, false);
+                        LandClaimPlayerPluginSettings.setBooleanValue(player,
+                                LandClaimPlayerPluginSettings.DEVELOPER_MODE_KEY, !currentValue);
                     }
                     break;
                 case "open":
@@ -217,8 +242,8 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
         chunkClaimUtil.enterChunk(player, chunkPos);
 
         // if player has "oz.landclaim.showCurrentChunkFrame" enabled, show chunk area
-        if (player.hasAttribute("oz.landclaim.showCurrentChunkFrame")
-                && (Boolean) player.getAttribute("oz.landclaim.showCurrentChunkFrame")) {
+        if (player.hasAttribute(LandClaimPlayerPluginSettings.SHOW_CURRENT_CHUNK_FRAME_KEY)
+                && (Boolean) player.getAttribute(LandClaimPlayerPluginSettings.SHOW_CURRENT_CHUNK_FRAME_KEY)) {
             Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPos);
             Area3DUtils.updateCurrentChunkFrameForPlayer(player, area);
         }
@@ -252,28 +277,28 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
                 + chunkPos.toString());
         Integer dbId = player.getDbID();
         // ensure values are set
-        if (!player.hasAttribute("oz.landclaim.developerMode"))
-            player.setAttribute("oz.landclaim.developerMode",
-                    ps.getBoolean(dbId, "oz.landclaim.developerMode").orElse(false));
-        if (!player.hasAttribute("oz.landclaim.showCurrentChunkFrame"))
-            player.setAttribute("oz.landclaim.showCurrentChunkFrame",
-                    ps.getBoolean(dbId, "oz.landclaim.showCurrentChunkFrame").orElse(false));
-        if (!player.hasAttribute("oz.landclaim.showOwnedAreaFrames"))
-            player.setAttribute("oz.landclaim.showOwnedAreaFrames",
-                    ps.getBoolean(dbId, "oz.landclaim.showOwnedAreaFrames").orElse(false));
-        if (!player.hasAttribute("oz.landclaim.showOtherAreaFrames"))
-            player.setAttribute("oz.landclaim.showOtherAreaFrames",
-                    ps.getBoolean(dbId, "oz.landclaim.showOtherAreaFrames").orElse(false));
-        if (!player.hasAttribute("oz.landclaim.enableClaimInfoOverlay"))
-            player.setAttribute("oz.landclaim.enableClaimInfoOverlay",
-                    ps.getBoolean(dbId, "oz.landclaim.enableClaimInfoOverlay").orElse(true));
+        if (!player.hasAttribute(LandClaimPlayerPluginSettings.DEVELOPER_MODE_KEY))
+            player.setAttribute(LandClaimPlayerPluginSettings.DEVELOPER_MODE_KEY,
+                    ps.getBoolean(dbId, LandClaimPlayerPluginSettings.DEVELOPER_MODE_KEY).orElse(false));
+        if (!player.hasAttribute(LandClaimPlayerPluginSettings.SHOW_CURRENT_CHUNK_FRAME_KEY))
+            player.setAttribute(LandClaimPlayerPluginSettings.SHOW_CURRENT_CHUNK_FRAME_KEY,
+                    ps.getBoolean(dbId, LandClaimPlayerPluginSettings.SHOW_CURRENT_CHUNK_FRAME_KEY).orElse(false));
+        if (!player.hasAttribute(LandClaimPlayerPluginSettings.SHOW_OWNED_AREA_FRAMES_KEY))
+            player.setAttribute(LandClaimPlayerPluginSettings.SHOW_OWNED_AREA_FRAMES_KEY,
+                    ps.getBoolean(dbId, LandClaimPlayerPluginSettings.SHOW_OWNED_AREA_FRAMES_KEY).orElse(false));
+        if (!player.hasAttribute(LandClaimPlayerPluginSettings.SHOW_OTHER_AREA_FRAMES_KEY))
+            player.setAttribute(LandClaimPlayerPluginSettings.SHOW_OTHER_AREA_FRAMES_KEY,
+                    ps.getBoolean(dbId, LandClaimPlayerPluginSettings.SHOW_OTHER_AREA_FRAMES_KEY).orElse(false));
+        if (!player.hasAttribute(LandClaimPlayerPluginSettings.ENABLE_CLAIM_INFO_OVERLAY_KEY))
+            player.setAttribute(LandClaimPlayerPluginSettings.ENABLE_CLAIM_INFO_OVERLAY_KEY,
+                    ps.getBoolean(dbId, LandClaimPlayerPluginSettings.ENABLE_CLAIM_INFO_OVERLAY_KEY).orElse(true));
         if (!player.hasAttribute("oz.landclaim.areaFrames"))
             player.setAttribute("oz.landclaim.areaFrames", new ConcurrentHashMap<Long, Area3D>());
         if (!player.hasAttribute("oz.landclaim.currentAreaFrame"))
             player.setAttribute("oz.landclaim.currentAreaFrame", null);
 
         // updated Area3D frames if needed
-        if ((Boolean) player.getAttribute("oz.landclaim.showCurrentChunkFrame"))
+        if ((Boolean) player.getAttribute(LandClaimPlayerPluginSettings.SHOW_CURRENT_CHUNK_FRAME_KEY))
             updatecurrentAreaFrameForPlayer(player);
         Area3DUtils.updateAreaFramesForPlayer(player);
     }

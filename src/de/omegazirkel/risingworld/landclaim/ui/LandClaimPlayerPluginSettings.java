@@ -11,9 +11,15 @@ import net.risingworld.api.objects.Area;
 import net.risingworld.api.objects.Player;
 
 public class LandClaimPlayerPluginSettings extends PlayerPluginSettings {
+    public static final String SHOW_CURRENT_CHUNK_FRAME_KEY = "oz.landclaim.showCurrentChunkFrame";
+    public static final String SHOW_OWNED_AREA_FRAMES_KEY = "oz.landclaim.showOwnedAreaFrames";
+    public static final String SHOW_OTHER_AREA_FRAMES_KEY = "oz.landclaim.showOtherAreaFrames";
+    public static final String ENABLE_CLAIM_INFO_OVERLAY_KEY = "oz.landclaim.enableClaimInfoOverlay";
+    public static final String DEVELOPER_MODE_KEY = "oz.landclaim.developerMode";
 
-    public LandClaimPlayerPluginSettings() {
+    public LandClaimPlayerPluginSettings(String pluginVersion) {
         this.pluginLabel = LandClaim.name;
+        this.pluginVersion = pluginVersion;
     }
 
     private final I18n t() {
@@ -27,97 +33,55 @@ public class LandClaimPlayerPluginSettings extends PlayerPluginSettings {
             @Override
             protected void redrawContent() {
                 flexWrapper.removeAllChilds();
-                flexWrapper.addChild(playerSettingShowCurrentChunk(uiPlayer));
-                flexWrapper.addChild(playerSettingShowOwnedAreas(uiPlayer));
-                flexWrapper.addChild(playerSettingShowOtherAreas(uiPlayer));
-                flexWrapper.addChild(playerSettingEnableClaimInfoOverlay(uiPlayer));
+                flexWrapper.addChild(booleanSetting(uiPlayer, SHOW_CURRENT_CHUNK_FRAME_KEY,
+                        "TC_UI_LABEL_SHOW_CURRENT_CHUNK_FRAME", false, () -> {
+                            Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(uiPlayer.getChunkPosition());
+                            Area3DUtils.updateCurrentChunkFrameForPlayer(uiPlayer,
+                                    booleanValue(uiPlayer, SHOW_CURRENT_CHUNK_FRAME_KEY, false) ? area : null);
+                        }));
+                flexWrapper.addChild(booleanSetting(uiPlayer, SHOW_OWNED_AREA_FRAMES_KEY,
+                        "TC_UI_LABEL_SHOW_OWNED_AREAS", false,
+                        () -> Area3DUtils.updateAreaFramesForPlayer(uiPlayer)));
+                flexWrapper.addChild(booleanSetting(uiPlayer, SHOW_OTHER_AREA_FRAMES_KEY,
+                        "TC_UI_LABEL_SHOW_OTHER_AREAS", false,
+                        () -> Area3DUtils.updateAreaFramesForPlayer(uiPlayer)));
+                flexWrapper.addChild(booleanSetting(uiPlayer, ENABLE_CLAIM_INFO_OVERLAY_KEY,
+                        "TC_UI_LABEL_ENABLE_CLAIM_INFO_OVERLAY", true, null));
                 if (uiPlayer.isAdmin())
-                    flexWrapper.addChild(playerSettingDeveloperMode(uiPlayer));
+                    flexWrapper.addChild(booleanSetting(uiPlayer, DEVELOPER_MODE_KEY,
+                            "TC_UI_LABEL_DEVELOPER_MODE", false, null));
             }
 
-            protected OZUIElement playerSettingShowCurrentChunk(Player uiPlayer) {
+            protected OZUIElement booleanSetting(Player uiPlayer, String key, String labelKey, boolean defaultValue,
+                    Runnable onChanged) {
                 OZUIElement element = defaultSettingsContainer();
-                // label
-                element.addChild(defaultSettingsLabel(t().get("TC_UI_LABEL_SHOW_CURRENT_CHUNK_FRAME", uiPlayer)));
-                // current value
-                String attributeKey = "oz.landclaim.showCurrentChunkFrame";
-                Boolean isEnabled = uiPlayer.hasAttribute(attributeKey) ? (Boolean) uiPlayer.getAttribute(attributeKey)
-                        : false;
+                element.addChild(defaultSettingsLabel(t().get(labelKey, uiPlayer)));
+
+                boolean isEnabled = booleanValue(uiPlayer, key, defaultValue);
                 element.addChild(switchButtons(uiPlayer, isEnabled, event -> {
-                    uiPlayer.setAttribute(attributeKey, !isEnabled);
+                    setBooleanValue(uiPlayer, key, !isEnabled);
                     redrawContent();
-                    Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(uiPlayer.getChunkPosition());
-                    Area3DUtils.updateCurrentChunkFrameForPlayer(uiPlayer, !isEnabled ? area : null);
-                }));
-                return element;
-            }
-
-            protected OZUIElement playerSettingShowOtherAreas(Player uiPlayer) {
-                OZUIElement element = defaultSettingsContainer();
-                // label
-                element.addChild(defaultSettingsLabel(t().get("TC_UI_LABEL_SHOW_OTHER_AREAS", uiPlayer)));
-
-                // toggle button
-                String attributeKey = "oz.landclaim.showOtherAreaFrames";
-                Boolean isEnabled = uiPlayer.hasAttribute(attributeKey) ? (Boolean) uiPlayer.getAttribute(attributeKey)
-                        : false;
-                element.addChild(switchButtons(uiPlayer, isEnabled, event -> {
-                    uiPlayer.setAttribute(attributeKey, !isEnabled);
-                    redrawContent();
-                    Area3DUtils.updateAreaFramesForPlayer(uiPlayer);
-                }));
-                return element;
-            }
-
-            protected OZUIElement playerSettingShowOwnedAreas(Player uiPlayer) {
-                OZUIElement element = defaultSettingsContainer();
-                // label
-                element.addChild(defaultSettingsLabel(t().get("TC_UI_LABEL_SHOW_OWNED_AREAS", uiPlayer)));
-
-                // toggle button
-                String attributeKey = "oz.landclaim.showOwnedAreaFrames";
-                Boolean isEnabled = uiPlayer.hasAttribute(attributeKey) ? (Boolean) uiPlayer.getAttribute(attributeKey)
-                        : false;
-                element.addChild(switchButtons(uiPlayer, isEnabled, event -> {
-                    uiPlayer.setAttribute(attributeKey, !isEnabled);
-                    redrawContent();
-                    Area3DUtils.updateAreaFramesForPlayer(uiPlayer);
-                }));
-                return element;
-            }
-
-            protected OZUIElement playerSettingEnableClaimInfoOverlay(Player uiPlayer) {
-                OZUIElement element = defaultSettingsContainer();
-                // label
-                element.addChild(defaultSettingsLabel(t().get("TC_UI_LABEL_ENABLE_CLAIM_INFO_OVERLAY", uiPlayer)));
-
-                // toggle button
-                String attributeKey = "oz.landclaim.enableClaimInfoOverlay";
-                Boolean isEnabled = uiPlayer.hasAttribute(attributeKey) ? (Boolean) uiPlayer.getAttribute(attributeKey)
-                        : false;
-                element.addChild(switchButtons(uiPlayer, isEnabled, event -> {
-                    uiPlayer.setAttribute(attributeKey, !isEnabled);
-                    redrawContent();
-                }));
-                return element;
-            }
-
-            protected OZUIElement playerSettingDeveloperMode(Player uiPlayer) {
-                OZUIElement element = defaultSettingsContainer();
-                // label
-                element.addChild(defaultSettingsLabel(t().get("TC_UI_LABEL_DEVELOPER_MODE", uiPlayer)));
-
-                // toggle button
-                String attributeKey = "oz.landclaim.developerMode";
-                Boolean isEnabled = uiPlayer.hasAttribute(attributeKey) ? (Boolean) uiPlayer.getAttribute(attributeKey)
-                        : false;
-                element.addChild(switchButtons(uiPlayer, isEnabled, event -> {
-                    uiPlayer.setAttribute(attributeKey, !isEnabled);
-                    redrawContent();
+                    if (onChanged != null) {
+                        onChanged.run();
+                    }
                 }));
                 return element;
             }
         };
+    }
+
+    public static boolean booleanValue(Player player, String key, boolean defaultValue) {
+        if (LandClaim.ps == null) {
+            return player.hasAttribute(key) ? (Boolean) player.getAttribute(key) : defaultValue;
+        }
+        return LandClaim.ps.getBoolean(player.getDbID(), key).orElse(defaultValue);
+    }
+
+    public static void setBooleanValue(Player player, String key, boolean value) {
+        player.setAttribute(key, value);
+        if (LandClaim.ps != null) {
+            LandClaim.ps.setBoolean(player.getDbID(), key, value);
+        }
     }
 
 }

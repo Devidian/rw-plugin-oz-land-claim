@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 // import de.omegazirkel.risingworld.LandClaim;
 // import de.omegazirkel.risingworld.tools.I18n;
+import de.omegazirkel.risingworld.landclaim.ui.LandClaimPlayerPluginSettings;
 import net.risingworld.api.Server;
 import net.risingworld.api.objects.Area;
 import net.risingworld.api.objects.Player;
@@ -48,8 +49,8 @@ public class Area3DUtils {
 
     public static void updateAreaFramesForPlayer(Player player) {
         fillColorMap(false);
-        Boolean showOwned = (Boolean) player.getAttribute("oz.landclaim.showOwnedAreaFrames");
-        Boolean showOther = (Boolean) player.getAttribute("oz.landclaim.showOtherAreaFrames");
+        Boolean showOwned = (Boolean) player.getAttribute(LandClaimPlayerPluginSettings.SHOW_OWNED_AREA_FRAMES_KEY);
+        Boolean showOther = (Boolean) player.getAttribute(LandClaimPlayerPluginSettings.SHOW_OTHER_AREA_FRAMES_KEY);
 
         // Get or create map
         if (!player.hasAttribute("oz.landclaim.areaFrames")) {
@@ -79,33 +80,26 @@ public class Area3DUtils {
             long areaId = area.getID();
             String areaPermission = area.getPlayerPermission(player);
             boolean isOwner = areaPermission != null && areaPermission.equals(s.ownerAreaPermission);
-            boolean shouldShow = isOwner ? showOwned : showOther;
+            boolean shouldShow = isOwner ? Boolean.TRUE.equals(showOwned) : Boolean.TRUE.equals(showOther);
 
             Area3D existing = frames.get(areaId);
 
             if (shouldShow) {
+                AreaColors colors = colorsFor(area, isOwner);
                 // if it should be visible but does not exist → create
                 if (existing == null) {
-
                     Area3D a3d = new Area3D(area);
-
-                    if (isOwner) {
-                        a3d.setColor(s.ownedAreaBorderColor);
-                        a3d.setFrameColor(s.ownedAreaFrameColor);
-                    } else {
-                        // TODO if for sale ...
-                        String defaultAreaPermission = area.getDefaultPermission();
-                        AreaColors colors = AREA_COLORS.getOrDefault(
-                                defaultAreaPermission,
-                                new AreaColors(s.otherAreaBorderColor, s.otherAreaFrameColor));
-
-                        a3d.setColor(colors.border());
-                        a3d.setFrameColor(colors.frame());
-                    }
+                    a3d.setColor(colors.border());
+                    a3d.setFrameColor(colors.frame());
                     a3d.setFrameVisible(true);
 
                     frames.put(areaId, a3d);
                     player.addGameObject(a3d);
+                } else {
+                    existing.setArea(area);
+                    existing.setColor(colors.border());
+                    existing.setFrameColor(colors.frame());
+                    existing.setFrameVisible(true);
                 }
             } else {
                 // if it should not be visible but exists → remove
@@ -115,6 +109,16 @@ public class Area3DUtils {
                 }
             }
         }
+    }
+
+    private static AreaColors colorsFor(Area area, boolean isOwner) {
+        if (isOwner) {
+            return new AreaColors(s.ownedAreaBorderColor, s.ownedAreaFrameColor);
+        }
+        String defaultAreaPermission = area.getDefaultPermission();
+        return AREA_COLORS.getOrDefault(
+                defaultAreaPermission,
+                new AreaColors(s.otherAreaBorderColor, s.otherAreaFrameColor));
     }
 
     public static void updateCurrentChunkFrameForPlayer(Player player, Area area) {

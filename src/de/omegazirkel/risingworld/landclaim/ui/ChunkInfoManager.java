@@ -10,6 +10,7 @@ import net.risingworld.api.events.EventMethod;
 import net.risingworld.api.events.Listener;
 import net.risingworld.api.events.player.PlayerConnectEvent;
 import net.risingworld.api.events.player.PlayerDisconnectEvent;
+import net.risingworld.api.events.player.ui.PlayerToggleInventoryEvent;
 import net.risingworld.api.objects.Player;
 
 public class ChunkInfoManager implements Listener {
@@ -37,6 +38,17 @@ public class ChunkInfoManager implements Listener {
         if (controller != null) {
             controller.update(); // sorgt für overlay.remove(), falls nötig
         }
+    }
+
+    @EventMethod
+    public void onPlayerToggleInventoryEvent(PlayerToggleInventoryEvent event) {
+        Player p = event.getPlayer();
+        ChunkInfoController controller = controllers.get(p);
+        if (controller == null) {
+            controller = new ChunkInfoController(p, chunkClaimUtil);
+            controllers.put(p, controller);
+        }
+        controller.setInventoryVisible(event.isVisible());
     }
 
     public void start() {

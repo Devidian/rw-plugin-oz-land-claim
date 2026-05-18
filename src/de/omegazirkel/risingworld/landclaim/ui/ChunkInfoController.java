@@ -12,6 +12,7 @@ import net.risingworld.api.objects.Player;
 import net.risingworld.api.utils.Vector3i;
 
 public class ChunkInfoController {
+    public static final String INVENTORY_VISIBLE_KEY = "oz.landclaim.inventoryVisible";
 
     private final Player player;
     private final ChunkInfoOverlay overlay;
@@ -34,15 +35,19 @@ public class ChunkInfoController {
 
     public boolean update() {
         // overlay is opt-out by default
-        Boolean enabled = player.hasAttribute("oz.landclaim.enableClaimInfoOverlay")
-                ? (Boolean) player.getAttribute("oz.landclaim.enableClaimInfoOverlay")
+        Boolean enabled = player.hasAttribute(LandClaimPlayerPluginSettings.ENABLE_CLAIM_INFO_OVERLAY_KEY)
+                ? (Boolean) player.getAttribute(LandClaimPlayerPluginSettings.ENABLE_CLAIM_INFO_OVERLAY_KEY)
                 : true;
         if (!enabled) {
             overlay.hide(player);
             return enabled;
-        } else {
-            overlay.refresh(player);
         }
+        if (isInventoryVisible()) {
+            overlay.hide(player);
+            return enabled;
+        }
+
+        overlay.refresh(player);
 
         String text = computeDisplay();
         overlay.updateText(text);
@@ -57,12 +62,14 @@ public class ChunkInfoController {
         }
         // check if owner
         if (isOwner()) {
-            return t().get("TC_CHUNKINFO_OWNED", player);
+            return t().get("TC_CHUNKINFO_OWNED", player)
+                    .replace("PH_AREA_NAME", getAreaName());
         }
         // check if someone else is owner
         if (isClaimed()) {
             return t().get("TC_CHUNKINFO_OWNED_BY", player)
-                    .replace("PH_PLAYER_NAME", getOwnerName());
+                    .replace("PH_PLAYER_NAME", getOwnerName())
+                    .replace("PH_AREA_NAME", getAreaName());
         }
         // check claim limit
         long maxClaims = ccu.getPlayerMaxClaims(player);
@@ -123,6 +130,14 @@ public class ChunkInfoController {
             return "No owner found";
     }
 
+    private String getAreaName() {
+        Area currentArea = player.getCurrentArea();
+        if (currentArea == null || currentArea.getName() == null || currentArea.getName().isBlank()) {
+            return "N/A";
+        }
+        return currentArea.getName();
+    }
+
     private boolean isClaimed() {
         Area currentArea = player.getCurrentArea();
         return currentArea != null;
@@ -165,6 +180,23 @@ public class ChunkInfoController {
                     .replace("PH_AREA_NAME", areaName);
         }
         return null;
+    }
+
+    public void setInventoryVisible(boolean visible) {
+        player.setAttribute(INVENTORY_VISIBLE_KEY, visible);
+        if (visible) {
+            overlay.hide(player);
+        } else {
+            update();
+        }
+    }
+
+    private boolean isInventoryVisible() {
+        if (!player.hasAttribute(INVENTORY_VISIBLE_KEY)) {
+            return false;
+        }
+        Object value = player.getAttribute(INVENTORY_VISIBLE_KEY);
+        return value instanceof Boolean && (Boolean) value;
     }
 
 }

@@ -30,13 +30,16 @@ public class PluginSettings {
         public double playTimeHoursExtraClaimFactor = 0.6;
         public Integer claimProtectionBaseTimeDays = 7;
         public double claimProtectionExtraTimeScale = 5;
-        public Boolean enableWelcomeMessage = true;
+        public Boolean enableWelcomeMessage = false;
         public Integer recentlyOnlinePermissionListHours = 24;
 
         public Integer claimBaseCost = 100;
         public double claimSaleFee = 0.01;
         public Boolean adminIgnoreLimit = true;
         public Boolean adminIgnoreTime = true;
+        public Boolean enableAutoClaimRemoval = false;
+        public Integer autoClaimRemovalInactiveDays = 90;
+        public Integer autoClaimRemovalDelaySeconds = 60;
         public Boolean allowClaimSale = false;
         public Boolean allowClaimBuyExceedLimit = false;
         // Discord announcements
@@ -153,6 +156,12 @@ public class PluginSettings {
                         // admin only settings
                         adminIgnoreLimit = settings.getProperty("adminIgnoreLimit", "false").contentEquals("true");
                         adminIgnoreTime = settings.getProperty("adminIgnoreTime", "false").contentEquals("true");
+                        enableAutoClaimRemoval = settings.getProperty("enableAutoClaimRemoval", "false")
+                                        .contentEquals("true");
+                        autoClaimRemovalInactiveDays = Integer
+                                        .parseInt(settings.getProperty("autoClaimRemovalInactiveDays", "90"));
+                        autoClaimRemovalDelaySeconds = Integer
+                                        .parseInt(settings.getProperty("autoClaimRemovalDelaySeconds", "60"));
                         // trade settings
                         allowClaimSale = settings.getProperty("allowClaimSale", "false").contentEquals("true");
                         allowClaimBuyExceedLimit = settings.getProperty("allowClaimBuyExceedLimit", "false")

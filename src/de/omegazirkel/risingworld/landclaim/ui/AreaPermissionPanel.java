@@ -22,10 +22,13 @@ import net.risingworld.api.ui.UILabel;
 import net.risingworld.api.ui.style.Font;
 import net.risingworld.api.ui.style.Pivot;
 import net.risingworld.api.ui.style.TextAnchor;
+import net.risingworld.api.ui.style.Unit;
 
 public class AreaPermissionPanel extends UIElement {
 
     private static final PluginSettings s = PluginSettings.getInstance();
+    private static final float BODY_HEIGHT = 369f;
+    private static final float TABLE_SCROLL_BODY_HEIGHT = 333f;
 
     private static I18n t() {
         return I18n.getInstance(LandClaim.name);
@@ -36,10 +39,11 @@ public class AreaPermissionPanel extends UIElement {
     public AreaPermissionPanel(Area area, Player player, Callback<Player> onClose, UIElement parentOverlay) {
         this.setPivot(Pivot.MiddleCenter);
         this.setPosition(50f, 50f, true);
-        this.setSize(50, 50, true);
-        this.setBackgroundColor(0, 0, 0, 0.85f);
-        this.setBorderColor(1, 1, 1, 0.4f);
-        this.setBorder(2);
+        this.style.width.set(78, Unit.Percent);
+        this.style.height.set(560, Unit.Pixel);
+        this.setBackgroundColor(0, 0, 0, 0.86f);
+        this.setBorderColor(0.95f, 0.75f, 0.25f, 0.6f);
+        this.setBorder(1);
 
         this.uiPlayer = player;
 
@@ -53,7 +57,7 @@ public class AreaPermissionPanel extends UIElement {
                 t().get("TC_UI_AREA_PERMISSIONS_TITLE", player)
                         .replace("PH_AREA_NAME", area.getName() != null ? area.getName() : "N/A"));
         title.setPivot(Pivot.UpperLeft);
-        title.setPosition(2f, 2f, true);
+        title.setPosition(24, 20, false);
         title.setFont(Font.DefaultBold);
         title.setFontSize(24);
         this.addChild(title);
@@ -72,7 +76,7 @@ public class AreaPermissionPanel extends UIElement {
 
         UILabel subtitle = new UILabel(t().get("TC_UI_AREA_PERMISSIONS_SUBTITLE", player));
         subtitle.setPivot(Pivot.UpperLeft);
-        subtitle.setPosition(2f, 10f, true);
+        subtitle.setPosition(24, 54, false);
         subtitle.setFont(Font.Default);
         subtitle.setFontSize(12);
         this.addChild(subtitle);
@@ -80,7 +84,7 @@ public class AreaPermissionPanel extends UIElement {
         UILabel info = new UILabel(t().get("TC_UI_AREA_PERMISSIONS_INFO", player)
                 .replace("PH_AREA_OWNER", ownerName));
         info.setPivot(Pivot.UpperRight);
-        info.setPosition(96f, 2f, true);
+        info.setPosition(96f, 4f, true);
         info.setTextAlign(TextAnchor.UpperRight);
         info.setFont(Font.Default);
         info.setFontSize(12);
@@ -105,6 +109,9 @@ public class AreaPermissionPanel extends UIElement {
                         t().get("TC_UI_TH_LABEL_STATUS", player),
                         t().get("TC_UI_TH_LABEL_PERMISSION", player)),
                 Arrays.asList(30f, 35f, 15f, 20f));
+        table.setPosition(0, 0, false);
+        table.style.width.set(100, Unit.Percent);
+        table.setScrollBodyHeight(TABLE_SCROLL_BODY_HEIGHT);
 
         LinkedHashMap<Integer, String> permissionCandidates = new LinkedHashMap<>();
         Map<Integer, String> allPlayerPermissions = area.getAllPlayerPermissions();
@@ -148,9 +155,12 @@ public class AreaPermissionPanel extends UIElement {
         }
         OZUIElement body = new OZUIElement();
         body.setPivot(Pivot.UpperLeft);
-        body.setPosition(2f, 20f, true);
-        body.setSize(96, 70, true);
-        body.setBackgroundColor(0, 0, 0, 0.85f);
+        body.setPosition(24, 120, false);
+        body.style.width.set(96, Unit.Percent);
+        body.style.height.set(BODY_HEIGHT, Unit.Pixel);
+        body.setBackgroundColor(0.08f, 0.08f, 0.08f, 0.55f);
+        body.setBorder(1);
+        body.setBorderColor(0.95f, 0.75f, 0.25f, 0.48f);
         body.addChild(table);
         this.addChild(body);
     }
@@ -189,7 +199,7 @@ public class AreaPermissionPanel extends UIElement {
             onClose.onCall(player);
         });
         cb.setPivot(Pivot.LowerCenter);
-        cb.setPosition(50f, 99f, true);
+        cb.setPosition(50f, 96f, true);
         this.addChild(cb);
     }
 

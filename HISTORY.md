@@ -2,6 +2,25 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.8.0] - 2026-05-18 | Player data tab and claim visibility refresh
+
+- feat: add a special properties tab to admin cleanup for non-claim server areas
+- fix: shorten admin cleanup owner rows without narrowing the table
+- fix: restore colored one-line plugin welcome message
+- feat: add admin claim cleanup overlay with owner and area cleanup tabs
+- fix: rename and tighten the admin property management UI, action colors, table labels, and teleport targets
+- feat: add optional delayed auto-removal for claims owned by inactive players
+- fix: show the selected player name in the fixed permission dropdown and increase its height so all options fit
+- fix: align the area permission overlay frame with wallet styling, reduce the permission table height, and keep permission dropdowns above table rows
+- fix: anchor permission dropdowns at a fixed scroll-independent Y position so they no longer drift down after scrolling
+- fix: align confirm and text-input dialogs with the LandClaim panel styling
+- feat: restyle the current-chunk overlay as a top-screen permission-style panel with area names and inventory-open hiding
+- fix: make the current-chunk overlay more compact and move it closer to the top edge
+- build: require OZTools `0.18.0`
+- feat: show persisted player visibility and overlay settings in the shared player plugin data tab
+- fix: persist shared player plugin settings changes through the same PlayerSettings table as the radial visibility menu
+- fix: refresh existing visible area frames when a claimed area is expanded
+
 ## [0.7.3] - 2026-05-10 | PluginAPI alignment and area workaround cleanup
 
 - build: align bundled PluginAPI jar and Maven dependency version

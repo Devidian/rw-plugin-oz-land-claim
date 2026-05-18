@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.omegazirkel.risingworld.LandClaim;
+import de.omegazirkel.risingworld.landclaim.ui.AdminCleanupOverlay;
 import de.omegazirkel.risingworld.landclaim.ChunkClaimUtil.Direction;
+import de.omegazirkel.risingworld.landclaim.ui.LandClaimPlayerPluginSettings;
 import de.omegazirkel.risingworld.landclaim.ui.PermissionOverlay;
 import de.omegazirkel.risingworld.landclaim.ui.UIDialogFactory;
 import de.omegazirkel.risingworld.tools.I18n;
@@ -74,11 +76,13 @@ import net.risingworld.api.utils.Vector3i;
 public class LandClaimGUI {
     private static LandClaimGUI instance = null;
     private static ChunkClaimUtil chunkClaimUtil;
+    private static ClaimCleanupService cleanupService;
     private static final I18n t = I18n.getInstance(LandClaim.name);
     private static final PluginSettings s = PluginSettings.getInstance();
 
-    public static LandClaimGUI getInstance(ChunkClaimUtil ccu, Plugin p) {
+    public static LandClaimGUI getInstance(ChunkClaimUtil ccu, ClaimCleanupService ccs, Plugin p) {
         chunkClaimUtil = ccu;
+        cleanupService = ccs;
 
         // Icons for radial menu
         AssetManager.loadIconFromPlugin(p, "oz-lc-logo", "/assets/icons/oz-lc-logo-alt.png");
@@ -96,6 +100,7 @@ public class LandClaimGUI {
         AssetManager.loadIconFromPlugin(p, "grid");
         AssetManager.loadIconFromPlugin(p, "square-minus");
         AssetManager.loadIconFromPlugin(p, "users-gear");
+        AssetManager.loadIconFromPlugin(p, "admin-cleanup", "/assets/icons/tools.png");
         // Area expansion menu
         AssetManager.loadIconFromPlugin(p, "compass-north");
         AssetManager.loadIconFromPlugin(p, "compass-east");
@@ -280,6 +285,24 @@ public class LandClaimGUI {
                 });
     }
 
+    private MenuItem menuItemAdminCleanup(Player uiPlayer, Callback<Player> onResponse) {
+        return new MenuItem(
+                AssetManager.getIcon("admin-cleanup"),
+                t.get("TC_MENU_ADMIN_CLEANUP", uiPlayer),
+                (p) -> {
+                    UIElement overlay = (UIElement) p.getAttribute("landclaim-admin-cleanup-overlay");
+                    if (overlay != null) {
+                        p.removeUIElement(overlay);
+                        CursorManager.hide(p);
+                    }
+                    AdminCleanupOverlay cleanupOverlay = new AdminCleanupOverlay(p, cleanupService, onResponse);
+                    p.addUIElement(cleanupOverlay, UITarget.HUD);
+                    CursorManager.show(p);
+                    p.setAttribute("landclaim-admin-cleanup-overlay", cleanupOverlay);
+                    p.hideRadialMenu(false);
+                });
+    }
+
     public void openSpecialAreaMenu(Player uiPlayer, Callback<Player> onBack) {
         List<MenuItem> menuItems = new ArrayList<>();
 
@@ -317,7 +340,7 @@ public class LandClaimGUI {
     }
 
     public void openAdminMenu(Player uiPlayer, Callback<Player> onBack) {
-        Boolean developerMode = (Boolean) uiPlayer.getAttribute("oz.landclaim.developerMode");
+        Boolean developerMode = (Boolean) uiPlayer.getAttribute(LandClaimPlayerPluginSettings.DEVELOPER_MODE_KEY);
         Area currentArea = uiPlayer.getCurrentArea();
         String defaultPermission = currentArea == null ? null : currentArea.getDefaultPermission();
         Boolean isDefaultArea = defaultPermission != null && defaultPermission.equals(s.defaultAreaPermission);
@@ -359,6 +382,7 @@ public class LandClaimGUI {
                         openAdminMenu(p, onBack);
                     }));
         }
+        menuItems.add(menuItemAdminCleanup(uiPlayer, onBackReopen));
         if (currentArea != null) {
             menuItems.add(menuItemRenameArea(uiPlayer, currentArea, onBackReopen));
             menuItems.add(menuItemPermissionManager(uiPlayer, currentArea, onBackReopen));
@@ -480,9 +504,12 @@ public class LandClaimGUI {
     }
 
     public void openVisibilitySettingsMenu(Player uiPlayer) {
-        Boolean showCurrentChunkFrame = (Boolean) uiPlayer.getAttribute("oz.landclaim.showCurrentChunkFrame");
-        Boolean showOwnedAreaFrames = (Boolean) uiPlayer.getAttribute("oz.landclaim.showOwnedAreaFrames");
-        Boolean showOtherAreaFrames = (Boolean) uiPlayer.getAttribute("oz.landclaim.showOtherAreaFrames");
+        Boolean showCurrentChunkFrame = (Boolean) uiPlayer
+                .getAttribute(LandClaimPlayerPluginSettings.SHOW_CURRENT_CHUNK_FRAME_KEY);
+        Boolean showOwnedAreaFrames = (Boolean) uiPlayer
+                .getAttribute(LandClaimPlayerPluginSettings.SHOW_OWNED_AREA_FRAMES_KEY);
+        Boolean showOtherAreaFrames = (Boolean) uiPlayer
+                .getAttribute(LandClaimPlayerPluginSettings.SHOW_OTHER_AREA_FRAMES_KEY);
 
         List<MenuItem> menuItems = new ArrayList<>();
 
@@ -493,8 +520,8 @@ public class LandClaimGUI {
                 (p) -> {
                     Vector3i chunkPos = p.getChunkPosition();
                     Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPos);
-                    p.setAttribute("oz.landclaim.showCurrentChunkFrame", !showCurrentChunkFrame);
-                    LandClaim.ps.setBoolean(p.getDbID(), "oz.landclaim.showCurrentChunkFrame", !showCurrentChunkFrame);
+                    LandClaimPlayerPluginSettings.setBooleanValue(p,
+                            LandClaimPlayerPluginSettings.SHOW_CURRENT_CHUNK_FRAME_KEY, !showCurrentChunkFrame);
                     Area3DUtils.updateCurrentChunkFrameForPlayer(p, showCurrentChunkFrame ? (Area) null : area);
                     // if we do not reopen the menu it seems to be frozen and unclickable
                     openVisibilitySettingsMenu(p);
@@ -505,8 +532,8 @@ public class LandClaimGUI {
                 t.get(showOwnedAreaFrames ? "TC_MENU_VISIBILITY_OWNED_HIDE" : "TC_MENU_VISIBILITY_OWNED_SHOW",
                         uiPlayer),
                 (p) -> {
-                    p.setAttribute("oz.landclaim.showOwnedAreaFrames", !showOwnedAreaFrames);
-                    LandClaim.ps.setBoolean(p.getDbID(), "oz.landclaim.showOwnedAreaFrames", !showOwnedAreaFrames);
+                    LandClaimPlayerPluginSettings.setBooleanValue(p,
+                            LandClaimPlayerPluginSettings.SHOW_OWNED_AREA_FRAMES_KEY, !showOwnedAreaFrames);
                     // if we do not reopen the menu it seems to be frozen and unclickable
                     openVisibilitySettingsMenu(p);
                     Area3DUtils.updateAreaFramesForPlayer(p);
@@ -517,8 +544,8 @@ public class LandClaimGUI {
                 t.get(showOtherAreaFrames ? "TC_MENU_VISIBILITY_OTHER_HIDE" : "TC_MENU_VISIBILITY_OTHER_SHOW",
                         uiPlayer),
                 (p) -> {
-                    p.setAttribute("oz.landclaim.showOtherAreaFrames", !showOtherAreaFrames);
-                    LandClaim.ps.setBoolean(p.getDbID(), "oz.landclaim.showOtherAreaFrames", !showOtherAreaFrames);
+                    LandClaimPlayerPluginSettings.setBooleanValue(p,
+                            LandClaimPlayerPluginSettings.SHOW_OTHER_AREA_FRAMES_KEY, !showOtherAreaFrames);
                     // if we do not reopen the menu it seems to be frozen and unclickable
                     openVisibilitySettingsMenu(p);
                     Area3DUtils.updateAreaFramesForPlayer(p);

@@ -7,7 +7,7 @@ Server administrators can configure almost all aspects of the plugin to their li
 ## Prerequisites
 
 This plugin requires the **OmegaZirkel Tools** plugin to be installed.
-Use OZTools `0.17.0` or newer with this release.
+Use OZTools `0.18.0` or newer with this release.
 
 1. Download the latest `oz-tools-....zip` from the [OZ-Tools](https://github.com/Devidian/rw-plugin-oz-tools/releases) Releases Page.
 2. Place the downloaded `.zip` file into your server's `Plugins` folder and extract it.
@@ -27,10 +27,12 @@ Use OZTools `0.17.0` or newer with this release.
 - **Claim Limits:** Control how many chunks a player can claim based on playtime.
 - **Claim Protection:** Protect inactive players' areas from being claimed by others for a configurable amount of time.
 - **Admin Tools:** Includes commands for repairing and managing zones.
+- **Admin Cleanup:** Admins can review active claim owners and claimed areas, delete claim records, clean up abandoned chunks, or teleport to listed areas.
 - **Special Zones for Admins:** Admins can create special zones such as default special, PvP, rest, and trap zones directly from the UI.
 - **UI-based Permissions:** Manage who has access to your claimed areas directly in-game.
 - **Recently Online Players:** The permission UI can also list players who were online recently, even if they are offline now.
 - **Permission Status Column:** The permission UI shows whether listed players are currently online or offline.
+- **Current Chunk Overlay:** A compact top-screen overlay shows whether the current chunk is claimable, part of one of your areas, owned by another player, or a special area. The overlay hides while the inventory is open; the current PluginAPI exposes a reliable inventory toggle event but no equivalent crafting/map visibility hook.
 
 ## Commands
 
@@ -55,8 +57,11 @@ All settings can be adjusted in the `settings.properties` file located in the pl
 | `claimProtectionBaseTimeDays`   | `7`     | The minimum number of offline days before another player can claim a chunk.                                    |
 | `claimProtectionExtraTimeScale` | `5`     | A multiplier for playtime to extend claim protection. `DaysOffline > BaseTime + (PlayTimeDays * Scale)`.       |
 | `enableClaimAnnouncement`       | `true`  | If `true`, a message is broadcast to all players when a chunk is claimed.                                      |
-| `enableWelcomeMessage`          | `true`  | If `true`, players receive a welcome message from the plugin upon login.                                       |
+| `enableWelcomeMessage`          | `false` | If `true`, players receive a welcome message from the plugin upon login.                                       |
 | `recentlyOnlinePermissionListHours` | `24` | Lists players in the area permission UI if they were online within the last configured number of hours. `0` disables this. |
+| `enableAutoClaimRemoval`            | `false` | Runs one delayed server-start cleanup for owners inactive longer than the configured threshold. This removes claims and areas but does not reset chunks. |
+| `autoClaimRemovalInactiveDays`      | `90` | Inactivity threshold in days for automatic claim removal. |
+| `autoClaimRemovalDelaySeconds`      | `60` | Delay after server start before automatic claim removal runs. |
 
 ### Color Configuration
 
