@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-// import de.omegazirkel.risingworld.LandClaim;
+import de.omegazirkel.risingworld.LandClaim;
 // import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.landclaim.ui.LandClaimPlayerPluginSettings;
 import net.risingworld.api.Server;
@@ -112,6 +112,9 @@ public class Area3DUtils {
     }
 
     private static AreaColors colorsFor(Area area, boolean isOwner) {
+        if (isListedForSale(area)) {
+            return new AreaColors(s.forSaleAreaBorderColor, s.forSaleAreaFrameColor);
+        }
         if (isOwner) {
             return new AreaColors(s.ownedAreaBorderColor, s.ownedAreaFrameColor);
         }
@@ -119,6 +122,13 @@ public class Area3DUtils {
         return AREA_COLORS.getOrDefault(
                 defaultAreaPermission,
                 new AreaColors(s.otherAreaBorderColor, s.otherAreaFrameColor));
+    }
+
+    private static boolean isListedForSale(Area area) {
+        return s.allowClaimSale
+                && area != null
+                && LandClaim.claimSaleListingService() != null
+                && LandClaim.claimSaleListingService().activeListing(area.getID()).isPresent();
     }
 
     public static void updateCurrentChunkFrameForPlayer(Player player, Area area) {

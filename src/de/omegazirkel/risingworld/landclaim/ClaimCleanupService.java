@@ -240,7 +240,7 @@ public class ClaimCleanupService {
         PlayerRecord record = playerRecords.get(first.playerDBID);
         String ownerName = onlinePlayer != null ? onlinePlayer.getName() : lastKnownName(first, record);
         long lastSeen = onlinePlayer != null ? nowEpochSeconds() : bestLastSeenEpochSeconds(infos, record);
-        long maxClaims = onlinePlayer != null ? exactMaxClaims(onlinePlayer) : bestEffortMaxClaims(record);
+        long maxClaims = onlinePlayer != null ? exactMaxClaims(onlinePlayer) : bestEffortMaxClaims(record, ownerUid);
         return new OwnerSummary(ownerUid, first.playerDBID == null ? 0 : first.playerDBID, ownerName, infos.size(), maxClaims, lastSeen,
                 inactiveDays(lastSeen));
     }
@@ -288,15 +288,22 @@ public class ClaimCleanupService {
 
     private long exactMaxClaims(Player player) {
         long hours = player.getTotalPlayTime() / 3600L;
-        return settings.basicClaimLimit + (long) (hours * settings.playTimeHoursExtraClaimFactor);
+        return settings.basicClaimLimit + (long) (hours * settings.playTimeHoursExtraClaimFactor)
+                + purchasedCapacity(player.getUID());
     }
 
-    private long bestEffortMaxClaims(PlayerRecord record) {
+    private long bestEffortMaxClaims(PlayerRecord record, String ownerUid) {
         if (record == null || record.totalPlayTimeSeconds <= 0) {
-            return settings.basicClaimLimit;
+            return settings.basicClaimLimit + purchasedCapacity(ownerUid);
         }
         long hours = record.totalPlayTimeSeconds / 3600L;
-        return settings.basicClaimLimit + (long) (hours * settings.playTimeHoursExtraClaimFactor);
+        return settings.basicClaimLimit + (long) (hours * settings.playTimeHoursExtraClaimFactor)
+                + purchasedCapacity(ownerUid);
+    }
+
+    private int purchasedCapacity(String ownerUid) {
+        return LandClaim.extraClaimCapacityService() == null ? 0
+                : LandClaim.extraClaimCapacityService().getPurchasedCapacity(ownerUid);
     }
 
     private long inactiveDays(long lastSeenEpochSeconds) {

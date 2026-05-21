@@ -1,9 +1,13 @@
 package de.omegazirkel.risingworld.landclaim;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import de.omegazirkel.risingworld.LandClaim;
+import de.omegazirkel.risingworld.landclaim.EconomyIntegration.WalletOperationResult;
+import de.omegazirkel.risingworld.landclaim.db.ClaimSaleListing;
 import de.omegazirkel.risingworld.landclaim.ui.AdminCleanupOverlay;
 import de.omegazirkel.risingworld.landclaim.ChunkClaimUtil.Direction;
 import de.omegazirkel.risingworld.landclaim.ui.LandClaimPlayerPluginSettings;
@@ -101,6 +105,7 @@ public class LandClaimGUI {
         AssetManager.loadIconFromPlugin(p, "square-minus");
         AssetManager.loadIconFromPlugin(p, "users-gear");
         AssetManager.loadIconFromPlugin(p, "admin-cleanup", "/assets/icons/tools.png");
+        AssetManager.loadIconFromPlugin(p, "selling");
         // Area expansion menu
         AssetManager.loadIconFromPlugin(p, "compass-north");
         AssetManager.loadIconFromPlugin(p, "compass-east");
@@ -209,6 +214,254 @@ public class LandClaimGUI {
                     p.hideRadialMenu(false);
 
                 });
+    }
+
+    private MenuItem menuItemListAreaForSale(Player player, Area area, Callback<Player> onCancel) {
+        return new MenuItem(
+                AssetManager.getIcon("selling"),
+                t.get("TC_MENU_AREA_SALE_LIST", player),
+                (p) -> {
+                    UIElement priceWindow = UIDialogFactory.getTextInput(p,
+                            t.get("TC_DIALOG_AREA_SALE_LIST_TITLE", p),
+                            "",
+                            (String value) -> {
+                                if (value.isBlank()) {
+                                    onCancel.onCall(p);
+                                    return;
+                                }
+                                long price = parsePositiveLong(value);
+                                if (price <= 0 || LandClaim.claimSaleListingService() == null) {
+                                    p.sendTextMessage(t.get("TC_AREA_SALE_INVALID_PRICE", p));
+                                    onCancel.onCall(p);
+                                    return;
+                                }
+                                ClaimSaleListing listing = LandClaim.claimSaleListingService()
+                                        .listForSale(p, area.getID(), price);
+                                if (listing == null) {
+                                    p.sendTextMessage(t.get("TC_AREA_SALE_LIST_FAILED", p));
+                                } else {
+                                    p.sendTextMessage(t.get("TC_AREA_SALE_LISTED", p)
+                                            .replace("PH_AREA_NAME", areaName(area))
+                                            .replace("PH_PRICE", String.valueOf(listing.price())));
+                                    Area3DUtils.updateAreaFramesForAllPlayers();
+                                }
+                                onCancel.onCall(p);
+                            },
+                            onCancel);
+
+                    p.addUIElement(priceWindow, UITarget.HUD);
+                    CursorManager.show(p);
+                    p.hideRadialMenu(false);
+                });
+    }
+
+    private MenuItem menuItemWithdrawAreaSale(Player player, Area area, ClaimSaleListing listing,
+            Callback<Player> onCancel) {
+        return new MenuItem(
+                AssetManager.getIcon("undo"),
+                t.get("TC_MENU_AREA_SALE_WITHDRAW", player),
+                (p) -> {
+                    UIElement confirmDialog = UIDialogFactory.getConfirmDialog(p,
+                            t.get("TC_DIALOG_AREA_SALE_WITHDRAW_TITLE", p),
+                            t.get("TC_DIALOG_AREA_SALE_WITHDRAW_CONFIRM", p)
+                                    .replace("PH_AREA_NAME", areaName(area))
+                                    .replace("PH_PRICE", String.valueOf(listing.price())),
+                            (Boolean v) -> {
+                                if (v && LandClaim.claimSaleListingService() != null
+                                        && LandClaim.claimSaleListingService().withdrawActiveListing(area.getID())) {
+                                    p.sendTextMessage(t.get("TC_AREA_SALE_WITHDRAWN", p)
+                                            .replace("PH_AREA_NAME", areaName(area)));
+                                    Area3DUtils.updateAreaFramesForAllPlayers();
+                                }
+                                onCancel.onCall(p);
+                            },
+                            onCancel);
+
+                    p.addUIElement(confirmDialog, UITarget.HUD);
+                    CursorManager.show(p);
+                    p.hideRadialMenu(false);
+                });
+    }
+
+    private MenuItem menuItemBuyArea(Player player, Area area, ClaimSaleListing listing, Callback<Player> onCancel) {
+        return new MenuItem(
+                AssetManager.getIcon("selling"),
+                t.get("TC_MENU_AREA_SALE_BUY", player),
+                (p) -> {
+                    UIElement confirmDialog = UIDialogFactory.getConfirmDialog(p,
+                            t.get("TC_DIALOG_AREA_SALE_BUY_TITLE", p),
+                            t.get("TC_DIALOG_AREA_SALE_BUY_CONFIRM", p)
+                                    .replace("PH_AREA_NAME", areaName(area))
+                                    .replace("PH_PRICE", String.valueOf(listing.price())),
+                            (Boolean v) -> {
+                                if (v) {
+                                    purchaseArea(p, area, listing);
+                                }
+                                onCancel.onCall(p);
+                            },
+                            onCancel);
+
+                    p.addUIElement(confirmDialog, UITarget.HUD);
+                    CursorManager.show(p);
+                    p.hideRadialMenu(false);
+                });
+    }
+
+    private void purchaseArea(Player buyer, Area area, ClaimSaleListing listing) {
+        if (LandClaim.claimSaleListingService() == null || LandClaim.economyIntegration() == null
+                || !LandClaim.economyIntegration().isWalletAvailable()) {
+            buyer.sendTextMessage(t.get("TC_AREA_SALE_PURCHASE_WALLET_MISSING", buyer));
+            return;
+        }
+        ClaimSaleListing currentListing = activeSaleListing(area);
+        if (currentListing == null || currentListing.id() != listing.id()) {
+            buyer.sendTextMessage(t.get("TC_AREA_SALE_PURCHASE_STALE", buyer));
+            return;
+        }
+        if (currentListing.ownerDbId() == buyer.getDbID()) {
+            buyer.sendTextMessage(t.get("TC_AREA_SALE_PURCHASE_SELF", buyer));
+            return;
+        }
+        if (!canBuyAreaWithinLimit(buyer, area)) {
+            buyer.sendTextMessage(t.get("TC_AREA_SALE_PURCHASE_LIMIT", buyer)
+                    .replace("PH_MAX_CLAIMS", String.valueOf(chunkClaimUtil.getPlayerMaxClaims(buyer))));
+            return;
+        }
+
+        String displayAreaName = areaName(area);
+        Map<Integer, String> originalPermissions = capturePermissions(area);
+        String reason = "LandClaim area purchase: " + displayAreaName + " (#" + area.getID() + ")";
+        WalletOperationResult withdrawal = LandClaim.economyIntegration().withdrawDefault(
+                buyer.getDbID(), currentListing.price(), reason);
+        if (!withdrawal.success()) {
+            buyer.sendTextMessage(t.get("TC_AREA_SALE_PURCHASE_WITHDRAW_FAILED", buyer)
+                    .replace("PH_REASON", walletMessage(withdrawal)));
+            return;
+        }
+
+        if (!chunkClaimUtil.transferAreaOwnership(area, buyer)) {
+            refundBuyer(buyer, currentListing.price(), reason);
+            buyer.sendTextMessage(t.get("TC_AREA_SALE_PURCHASE_TRANSFER_FAILED", buyer));
+            return;
+        }
+
+        WalletOperationResult sellerCredit = LandClaim.economyIntegration().depositDefault(
+                currentListing.ownerDbId(), currentListing.price(), reason);
+        if (!sellerCredit.success()) {
+            rollbackAreaTransfer(area, currentListing, originalPermissions);
+            refundBuyer(buyer, currentListing.price(), reason);
+            buyer.sendTextMessage(t.get("TC_AREA_SALE_PURCHASE_SELLER_CREDIT_FAILED", buyer)
+                    .replace("PH_REASON", walletMessage(sellerCredit)));
+            Area3DUtils.updateAreaFramesForAllPlayers();
+            return;
+        }
+
+        if (!LandClaim.claimSaleListingService().markPurchased(area.getID(), buyer)) {
+            rollbackAreaTransfer(area, currentListing, originalPermissions);
+            refundBuyer(buyer, currentListing.price(), reason);
+            WalletOperationResult sellerDebit = LandClaim.economyIntegration().withdrawDefault(
+                    currentListing.ownerDbId(), currentListing.price(),
+                    "Rollback failed LandClaim area purchase: " + displayAreaName + " (#" + area.getID() + ")");
+            if (!sellerDebit.success()) {
+                LandClaim.logger().error("Could not reverse seller credit for failed claim purchase on area "
+                        + area.getID() + ": " + walletMessage(sellerDebit));
+            }
+            buyer.sendTextMessage(t.get("TC_AREA_SALE_PURCHASE_LISTING_UPDATE_FAILED", buyer));
+            Area3DUtils.updateAreaFramesForAllPlayers();
+            return;
+        }
+
+        buyer.sendTextMessage(t.get("TC_AREA_SALE_PURCHASED", buyer)
+                .replace("PH_AREA_NAME", displayAreaName)
+                .replace("PH_PRICE", String.valueOf(currentListing.price())));
+        Player seller = Server.getPlayerByDbID(currentListing.ownerDbId());
+        if (seller != null) {
+            seller.sendTextMessage(t.get("TC_AREA_SALE_SOLD", seller)
+                    .replace("PH_AREA_NAME", displayAreaName)
+                    .replace("PH_PRICE", String.valueOf(currentListing.price()))
+                    .replace("PH_PLAYER_NAME", buyer.getName()));
+        }
+        announceAreaPurchase(area, buyer, currentListing);
+        Area3DUtils.updateAreaFramesForAllPlayers();
+    }
+
+    private boolean canBuyAreaWithinLimit(Player buyer, Area area) {
+        if (s.allowClaimBuyExceedLimit) {
+            return true;
+        }
+        int areaClaimWeight = LandClaim.llcs.getChunkInfoListByArea(area.getID()).size();
+        return chunkClaimUtil.getPlayerClaimCount(buyer) + areaClaimWeight <= chunkClaimUtil.getPlayerMaxClaims(buyer);
+    }
+
+    private Map<Integer, String> capturePermissions(Area area) {
+        Map<Integer, String> permissions = area.getAllPlayerPermissions();
+        return permissions == null ? Map.of() : new HashMap<>(permissions);
+    }
+
+    private void rollbackAreaTransfer(Area area, ClaimSaleListing listing, Map<Integer, String> originalPermissions) {
+        if (!chunkClaimUtil.transferAreaOwnership(area, listing.ownerUuid(), listing.ownerDbId())) {
+            LandClaim.logger().error("Could not roll back claim ownership transfer for area " + area.getID());
+            return;
+        }
+        Map<Integer, String> currentPermissions = area.getAllPlayerPermissions();
+        if (currentPermissions != null) {
+            for (Map.Entry<Integer, String> entry : List.copyOf(currentPermissions.entrySet())) {
+                area.removePlayerPermission(entry.getKey());
+            }
+        }
+        for (Map.Entry<Integer, String> entry : originalPermissions.entrySet()) {
+            area.setPlayerPermission(entry.getKey(), entry.getValue());
+        }
+    }
+
+    private void refundBuyer(Player buyer, long price, String reason) {
+        WalletOperationResult refund = LandClaim.economyIntegration().depositDefault(
+                buyer.getDbID(), price, "Rollback " + reason);
+        if (!refund.success()) {
+            LandClaim.logger().error("Could not refund failed claim purchase for player " + buyer.getDbID()
+                    + ": " + walletMessage(refund));
+        }
+    }
+
+    private String walletMessage(WalletOperationResult result) {
+        return result == null || result.message() == null || result.message().isBlank()
+                ? "Wallet transaction failed."
+                : result.message();
+    }
+
+    private void announceAreaPurchase(Area area, Player buyer, ClaimSaleListing listing) {
+        String sellerName = Server.getLastKnownPlayerName(listing.ownerDbId());
+        String resolvedSellerName = sellerName == null || sellerName.isBlank() ? "Unknown" : sellerName;
+        String message = t.get("TC_DISCORD_AREA_SOLD", DiscordConnect.botLang())
+                .replace("PH_AREA_NAME", areaName(area))
+                .replace("PH_PRICE", String.valueOf(listing.price()))
+                .replace("PH_BUYER_NAME", buyer.getName())
+                .replace("PH_SELLER_NAME", resolvedSellerName);
+        DiscordConnect.sendDiscordBuyAccouncement(message);
+        if (!s.enableIngameBuyAccouncement) {
+            return;
+        }
+        for (Player onlinePlayer : Server.getAllPlayers()) {
+            if (!onlinePlayer.equals(buyer)) {
+                onlinePlayer.sendTextMessage(t.get("TC_ANNOUNCEMENT_AREA_SOLD", onlinePlayer)
+                        .replace("PH_AREA_NAME", areaName(area))
+                        .replace("PH_PRICE", String.valueOf(listing.price()))
+                        .replace("PH_BUYER_NAME", buyer.getName())
+                        .replace("PH_SELLER_NAME", resolvedSellerName));
+            }
+        }
+    }
+
+    private long parsePositiveLong(String value) {
+        try {
+            return Long.parseLong(value.trim());
+        } catch (NumberFormatException ex) {
+            return 0L;
+        }
+    }
+
+    private String areaName(Area area) {
+        return area == null || area.getName() == null || area.getName().isBlank() ? "Unnamed Area" : area.getName();
     }
 
     private MenuItem menuItemCreateSpecialArea(
@@ -424,6 +677,13 @@ public class LandClaimGUI {
 
             menuItems.add(menuItemPermissionManager(uiPlayer, currentArea, onBackReopen));
             menuItems.add(menuItemRenameArea(uiPlayer, currentArea, onBackReopen));
+            if (s.allowClaimSale && LandClaim.claimSaleListingService() != null) {
+                ClaimSaleListing listing = LandClaim.claimSaleListingService().activeListing(currentArea.getID())
+                        .orElse(null);
+                menuItems.add(listing == null
+                        ? menuItemListAreaForSale(uiPlayer, currentArea, onBackReopen)
+                        : menuItemWithdrawAreaSale(uiPlayer, currentArea, listing, onBackReopen));
+            }
             menuItems.add(menuItemRemoveArea(uiPlayer, currentArea, onBackReopen));
         }
 
@@ -560,6 +820,8 @@ public class LandClaimGUI {
     public void openMainMenu(Player uiPlayer) {
         Area currentArea = uiPlayer.getCurrentArea();
         Boolean canClaimArea = chunkClaimUtil.canPlayerClaimArea(uiPlayer, currentArea, null);
+        ClaimSaleListing activeSaleListing = activeSaleListing(currentArea);
+        boolean currentAreaOwner = isOwner(uiPlayer, currentArea);
 
         List<MenuItem> menuItems = new ArrayList<>();
 
@@ -608,6 +870,10 @@ public class LandClaimGUI {
                         }
                         openMainMenu(p);
                     }));
+        if (activeSaleListing != null && !currentAreaOwner) {
+            menuItems.add(menuItemBuyArea(uiPlayer, currentArea, activeSaleListing,
+                    (Player player) -> openMainMenu(player)));
+        }
         if (currentArea != null) {
             menuItems.add(new MenuItem(
                     AssetManager.getIcon("claim-chunk"),
@@ -620,6 +886,18 @@ public class LandClaimGUI {
         menuItems.add(MenuItem.closeMenu(uiPlayer));
 
         PluginMenuManager.showMenu(uiPlayer, menuItems);
+    }
+
+    private ClaimSaleListing activeSaleListing(Area area) {
+        if (!s.allowClaimSale || area == null || LandClaim.claimSaleListingService() == null) {
+            return null;
+        }
+        return LandClaim.claimSaleListingService().activeListing(area.getID()).orElse(null);
+    }
+
+    private boolean isOwner(Player player, Area area) {
+        String areaPermission = area == null ? null : area.getPlayerPermission(player);
+        return areaPermission != null && areaPermission.equals(s.ownerAreaPermission);
     }
 
 }

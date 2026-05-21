@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import de.omegazirkel.risingworld.LandClaim;
+import de.omegazirkel.risingworld.landclaim.db.ExtraClaimCapacityService;
 import de.omegazirkel.risingworld.landclaim.db.LandClaimChunkService;
 import de.omegazirkel.risingworld.landclaim.db.entities.LandClaimChunkInfo;
 import de.omegazirkel.risingworld.tools.AreaUtils;
@@ -112,8 +113,10 @@ public class ChunkClaimUtil {
     public long getPlayerMaxClaims(Player p) {
         long playtimeSeconds = p.getTotalPlayTime(); // Rising World: in seconds
         long hours = playtimeSeconds / 3_600;
+        ExtraClaimCapacityService extraCapacity = LandClaim.extraClaimCapacityService();
+        int purchasedCapacity = extraCapacity == null ? 0 : extraCapacity.getPurchasedCapacity(p);
 
-        return s.basicClaimLimit + (long) (hours * s.playTimeHoursExtraClaimFactor);
+        return s.basicClaimLimit + (long) (hours * s.playTimeHoursExtraClaimFactor) + purchasedCapacity;
     }
 
     public long getPlayerNextClaimTime(Player p) {
@@ -424,6 +427,32 @@ public class ChunkClaimUtil {
             area.setPlayerPermission(ownerDBId, s.ownerAreaPermission);
         }
         return area;
+    }
+
+    public boolean transferAreaOwnership(Area area, Player newOwner) {
+        if (newOwner == null) {
+            return false;
+        }
+        return transferAreaOwnership(area, newOwner.getUID(), newOwner.getDbID());
+    }
+
+    public boolean transferAreaOwnership(Area area, String newOwnerUid, int newOwnerDbId) {
+        if (area == null || newOwnerUid == null || newOwnerUid.isBlank() || newOwnerDbId <= 0) {
+            return false;
+        }
+        if (!service.transferAreaClaims(area.getID(), newOwnerUid, newOwnerDbId)) {
+            return false;
+        }
+        Map<Integer, String> permissionSet = area.getAllPlayerPermissions();
+        if (permissionSet != null) {
+            for (Map.Entry<Integer, String> entry : List.copyOf(permissionSet.entrySet())) {
+                area.removePlayerPermission(entry.getKey());
+            }
+        }
+        area.setAttribute("ownerUID", newOwnerUid);
+        area.setAttribute("ownerDBID", newOwnerDbId);
+        area.setPlayerPermission(newOwnerDbId, s.ownerAreaPermission);
+        return true;
     }
 
     // ---------------------------------------------------------

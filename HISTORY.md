@@ -2,6 +2,18 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [unreleased]
+
+- feat: add optional Wallet/Shop economy integration detection for claim economy work
+- feat: persist purchased extra-claim capacity and include it in player claim limits
+- feat: register an extra-claim capacity Shop offer with per-player linear pricing
+- feat: add additive claim-sale listing persistence with active, withdrawn, and sold status tracking
+- feat: add owner radial actions to list an owned area for sale or withdraw its active sale listing
+- feat: show listed-for-sale areas to buyers and add a buyer radial entry for the upcoming purchase flow
+- feat: implement Wallet-backed claim purchases with ownership transfer, permission reset, seller credit, and rollback handling
+- feat: show listed-for-sale areas with configurable sale frame colors
+- docs: document claim economy settings, install scope, and automatic migration behavior
+
 ## [0.8.0] - 2026-05-18 | Player data tab and claim visibility refresh
 
 - feat: add a special properties tab to admin cleanup for non-claim server areas

@@ -10,6 +10,7 @@ This release updates Land Claim for OZTools 0.18.0 and improves claim administra
 - Player visibility and overlay settings are now visible in the shared plugin data tab.
 - Shared player plugin settings now persist through the same player settings database used by the radial visibility menu.
 - Visible area frames now refresh immediately after a claimed area is expanded.
+- LandClaim now has optional economy support: extra-claim capacity can be registered as a Shop offer, claim owners can list claims for sale, buyers can purchase listed claims through Wallet, and sale areas use a configurable frame color.
 - Dialogs, permission tables, dropdowns, and cleanup table rows received layout fixes.
 
 ## Installation
@@ -19,8 +20,13 @@ Update both plugins:
 - `OZTools` `0.18.0`
 - `OZLandClaim` `0.8.0`
 
-No manual database migration is required. Existing persisted player settings remain in the OZTools player settings tables.
+Optional economy features also use:
+
+- `OZWallet` for claim sale purchases
+- `OZShop` plus `OZWallet` for extra-claim capacity purchases
+
+No manual database migration is required. New extra-claim capacity and claim sale listing tables are created automatically. Existing persisted player settings remain in the OZTools player settings tables. Claim sales stay disabled until `allowClaimSale=true` is set.
 
 ## Roadmap
 
-Claim buying/selling, purchasable extra claim capacity, and a possible shared shop plugin/interface are documented as future work in `docs/roadmaps/claim-economy-and-shop.md`.
+The claim economy roadmap is complete through the first claim-sale and extra-claim purchase implementation. Remaining future work is tracked separately.

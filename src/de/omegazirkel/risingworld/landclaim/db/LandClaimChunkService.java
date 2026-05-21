@@ -122,6 +122,45 @@ public class LandClaimChunkService {
         return set == null ? List.of() : new ArrayList<>(set);
     }
 
+    public synchronized boolean transferAreaClaims(long areaId, String newPlayerUuid, int newPlayerDbId) {
+        if (areaId <= 0 || newPlayerUuid == null || newPlayerUuid.isBlank() || newPlayerDbId <= 0) {
+            return false;
+        }
+        List<LandClaimChunkInfo> claims = getChunkInfoListByArea(areaId);
+        if (claims.isEmpty()) {
+            return false;
+        }
+
+        for (LandClaimChunkInfo oldInfo : claims) {
+            LandClaimChunkKey oldKey = new LandClaimChunkKey(oldInfo.playerUID, world, oldInfo.chunkPos);
+            LandClaimChunkKey newKey = new LandClaimChunkKey(newPlayerUuid, world, oldInfo.chunkPos);
+            LandClaimChunkInfo existingNewInfo = store.get(newKey);
+            long totalTime = oldInfo.totalTimeMs + (existingNewInfo == null ? 0 : existingNewInfo.totalTimeMs);
+            long lastSeen = Math.max(oldInfo.lastSeenMs, existingNewInfo == null ? 0 : existingNewInfo.lastSeenMs);
+
+            unindex(oldInfo);
+            store.remove(oldKey);
+            if (existingNewInfo != null) {
+                unindex(existingNewInfo);
+                store.remove(newKey);
+            }
+
+            LandClaimChunkInfo newInfo = new LandClaimChunkInfo(
+                    oldInfo.chunkPos,
+                    totalTime,
+                    lastSeen,
+                    oldInfo.claimedAtMs,
+                    newPlayerUuid,
+                    world,
+                    oldInfo.price,
+                    oldInfo.areaID,
+                    newPlayerDbId);
+            store.put(newKey, newInfo);
+            index(newInfo);
+        }
+        return true;
+    }
+
     public void saveChunkTime(Player player, Vector3i chunk, long milliseconds) {
         LandClaimChunkKey key = new LandClaimChunkKey(player.getUID(), world, chunk);
         LandClaimChunkInfo info = store.get(key);
@@ -278,6 +317,26 @@ public class LandClaimChunkService {
         }
         if (info.areaID > 0) {
             byArea.computeIfAbsent(info.areaID, k -> ConcurrentHashMap.newKeySet()).add(info);
+        }
+    }
+
+    private void unindex(LandClaimChunkInfo info) {
+        Set<LandClaimChunkInfo> playerSet = byPlayer.get(info.playerUID);
+        if (playerSet != null) {
+            playerSet.remove(info);
+        }
+        Set<LandClaimChunkInfo> chunkSet = byChunk.get(info.chunkPos);
+        if (chunkSet != null) {
+            chunkSet.remove(info);
+        }
+        if (info.areaID > 0) {
+            Set<LandClaimChunkInfo> areaSet = byArea.get(info.areaID);
+            if (areaSet != null) {
+                areaSet.remove(info);
+            }
+        }
+        if (info.claimedAtMs > 0 && claimedChunks.remove(info)) {
+            adjustClaimCount(info.playerUID, false);
         }
     }
 

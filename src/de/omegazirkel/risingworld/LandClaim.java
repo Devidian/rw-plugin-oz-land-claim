@@ -9,9 +9,12 @@ import de.omegazirkel.risingworld.landclaim.Area3DUtils;
 import de.omegazirkel.risingworld.landclaim.ClaimCleanupService;
 import de.omegazirkel.risingworld.landclaim.ChunkClaimUtil;
 import de.omegazirkel.risingworld.landclaim.DiscordConnect;
+import de.omegazirkel.risingworld.landclaim.EconomyIntegration;
 import de.omegazirkel.risingworld.landclaim.LandClaimGUI;
 import de.omegazirkel.risingworld.landclaim.PermissionFileUtil;
 import de.omegazirkel.risingworld.landclaim.PluginSettings;
+import de.omegazirkel.risingworld.landclaim.db.ClaimSaleListingService;
+import de.omegazirkel.risingworld.landclaim.db.ExtraClaimCapacityService;
 import de.omegazirkel.risingworld.landclaim.db.LandClaimChunkService;
 import de.omegazirkel.risingworld.landclaim.db.LandClaimChunkStore;
 import de.omegazirkel.risingworld.landclaim.ui.ChunkInfoManager;
@@ -23,6 +26,7 @@ import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.OZLogger;
 import de.omegazirkel.risingworld.tools.PlayerSettings;
 import de.omegazirkel.risingworld.tools.db.SQLiteConnectionFactory;
+import de.omegazirkel.risingworld.tools.settings.PlayerPluginAdminSettings;
 import de.omegazirkel.risingworld.tools.ui.AssetManager;
 import de.omegazirkel.risingworld.tools.ui.MenuItem;
 import de.omegazirkel.risingworld.tools.ui.PlayerPluginSettingsOverlay;
@@ -53,6 +57,9 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
     private static LandClaimGUI gui;
     private static ChunkClaimUtil chunkClaimUtil;
     private static ClaimCleanupService cleanupService;
+    private static EconomyIntegration economyIntegration;
+    private static ExtraClaimCapacityService extraClaimCapacityService;
+    private static ClaimSaleListingService claimSaleListingService;
     public static String name;
     // only for workaround with area bugs
     // public static WorldDatabase wdbAreas;
@@ -86,6 +93,8 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
         ps = new PlayerSettings(sqliteCon);
         try {
             lccStore = new LandClaimChunkStore(sqliteCon);
+            extraClaimCapacityService = new ExtraClaimCapacityService(sqliteCon);
+            claimSaleListingService = new ClaimSaleListingService(sqliteCon);
         } catch (Exception e) {
             logger().error(e.getMessage());
             e.printStackTrace();
@@ -109,6 +118,9 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
                 }));
         // connect plugins
         DiscordConnect.init(this);
+        economyIntegration = new EconomyIntegration(this);
+        economyIntegration.logStatus();
+        economyIntegration.registerExtraClaimOffer(s);
 
         // init Chunk Info overlay timer
         chunkInfoManager = new ChunkInfoManager(chunkClaimUtil);
@@ -118,6 +130,9 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
         // register plugin settings
         PlayerPluginSettingsOverlay.registerPlayerPluginSettings(new LandClaimPlayerPluginSettings(getDescription("version")));
         PlayerPluginSettingsOverlay.registerPlayerPluginData(new LandClaimPlayerPluginData(getDescription("version")));
+        PlayerPluginSettingsOverlay.registerPlayerPluginAdminSettings(
+                new PlayerPluginAdminSettings(name, getDescription("version"), () -> s.adminSettingsEntries(),
+                        s::initSettings));
 
         scheduleAutoClaimRemoval();
 
@@ -141,6 +156,22 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
         logger().setLevel(s.logLevel);
         ChunkClaimUtil.logger().setLevel(s.logLevel);
         PermissionFileUtil.logger().setLevel(s.logLevel);
+        if (economyIntegration != null) {
+            economyIntegration.logStatus();
+            economyIntegration.registerExtraClaimOffer(s);
+        }
+    }
+
+    public static ExtraClaimCapacityService extraClaimCapacityService() {
+        return extraClaimCapacityService;
+    }
+
+    public static ClaimSaleListingService claimSaleListingService() {
+        return claimSaleListingService;
+    }
+
+    public static EconomyIntegration economyIntegration() {
+        return economyIntegration;
     }
 
     private void scheduleAutoClaimRemoval() {

@@ -5,6 +5,7 @@ import java.util.Map;
 import de.omegazirkel.risingworld.LandClaim;
 import de.omegazirkel.risingworld.landclaim.ChunkClaimUtil;
 import de.omegazirkel.risingworld.landclaim.PluginSettings;
+import de.omegazirkel.risingworld.landclaim.db.ClaimSaleListing;
 import de.omegazirkel.risingworld.tools.I18n;
 import net.risingworld.api.Server;
 import net.risingworld.api.objects.Area;
@@ -67,6 +68,13 @@ public class ChunkInfoController {
         }
         // check if someone else is owner
         if (isClaimed()) {
+            ClaimSaleListing listing = activeSaleListing();
+            if (listing != null) {
+                return t().get("TC_CHUNKINFO_FOR_SALE", player)
+                        .replace("PH_PLAYER_NAME", getOwnerName())
+                        .replace("PH_AREA_NAME", getAreaName())
+                        .replace("PH_PRICE", String.valueOf(listing.price()));
+            }
             return t().get("TC_CHUNKINFO_OWNED_BY", player)
                     .replace("PH_PLAYER_NAME", getOwnerName())
                     .replace("PH_AREA_NAME", getAreaName());
@@ -147,6 +155,14 @@ public class ChunkInfoController {
         Area currentArea = player.getCurrentArea();
         String areaPermission = currentArea == null ? null : currentArea.getPlayerPermission(player);
         return areaPermission != null && areaPermission.equals(s.ownerAreaPermission);
+    }
+
+    private ClaimSaleListing activeSaleListing() {
+        Area currentArea = player.getCurrentArea();
+        if (!s.allowClaimSale || currentArea == null || LandClaim.claimSaleListingService() == null) {
+            return null;
+        }
+        return LandClaim.claimSaleListingService().activeListing(currentArea.getID()).orElse(null);
     }
 
     private String handleSpecialArea() {

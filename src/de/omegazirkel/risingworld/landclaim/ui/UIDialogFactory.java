@@ -23,18 +23,18 @@ public class UIDialogFactory {
     private static final int TEXT_INPUT_DIALOG_WIDTH = 460;
     private static final int CONFIRM_DIALOG_WIDTH = 580;
     private static final int CONFIRM_DIALOG_HEIGHT = 232;
-    private static final int TEXT_INPUT_DIALOG_HEIGHT = 204;
-    private static final int CONFIRM_TITLE_Y = 10;
-    private static final int TEXT_INPUT_TITLE_Y = 18;
+    private static final int TEXT_INPUT_DIALOG_HEIGHT = 232;
+    private static final int CONFIRM_TITLE_Y = 5;
+    private static final int TEXT_INPUT_TITLE_Y = 5;
     private static final int BODY_X = 24;
     private static final int CONFIRM_BODY_Y = 62;
-    private static final int TEXT_INPUT_BODY_Y = 58;
+    private static final int TEXT_INPUT_BODY_Y = 62;
     private static final int CONFIRM_BODY_WIDTH = 532;
     private static final int TEXT_INPUT_BODY_WIDTH = 412;
     private static final int CONFIRM_BODY_HEIGHT = 104;
     private static final int INPUT_BODY_HEIGHT = 98;
     private static final int CONFIRM_FOOTER_Y = 218;
-    private static final int TEXT_INPUT_FOOTER_Y = 192;
+    private static final int TEXT_INPUT_FOOTER_Y = 218;
     private static final int BUTTON_OFFSET_X = 24;
 
     private static UIElement getDialogWindow(int width, int height) {

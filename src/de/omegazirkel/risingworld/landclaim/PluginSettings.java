@@ -10,6 +10,9 @@ import java.util.Properties;
 
 import de.omegazirkel.risingworld.LandClaim;
 import de.omegazirkel.risingworld.tools.OZLogger;
+import de.omegazirkel.risingworld.tools.settings.AdminSettingsEntry;
+import de.omegazirkel.risingworld.tools.settings.AdminSettingsType;
+import de.omegazirkel.risingworld.tools.settings.SettingsFileEditor;
 import net.risingworld.api.Plugin;
 import net.risingworld.api.utils.ColorRGBA;
 
@@ -24,6 +27,7 @@ public class PluginSettings {
 
         // Public settings
         public String logLevel = "ALL";
+        public Boolean reloadOnChange = true;
         public Integer minutesToClaim = 10;
         public double claimTimeScaleFactor = 1.01;
         public Integer basicClaimLimit = 5;
@@ -42,6 +46,10 @@ public class PluginSettings {
         public Integer autoClaimRemovalDelaySeconds = 60;
         public Boolean allowClaimSale = false;
         public Boolean allowClaimBuyExceedLimit = false;
+        public Boolean enableExtraClaimShopOffer = true;
+        public Integer extraClaimBasePrice = 200;
+        public Integer extraClaimPriceIncreasePercent = 10;
+        public String extraClaimShopCurrencyIdentifier = "";
         // Discord announcements
         public long discordClaimAnnouncementChannelId = 0;
         public long discordExpandAnnouncementChannelId = 0;
@@ -149,6 +157,7 @@ public class PluginSettings {
                         }
                         // fill properties
                         logLevel = settings.getProperty("logLevel", "ALL");
+                        reloadOnChange = settings.getProperty("reloadOnChange", "true").contentEquals("true");
                         enableWelcomeMessage = settings.getProperty("enableWelcomeMessage", "false")
                                         .contentEquals("true");
                         recentlyOnlinePermissionListHours = Integer
@@ -166,6 +175,12 @@ public class PluginSettings {
                         allowClaimSale = settings.getProperty("allowClaimSale", "false").contentEquals("true");
                         allowClaimBuyExceedLimit = settings.getProperty("allowClaimBuyExceedLimit", "false")
                                         .contentEquals("true");
+                        enableExtraClaimShopOffer = settings.getProperty("enableExtraClaimShopOffer", "true")
+                                        .contentEquals("true");
+                        extraClaimBasePrice = Integer.parseInt(settings.getProperty("extraClaimBasePrice", "200"));
+                        extraClaimPriceIncreasePercent = Integer
+                                        .parseInt(settings.getProperty("extraClaimPriceIncreasePercent", "10"));
+                        extraClaimShopCurrencyIdentifier = settings.getProperty("extraClaimShopCurrencyIdentifier", "");
                         // claim settings
                         minutesToClaim = Integer.parseInt(settings.getProperty("minutesToClaim", "10"));
                         claimTimeScaleFactor = Double.parseDouble(settings.getProperty("claimTimeScaleFactor", "1.01"));
@@ -291,5 +306,61 @@ public class PluginSettings {
                         logger().error("NumberFormatException on initSettings: " + ex.getMessage());
                         ex.printStackTrace();
                 }
+        }
+
+        public java.util.List<AdminSettingsEntry> adminSettingsEntries() {
+                return java.util.List.of(
+                                entry("logLevel", "Log level", "Controls LandClaim logging verbosity.", logLevel,
+                                                "ALL", AdminSettingsType.STRING),
+                                entry("reloadOnChange", "Reload on change",
+                                                "Documents that LandClaim settings reload when settings.properties changes.",
+                                                reloadOnChange, "true", AdminSettingsType.BOOLEAN),
+                                entry("enableWelcomeMessage", "Welcome message",
+                                                "Shows a short LandClaim message when a player joins.",
+                                                enableWelcomeMessage, "false", AdminSettingsType.BOOLEAN),
+                                entry("recentlyOnlinePermissionListHours", "Recently online hours",
+                                                "Hours used for recently seen players in permission workflows.",
+                                                recentlyOnlinePermissionListHours, "24", AdminSettingsType.INTEGER),
+                                entry("adminIgnoreLimit", "Admin ignores claim limit",
+                                                "Lets admins bypass claim limits.", adminIgnoreLimit, "true",
+                                                AdminSettingsType.BOOLEAN),
+                                entry("adminIgnoreTime", "Admin ignores claim time",
+                                                "Lets admins bypass claim wait time.", adminIgnoreTime, "true",
+                                                AdminSettingsType.BOOLEAN),
+                                entry("enableAutoClaimRemoval", "Auto claim removal",
+                                                "Removes claims from owners inactive longer than the configured days.",
+                                                enableAutoClaimRemoval, "false", AdminSettingsType.BOOLEAN),
+                                entry("autoClaimRemovalInactiveDays", "Inactive days",
+                                                "Inactive owner age before auto claim removal.", autoClaimRemovalInactiveDays,
+                                                "90", AdminSettingsType.INTEGER),
+                                entry("enableExtraClaimShopOffer", "Extra claim shop offer",
+                                                "Registers the extra-claim capacity offer in OZ Shop when available.",
+                                                enableExtraClaimShopOffer, "true", AdminSettingsType.BOOLEAN),
+                                entry("extraClaimBasePrice", "Extra claim base price",
+                                                "Price for the first purchased extra claim capacity.",
+                                                extraClaimBasePrice, "200", AdminSettingsType.INTEGER),
+                                entry("extraClaimPriceIncreasePercent", "Extra claim price increase",
+                                                "Linear percent increase per already purchased extra claim capacity.",
+                                                extraClaimPriceIncreasePercent, "10", AdminSettingsType.INTEGER),
+                                entry("extraClaimShopCurrencyIdentifier", "Extra claim currency",
+                                                "Currency identifier for extra-claim Shop purchases. Empty uses Wallet default.",
+                                                extraClaimShopCurrencyIdentifier, "", AdminSettingsType.STRING));
+        }
+
+        private AdminSettingsEntry entry(String key, String label, String description, Object value, String defaultValue,
+                        AdminSettingsType type) {
+                return new AdminSettingsEntry(
+                                key,
+                                label,
+                                description,
+                                String.valueOf(value),
+                                defaultValue,
+                                type,
+                                false,
+                                newValue -> SettingsFileEditor.writeValue(settingsPath(), key, newValue));
+        }
+
+        private Path settingsPath() {
+                return Paths.get((plugin.getPath() != null ? plugin.getPath() : ".") + "/settings.properties");
         }
 }
