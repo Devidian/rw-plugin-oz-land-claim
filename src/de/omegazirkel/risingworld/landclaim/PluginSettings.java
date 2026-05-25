@@ -310,6 +310,8 @@ public class PluginSettings {
 
         public java.util.List<AdminSettingsEntry> adminSettingsEntries() {
                 return java.util.List.of(
+                                AdminSettingsEntry.group("general", "General",
+                                                "Logging, reload, welcome, and permission list behavior."),
                                 entry("logLevel", "Log level", "Controls LandClaim logging verbosity.", logLevel,
                                                 "ALL", AdminSettingsType.STRING),
                                 entry("reloadOnChange", "Reload on change",
@@ -321,18 +323,49 @@ public class PluginSettings {
                                 entry("recentlyOnlinePermissionListHours", "Recently online hours",
                                                 "Hours used for recently seen players in permission workflows.",
                                                 recentlyOnlinePermissionListHours, "24", AdminSettingsType.INTEGER),
+                                AdminSettingsEntry.group("adminOverrides", "Admin overrides",
+                                                "Admin bypass behavior for claim limits and claim time."),
                                 entry("adminIgnoreLimit", "Admin ignores claim limit",
                                                 "Lets admins bypass claim limits.", adminIgnoreLimit, "true",
                                                 AdminSettingsType.BOOLEAN),
                                 entry("adminIgnoreTime", "Admin ignores claim time",
                                                 "Lets admins bypass claim wait time.", adminIgnoreTime, "true",
                                                 AdminSettingsType.BOOLEAN),
+                                AdminSettingsEntry.group("claimRules", "Claim rules",
+                                                "Base claim timing and limit behavior."),
+                                entry("minutesToClaim", "Minutes to claim",
+                                                "Minimum minutes a player must stay in a chunk before claiming.",
+                                                minutesToClaim, "10", AdminSettingsType.INTEGER),
+                                readOnlyEntry("claimTimeScaleFactor", "Claim time scale",
+                                                "Decimal scale factor for increasing or decreasing claim wait time.",
+                                                claimTimeScaleFactor, "1.01", AdminSettingsType.STRING),
+                                entry("basicClaimLimit", "Basic claim limit",
+                                                "Base number of claims a player can own.", basicClaimLimit, "1",
+                                                AdminSettingsType.INTEGER),
+                                readOnlyEntry("playTimeHoursExtraClaimFactor", "Playtime extra-claim factor",
+                                                "Decimal factor used to grant additional claims from playtime.",
+                                                playTimeHoursExtraClaimFactor, "0.6", AdminSettingsType.STRING),
+                                AdminSettingsEntry.group("autoRemoval", "Auto removal",
+                                                "Inactive-owner automatic claim removal behavior."),
                                 entry("enableAutoClaimRemoval", "Auto claim removal",
                                                 "Removes claims from owners inactive longer than the configured days.",
                                                 enableAutoClaimRemoval, "false", AdminSettingsType.BOOLEAN),
                                 entry("autoClaimRemovalInactiveDays", "Inactive days",
                                                 "Inactive owner age before auto claim removal.", autoClaimRemovalInactiveDays,
                                                 "90", AdminSettingsType.INTEGER),
+                                entry("autoClaimRemovalDelaySeconds", "Removal delay",
+                                                "Delay in seconds before the automatic removal check runs after startup.",
+                                                autoClaimRemovalDelaySeconds, "60", AdminSettingsType.INTEGER),
+                                AdminSettingsEntry.group("claimSales", "Claim sales",
+                                                "Wallet-backed claim sale and purchase behavior."),
+                                entry("allowClaimSale", "Allow claim sale",
+                                                "Allows players to list owned claims for Wallet-backed sale.",
+                                                allowClaimSale, "false", AdminSettingsType.BOOLEAN),
+                                entry("allowClaimBuyExceedLimit", "Buy above limit",
+                                                "Allows claim purchases to exceed the buyer's normal claim limit.",
+                                                allowClaimBuyExceedLimit, "false", AdminSettingsType.BOOLEAN),
+                                AdminSettingsEntry.group("extraClaims", "Extra claim shop",
+                                                "Shop offer for purchasing additional claim capacity."),
                                 entry("enableExtraClaimShopOffer", "Extra claim shop offer",
                                                 "Registers the extra-claim capacity offer in OZ Shop when available.",
                                                 enableExtraClaimShopOffer, "true", AdminSettingsType.BOOLEAN),
@@ -358,6 +391,19 @@ public class PluginSettings {
                                 type,
                                 false,
                                 newValue -> SettingsFileEditor.writeValue(settingsPath(), key, newValue));
+        }
+
+        private AdminSettingsEntry readOnlyEntry(String key, String label, String description, Object value,
+                        String defaultValue, AdminSettingsType type) {
+                return new AdminSettingsEntry(
+                                key,
+                                label,
+                                description,
+                                String.valueOf(value),
+                                defaultValue,
+                                type,
+                                false,
+                                null);
         }
 
         private Path settingsPath() {

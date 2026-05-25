@@ -11,6 +11,7 @@ import de.omegazirkel.risingworld.landclaim.ChunkClaimUtil;
 import de.omegazirkel.risingworld.landclaim.DiscordConnect;
 import de.omegazirkel.risingworld.landclaim.EconomyIntegration;
 import de.omegazirkel.risingworld.landclaim.LandClaimGUI;
+import de.omegazirkel.risingworld.landclaim.LandClaimPluginInfoStatusProvider;
 import de.omegazirkel.risingworld.landclaim.PermissionFileUtil;
 import de.omegazirkel.risingworld.landclaim.PluginSettings;
 import de.omegazirkel.risingworld.landclaim.db.ClaimSaleListingService;
@@ -30,6 +31,7 @@ import de.omegazirkel.risingworld.tools.settings.PlayerPluginAdminSettings;
 import de.omegazirkel.risingworld.tools.ui.AssetManager;
 import de.omegazirkel.risingworld.tools.ui.MenuItem;
 import de.omegazirkel.risingworld.tools.ui.PlayerPluginSettingsOverlay;
+import de.omegazirkel.risingworld.tools.ui.PluginInfoStatusProviders;
 import de.omegazirkel.risingworld.tools.ui.PluginMenuManager;
 import net.risingworld.api.Plugin;
 import net.risingworld.api.Server;
@@ -133,6 +135,8 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
         PlayerPluginSettingsOverlay.registerPlayerPluginAdminSettings(
                 new PlayerPluginAdminSettings(name, getDescription("version"), () -> s.adminSettingsEntries(),
                         s::initSettings));
+        PluginInfoStatusProviders
+                .registerProvider(new LandClaimPluginInfoStatusProvider(this, getDescription("version")));
 
         scheduleAutoClaimRemoval();
 
@@ -144,7 +148,12 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
         logger().warn("⚠️ Disabling " + this.getName() + " ...");
         if (chunkInfoManager != null)
             chunkInfoManager.stop();
-        lccStore.shutdown();
+        if (name != null) {
+            PluginInfoStatusProviders.unregisterProvider(name);
+        }
+        if (lccStore != null) {
+            lccStore.shutdown();
+        }
 
         logger().warn("❌ " + this.getName() + " disabled.");
     }
@@ -152,10 +161,7 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
     @Override
     public void onSettingsChanged(Path settingsPath) {
         s.initSettings(settingsPath.toString());
-        // set loglevels on all loggers (PluginSettings logger sets it's own)
         logger().setLevel(s.logLevel);
-        ChunkClaimUtil.logger().setLevel(s.logLevel);
-        PermissionFileUtil.logger().setLevel(s.logLevel);
         if (economyIntegration != null) {
             economyIntegration.logStatus();
             economyIntegration.registerExtraClaimOffer(s);
@@ -172,6 +178,14 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
 
     public static EconomyIntegration economyIntegration() {
         return economyIntegration;
+    }
+
+    public int playerClaimCount(Player player) {
+        return chunkClaimUtil == null ? 0 : chunkClaimUtil.getPlayerClaimCount(player);
+    }
+
+    public long playerMaxClaims(Player player) {
+        return chunkClaimUtil == null ? 0 : chunkClaimUtil.getPlayerMaxClaims(player);
     }
 
     private void scheduleAutoClaimRemoval() {
@@ -214,13 +228,7 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
             String option = cmdParts[1].toLowerCase();
             switch (option) {
                 case "status":
-                    String statusMessage = t.get("TC_CMD_STATUS", player)
-                            .replace("PH_VERSION", c.okay + this.getDescription("version") + c.endTag)
-                            .replace("PH_LANGUAGE",
-                                    c.info + player.getLanguage() + " / " + player.getSystemLanguage() + c.endTag)
-                            .replace("PH_USEDLANG", c.okay + t.getLanguageUsed(lang) + c.endTag)
-                            .replace("PH_LANG_AVAILABLE", c.warning + t.getLanguageAvailable() + c.endTag);
-                    player.sendTextMessage(c.okay + this.getName() + ":> " + c.endTag + statusMessage);
+                    PluginInfoStatusProviders.show(player, name);
                     break;
                 case "stats":
                     String statsMessage = t.get("TC_CMD_STATS", player)

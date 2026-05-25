@@ -44,7 +44,7 @@ The main command is `/lc`. You can also use the alias `/landclaim`.
 | Command           | Description                                     | Permission           |
 | :---------------- | :---------------------------------------------- | :------------------- |
 | `/lc open`        | Opens the main radial menu for land management. | (everyone)           |
-| `/lc status`      | Shows the current status of the plugin.         | (everyone)           |
+| `/lc status`      | Opens the shared Tools Info/Status panel.       | (everyone)           |
 | `/lc repairareas` | (Admin) Scans and repairs all claim areas.      | `oz.landclaim.admin` |
 
 ## Configuration

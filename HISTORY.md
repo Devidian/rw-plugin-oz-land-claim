@@ -4,6 +4,9 @@
 
 ## [unreleased]
 
+- feat: add shared Tools Info/Status panel content for LandClaim and route `/lc status` to it
+- feat: complete grouped admin settings metadata and i18n labels for LandClaim settings
+- refactor: keep LandClaim settings reload logging on the main `OZ.LandClaim` logger only
 - feat: add optional Wallet/Shop economy integration detection for claim economy work
 - feat: persist purchased extra-claim capacity and include it in player claim limits
 - feat: register an extra-claim capacity Shop offer with per-player linear pricing

@@ -1,5 +1,7 @@
 # Roadmaps
 
+- [Roadmap Plan 02 Plugin Standardization](roadmap-plan-02-plugin-standardization.md)
+
 Large implementation plans and long-lived roadmap documents live here.
 
 ## Template
