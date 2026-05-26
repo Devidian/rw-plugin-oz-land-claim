@@ -4,6 +4,8 @@
 
 ## [unreleased]
 
+## [0.9.0] - 2026-05-26 | Claim economy and shared indicators
+
 - feat: add a shared Tools indicator for active claim-sale areas
 - feat: limit area-frame rendering to the current and neighboring sectors when sector/chunk coordinates are safely derivable
 - feat: refresh LandClaim area frames when players enter a new sector
