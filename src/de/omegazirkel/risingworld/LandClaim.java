@@ -18,6 +18,7 @@ import de.omegazirkel.risingworld.landclaim.db.ClaimSaleListingService;
 import de.omegazirkel.risingworld.landclaim.db.ExtraClaimCapacityService;
 import de.omegazirkel.risingworld.landclaim.db.LandClaimChunkService;
 import de.omegazirkel.risingworld.landclaim.db.LandClaimChunkStore;
+import de.omegazirkel.risingworld.landclaim.ui.ClaimSaleIndicatorProvider;
 import de.omegazirkel.risingworld.landclaim.ui.ChunkInfoManager;
 import de.omegazirkel.risingworld.landclaim.ui.LandClaimPlayerPluginData;
 import de.omegazirkel.risingworld.landclaim.ui.LandClaimPlayerPluginSettings;
@@ -33,6 +34,7 @@ import de.omegazirkel.risingworld.tools.ui.MenuItem;
 import de.omegazirkel.risingworld.tools.ui.PlayerPluginSettingsOverlay;
 import de.omegazirkel.risingworld.tools.ui.PluginInfoStatusProviders;
 import de.omegazirkel.risingworld.tools.ui.PluginMenuManager;
+import de.omegazirkel.risingworld.tools.ui.SharedIndicators;
 import net.risingworld.api.Plugin;
 import net.risingworld.api.Server;
 import net.risingworld.api.events.EventMethod;
@@ -42,6 +44,7 @@ import net.risingworld.api.events.player.PlayerConnectEvent;
 import net.risingworld.api.events.player.PlayerDeathEvent;
 import net.risingworld.api.events.player.PlayerDisconnectEvent;
 import net.risingworld.api.events.player.PlayerEnterChunkEvent;
+import net.risingworld.api.events.player.PlayerEnterSectorEvent;
 import net.risingworld.api.events.player.PlayerSpawnEvent;
 import net.risingworld.api.objects.Area;
 import net.risingworld.api.objects.Player;
@@ -137,6 +140,7 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
                         s::initSettings));
         PluginInfoStatusProviders
                 .registerProvider(new LandClaimPluginInfoStatusProvider(this, getDescription("version")));
+        SharedIndicators.registerProvider(name, new ClaimSaleIndicatorProvider());
 
         scheduleAutoClaimRemoval();
 
@@ -150,6 +154,7 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
             chunkInfoManager.stop();
         if (name != null) {
             PluginInfoStatusProviders.unregisterProvider(name);
+            SharedIndicators.unregisterProvider(name);
         }
         if (lccStore != null) {
             lccStore.shutdown();
@@ -227,6 +232,7 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
             }
             String option = cmdParts[1].toLowerCase();
             switch (option) {
+                case "info":
                 case "status":
                     PluginInfoStatusProviders.show(player, name);
                     break;
@@ -286,6 +292,11 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
             Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(chunkPos);
             Area3DUtils.updateCurrentChunkFrameForPlayer(player, area);
         }
+    }
+
+    @EventMethod
+    public void onPlayerEnterSectorEvent(PlayerEnterSectorEvent event) {
+        Area3DUtils.updateAreaFramesForPlayer(event.getPlayer());
     }
 
     @EventMethod

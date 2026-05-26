@@ -32,10 +32,11 @@ Wallet and Shop are detected optionally for economy features; core claim protect
 - **Admin Cleanup:** Admins can review active claim owners and claimed areas, delete claim records, clean up abandoned chunks, or teleport to listed areas.
 - **Special Zones for Admins:** Admins can create special zones such as default special, PvP, rest, and trap zones directly from the UI.
 - **UI-based Permissions:** Manage who has access to your claimed areas directly in-game.
-- **Claim Sales:** Claim sale listings are stored with owner, area, price, listing time, buyer, purchase time, and status. When `allowClaimSale=true`, owners can list an owned area for sale or withdraw its active sale listing from the radial area menu. Buyers see listed areas in the current chunk overlay and can buy them through Wallet-backed settlement. A completed purchase withdraws the buyer payment, clears old area permissions, assigns the buyer as the only owner, credits the seller, and rolls back on failure.
+- **Claim Sales:** Claim sale listings are stored with owner, area, price, listing time, buyer, purchase time, and status. When `allowClaimSale=true`, owners can list an owned area for sale or withdraw its active sale listing from the radial area menu. Active sale areas show a shared Tools indicator, and buyers see listed areas in the current chunk overlay and can buy them through Wallet-backed settlement. A completed purchase withdraws the buyer payment, clears old area permissions, assigns the buyer as the only owner, credits the seller, and rolls back on failure.
 - **Recently Online Players:** The permission UI can also list players who were online recently, even if they are offline now.
 - **Permission Status Column:** The permission UI shows whether listed players are currently online or offline.
 - **Current Chunk Overlay:** A compact top-screen overlay shows whether the current chunk is claimable, part of one of your areas, owned by another player, or a special area. The overlay hides while the inventory is open; the current PluginAPI exposes a reliable inventory toggle event but no equivalent crafting/map visibility hook.
+- **Area Frame Visibility:** Owned/other area frame rendering is limited to the current sector and neighboring sectors when the API coordinate model can be matched safely. Claim protection itself is not filtered by visibility.
 
 ## Commands
 
@@ -44,7 +45,7 @@ The main command is `/lc`. You can also use the alias `/landclaim`.
 | Command           | Description                                     | Permission           |
 | :---------------- | :---------------------------------------------- | :------------------- |
 | `/lc open`        | Opens the main radial menu for land management. | (everyone)           |
-| `/lc status`      | Opens the shared Tools Info/Status panel.       | (everyone)           |
+| `/lc status` or `/lc info` | Opens the shared Tools Info/Status panel. | (everyone)           |
 | `/lc repairareas` | (Admin) Scans and repairs all claim areas.      | `oz.landclaim.admin` |
 
 ## Configuration

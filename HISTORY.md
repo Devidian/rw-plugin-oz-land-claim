@@ -4,6 +4,10 @@
 
 ## [unreleased]
 
+- feat: add a shared Tools indicator for active claim-sale areas
+- feat: limit area-frame rendering to the current and neighboring sectors when sector/chunk coordinates are safely derivable
+- feat: refresh LandClaim area frames when players enter a new sector
+- feat: add LandClaim radial Info/Status menu action with the shared Tools info icon
 - feat: add shared Tools Info/Status panel content for LandClaim and route `/lc status` to it
 - feat: complete grouped admin settings metadata and i18n labels for LandClaim settings
 - refactor: keep LandClaim settings reload logging on the main `OZ.LandClaim` logger only

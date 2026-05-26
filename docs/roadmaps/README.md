@@ -1,5 +1,6 @@
 # Roadmaps
 
+- [Roadmap Plan 03 Sector Visibility](roadmap-plan-03-sector-visibility.md)
 - [Roadmap Plan 02 Plugin Standardization](roadmap-plan-02-plugin-standardization.md)
 
 Large implementation plans and long-lived roadmap documents live here.

@@ -17,6 +17,7 @@ import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.ui.AssetManager;
 import de.omegazirkel.risingworld.tools.ui.CursorManager;
 import de.omegazirkel.risingworld.tools.ui.MenuItem;
+import de.omegazirkel.risingworld.tools.ui.PluginInfoStatusProviders;
 import de.omegazirkel.risingworld.tools.ui.PluginMenuManager;
 import net.risingworld.api.Plugin;
 import net.risingworld.api.Server;
@@ -106,6 +107,7 @@ public class LandClaimGUI {
         AssetManager.loadIconFromPlugin(p, "users-gear");
         AssetManager.loadIconFromPlugin(p, "admin-cleanup", "/assets/icons/tools.png");
         AssetManager.loadIconFromPlugin(p, "selling");
+        AssetManager.loadIconFromPlugin(p, "icon-ki-zone-indicator-sale");
         // Area expansion menu
         AssetManager.loadIconFromPlugin(p, "compass-north");
         AssetManager.loadIconFromPlugin(p, "compass-east");
@@ -883,6 +885,7 @@ public class LandClaimGUI {
                     }));
         }
 
+        menuItems.add(PluginInfoStatusProviders.menuItem(t.get("TC_MENU_INFO_STATUS", uiPlayer), LandClaim.name));
         menuItems.add(MenuItem.closeMenu(uiPlayer));
 
         PluginMenuManager.showMenu(uiPlayer, menuItems);
