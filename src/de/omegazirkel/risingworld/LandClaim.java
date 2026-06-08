@@ -2,6 +2,7 @@ package de.omegazirkel.risingworld;
 
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -34,6 +35,7 @@ import de.omegazirkel.risingworld.tools.ui.MenuItem;
 import de.omegazirkel.risingworld.tools.ui.PlayerPluginSettingsOverlay;
 import de.omegazirkel.risingworld.tools.ui.PluginInfoStatusProviders;
 import de.omegazirkel.risingworld.tools.ui.PluginMenuManager;
+import de.omegazirkel.risingworld.tools.ui.PluginShortcutVisibility;
 import de.omegazirkel.risingworld.tools.ui.SharedIndicators;
 import net.risingworld.api.Plugin;
 import net.risingworld.api.Server;
@@ -118,9 +120,10 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
 
         // Load Plugin Menu into Main Plugin Menu
         PluginMenuManager
-                .registerPluginMenu(new MenuItem(AssetManager.getIcon("oz-lc-logo"), "Land Claim", (Player p) -> {
+                .registerPluginMenu(new MenuItem(name, AssetManager.getIcon("oz-lc-logo"), "Land Claim", (Player p) -> {
                     gui.openMainMenu(p);
                 }));
+        PluginShortcutVisibility.register(name, LandClaimPlayerPluginSettings::shortcutVisible);
         // connect plugins
         DiscordConnect.init(this);
         economyIntegration = new EconomyIntegration(this);
@@ -153,11 +156,19 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
         if (chunkInfoManager != null)
             chunkInfoManager.stop();
         if (name != null) {
+            PluginShortcutVisibility.unregister(name);
             PluginInfoStatusProviders.unregisterProvider(name);
             SharedIndicators.unregisterProvider(name);
         }
         if (lccStore != null) {
             lccStore.shutdown();
+        }
+        if (sqliteCon != null) {
+            try {
+                sqliteCon.close();
+            } catch (SQLException ex) {
+                logger().warn("Failed to close Land Claim database connection: " + ex.getMessage());
+            }
         }
 
         logger().warn("❌ " + this.getName() + " disabled.");

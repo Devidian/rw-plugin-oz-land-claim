@@ -7,6 +7,7 @@ import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.ui.BasePlayerPluginSettingsPanel;
 import de.omegazirkel.risingworld.tools.ui.OZUIElement;
 import de.omegazirkel.risingworld.tools.ui.PlayerPluginSettings;
+import de.omegazirkel.risingworld.tools.ui.PluginShortcutVisibility;
 import net.risingworld.api.objects.Area;
 import net.risingworld.api.objects.Player;
 
@@ -33,6 +34,8 @@ public class LandClaimPlayerPluginSettings extends PlayerPluginSettings {
             @Override
             protected void redrawContent() {
                 flexWrapper.removeAllChilds();
+                flexWrapper.addChild(booleanSetting(uiPlayer, shortcutKey(),
+                        "TC_UI_LABEL_LANDCLAIM_SHORTCUT", true, null));
                 flexWrapper.addChild(booleanSetting(uiPlayer, SHOW_CURRENT_CHUNK_FRAME_KEY,
                         "TC_UI_LABEL_SHOW_CURRENT_CHUNK_FRAME", false, () -> {
                             Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(uiPlayer.getChunkPosition());
@@ -82,6 +85,14 @@ public class LandClaimPlayerPluginSettings extends PlayerPluginSettings {
         if (LandClaim.ps != null) {
             LandClaim.ps.setBoolean(player.getDbID(), key, value);
         }
+    }
+
+    public static boolean shortcutVisible(Player player) {
+        return booleanValue(player, shortcutKey(), true);
+    }
+
+    private static String shortcutKey() {
+        return PluginShortcutVisibility.playerSettingKey(LandClaim.name);
     }
 
 }

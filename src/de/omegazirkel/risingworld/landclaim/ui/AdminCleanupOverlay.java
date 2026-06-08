@@ -31,6 +31,7 @@ import net.risingworld.api.ui.style.TextAnchor;
 import net.risingworld.api.ui.style.Unit;
 
 public class AdminCleanupOverlay extends OZUIElement {
+    public static final String ATTRIBUTE_KEY = "landclaim-admin-cleanup-overlay";
 
     private enum Tab {
         OWNERS, AREAS, SPECIAL_AREAS
@@ -511,7 +512,7 @@ public class AdminCleanupOverlay extends OZUIElement {
     private void close() {
         player.removeUIElement(this);
         CursorManager.hide(player);
-        player.deleteAttribute("landclaim-admin-cleanup-overlay");
+        player.deleteAttribute(ATTRIBUTE_KEY);
         onClose.onCall(player);
     }
 }

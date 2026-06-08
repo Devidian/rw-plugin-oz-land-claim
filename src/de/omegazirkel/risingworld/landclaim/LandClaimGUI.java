@@ -525,7 +525,7 @@ public class LandClaimGUI {
                 AssetManager.getIcon("users-gear"),
                 t.get("TC_MENU_AREA_PERMISSIONS", player),
                 (p) -> {
-                    UIElement overlay = (UIElement) p.getAttribute("landclaim-overlay");
+                    UIElement overlay = (UIElement) p.getAttribute(PermissionOverlay.ATTRIBUTE_KEY);
                     if (overlay != null) {
                         p.removeUIElement(overlay);
                         CursorManager.hide(p);
@@ -533,7 +533,7 @@ public class LandClaimGUI {
                     PermissionOverlay permissionOverlay = new PermissionOverlay(area, p, onResponse);
                     p.addUIElement(permissionOverlay, UITarget.HUD);
                     CursorManager.show(p);
-                    p.setAttribute("landclaim-overlay", permissionOverlay);
+                    p.setAttribute(PermissionOverlay.ATTRIBUTE_KEY, permissionOverlay);
 
                     p.hideRadialMenu(false);
 
@@ -545,7 +545,7 @@ public class LandClaimGUI {
                 AssetManager.getIcon("admin-cleanup"),
                 t.get("TC_MENU_ADMIN_CLEANUP", uiPlayer),
                 (p) -> {
-                    UIElement overlay = (UIElement) p.getAttribute("landclaim-admin-cleanup-overlay");
+                    UIElement overlay = (UIElement) p.getAttribute(AdminCleanupOverlay.ATTRIBUTE_KEY);
                     if (overlay != null) {
                         p.removeUIElement(overlay);
                         CursorManager.hide(p);
@@ -553,7 +553,7 @@ public class LandClaimGUI {
                     AdminCleanupOverlay cleanupOverlay = new AdminCleanupOverlay(p, cleanupService, onResponse);
                     p.addUIElement(cleanupOverlay, UITarget.HUD);
                     CursorManager.show(p);
-                    p.setAttribute("landclaim-admin-cleanup-overlay", cleanupOverlay);
+                    p.setAttribute(AdminCleanupOverlay.ATTRIBUTE_KEY, cleanupOverlay);
                     p.hideRadialMenu(false);
                 });
     }

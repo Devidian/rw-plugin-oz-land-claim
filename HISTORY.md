@@ -4,6 +4,12 @@
 
 ## [unreleased]
 
+## [0.10.0] - 2026-06-08 | Shortcut visibility and shutdown cleanup
+
+- feat: add LandClaim player shortcut visibility setting for `/ozt` and inventory shortcuts
+- change: remove obsolete shared escape-close registrations pending future API support
+- change: close LandClaim SQLite connection on plugin shutdown
+
 ## [0.9.0] - 2026-05-26 | Claim economy and shared indicators
 
 - feat: add a shared Tools indicator for active claim-sale areas
