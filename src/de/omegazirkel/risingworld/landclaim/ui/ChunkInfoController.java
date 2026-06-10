@@ -187,6 +187,10 @@ public class ChunkInfoController {
             return t().get("TC_CHUNKINFO_SPECIAL_PVP_AREA", player)
                     .replace("PH_AREA_NAME", areaName);
         }
+        if (defaultPermission.equals(s.specialStaticAreaPermission)) {
+            return t().get("TC_CHUNKINFO_SPECIAL_STATIC_AREA", player)
+                    .replace("PH_AREA_NAME", areaName);
+        }
         if (defaultPermission.equals(s.specialRestAreaPermission)) {
             return t().get("TC_CHUNKINFO_SPECIAL_REST_AREA", player)
                     .replace("PH_AREA_NAME", areaName);

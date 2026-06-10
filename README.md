@@ -82,6 +82,7 @@ You can override the default colors for the chunk visualizations by uncommenting
 - `otherAreaBorderColor` / `otherAreaFrameColor`
 - `forSaleAreaBorderColor` / `forSaleAreaFrameColor`
 - `specialAreaBorderColor` / `specialAreaFrameColor`
+- `staticAreaBorderColor` / `staticAreaFrameColor`
 - `pvpAreaBorderColor` / `pvpAreaFrameColor`
 - `restAreaBorderColor` / `restAreaFrameColor`
 - `trapAreaBorderColor` / `trapAreaFrameColor`

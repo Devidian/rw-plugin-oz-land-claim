@@ -89,38 +89,46 @@ public class LandClaimGUI {
         chunkClaimUtil = ccu;
         cleanupService = ccs;
 
-        // Icons for radial menu
-        AssetManager.loadIconFromPlugin(p, "oz-lc-logo", "/assets/icons/oz-lc-logo-alt.png");
-        AssetManager.loadIconFromPlugin(p, "debug", "/assets/icons/error-bug.png");
-        AssetManager.loadIconFromPlugin(p, "hideCurrentChunk", "/assets/icons/hide-current-frame.png");
-        AssetManager.loadIconFromPlugin(p, "showCurrentChunk", "/assets/icons/show-current-frame.png");
-        AssetManager.loadIconFromPlugin(p, "hideOwnedAreas", "/assets/icons/hide-owned-area-frames.png");
-        AssetManager.loadIconFromPlugin(p, "showOwnedAreas", "/assets/icons/show-owned-area-frames.png");
-        AssetManager.loadIconFromPlugin(p, "hideOtherAreas", "/assets/icons/hide-other-area-frames.png");
-        AssetManager.loadIconFromPlugin(p, "showOtherAreas", "/assets/icons/show-other-area-frames.png");
-        AssetManager.loadIconFromPlugin(p, "visibilityMenu", "/assets/icons/visibility-menu.png");
-        AssetManager.loadIconFromPlugin(p, "tools");
-        AssetManager.loadIconFromPlugin(p, "claim-chunk");
-        AssetManager.loadIconFromPlugin(p, "resize");
-        AssetManager.loadIconFromPlugin(p, "grid");
-        AssetManager.loadIconFromPlugin(p, "square-minus");
-        AssetManager.loadIconFromPlugin(p, "users-gear");
-        AssetManager.loadIconFromPlugin(p, "admin-cleanup", "/assets/icons/tools.png");
-        AssetManager.loadIconFromPlugin(p, "selling");
+        // Icon for /ozt menu
+        AssetManager.loadIconFromPlugin(p, "icon-ki-plugin-logo");
+        // Icons for main menu
+        AssetManager.loadIconFromPlugin(p, "icon-ki-create-claim");
         AssetManager.loadIconFromPlugin(p, "icon-ki-zone-indicator-sale");
+
+        // Visibility menu
+        AssetManager.loadIconFromPlugin(p, "icon-ki-claim-visibility"); // menu icon
+        AssetManager.loadIconFromPlugin(p, "icon-ki-current-on");
+        AssetManager.loadIconFromPlugin(p, "icon-ki-current-off");
+        AssetManager.loadIconFromPlugin(p, "icon-ki-owned-on");
+        AssetManager.loadIconFromPlugin(p, "icon-ki-owned-off");
+        AssetManager.loadIconFromPlugin(p, "icon-ki-others-on");
+        AssetManager.loadIconFromPlugin(p, "icon-ki-others-off");
+        // Area administration menu for players
+        AssetManager.loadIconFromPlugin(p, "icon-ki-rename-claim");
+        AssetManager.loadIconFromPlugin(p, "icon-ki-split-claim");
+        AssetManager.loadIconFromPlugin(p, "icon-ki-delete-claim");
+        AssetManager.loadIconFromPlugin(p, "icon-ki-for-sale");
+        AssetManager.loadIconFromPlugin(p, "icon-ki-permissions");
         // Area expansion menu
-        AssetManager.loadIconFromPlugin(p, "compass-north");
-        AssetManager.loadIconFromPlugin(p, "compass-east");
-        AssetManager.loadIconFromPlugin(p, "compass-south");
-        AssetManager.loadIconFromPlugin(p, "compass-west");
-        AssetManager.loadIconFromPlugin(p, "up");
-        AssetManager.loadIconFromPlugin(p, "down");
+        AssetManager.loadIconFromPlugin(p, "icon-ki-expand-menu");
+        AssetManager.loadIconFromPlugin(p, "icon-ki-expand-north");
+        AssetManager.loadIconFromPlugin(p, "icon-ki-expand-east");
+        AssetManager.loadIconFromPlugin(p, "icon-ki-expand-south");
+        AssetManager.loadIconFromPlugin(p, "icon-ki-expand-west");
+        AssetManager.loadIconFromPlugin(p, "icon-ki-expand-up");
+        AssetManager.loadIconFromPlugin(p, "icon-ki-expand-down");
+        // Admin Menu
+        AssetManager.loadIconFromPlugin(p, "icon-ki-zone-admin"); // Admin menu
+        AssetManager.loadIconFromPlugin(p, "icon-ki-zone-administration"); // Zone manager
+        AssetManager.loadIconFromPlugin(p, "error-bug"); // dev-mode
+        AssetManager.loadIconFromPlugin(p, "tools"); // dev-mode
         // Special area menu (admin)
-        AssetManager.loadIconFromPlugin(p, "square-star"); // open special area menu
-        AssetManager.loadIconFromPlugin(p, "icon-star"); // create default special area
-        AssetManager.loadIconFromPlugin(p, "user-forbidden"); // create trap area
-        AssetManager.loadIconFromPlugin(p, "bed"); // create rest area
-        AssetManager.loadIconFromPlugin(p, "sword"); // create pvp area
+        AssetManager.loadIconFromPlugin(p, "icon-ki-special-zones"); // open special area menu
+        AssetManager.loadIconFromPlugin(p, "icon-ki-neutral-zone"); // create default special area
+        AssetManager.loadIconFromPlugin(p, "icon-ki-trap-zone"); // create trap area
+        AssetManager.loadIconFromPlugin(p, "icon-ki-rest-zone"); // create rest area
+        AssetManager.loadIconFromPlugin(p, "icon-ki-combat-zone"); // create pvp area
+        AssetManager.loadIconFromPlugin(p, "icon-ki-static-zone"); // static area
 
         return getInstance();
     }
@@ -134,7 +142,7 @@ public class LandClaimGUI {
 
     private MenuItem menuItemSplitArea(Player uiPlayer, Area area, Callback<Player> onCancel) {
         return new MenuItem(
-                AssetManager.getIcon("grid"),
+                AssetManager.getIcon("icon-ki-split-claim"),
                 t.get("TC_MENU_AREA_SPLIT", uiPlayer),
                 (p) -> {
                     UIElement confirmDialog = UIDialogFactory.getConfirmDangerDialog(p,
@@ -164,7 +172,7 @@ public class LandClaimGUI {
     private MenuItem menuItemRenameArea(Player player, Area area, Callback<Player> onCancel) {
         final String currentName = area.getName();
         return new MenuItem(
-                AssetManager.getIcon("rename"),
+                AssetManager.getIcon("icon-ki-rename-claim"),
                 t.get("TC_MENU_AREA_RENAME", player),
                 (p) -> {
                     UIElement renameWindow = UIDialogFactory.getTextInput(p,
@@ -176,9 +184,9 @@ public class LandClaimGUI {
                                     area.setName(v);
                                     // WORKAROUND direct SQL
                                     // if (LandClaim.wdbAreas != null) {
-                                    //     LandClaim.wdbAreas.executeUpdate(
-                                    //             "UPDATE areas SET name ='" + v.replace("'", "''") + "' WHERE id="
-                                    //                     + area.getID());
+                                    // LandClaim.wdbAreas.executeUpdate(
+                                    // "UPDATE areas SET name ='" + v.replace("'", "''") + "' WHERE id="
+                                    // + area.getID());
                                     // }
                                     p.sendTextMessage(t.get("TC_AREA_RENNAMED", p)
                                             .replace("PH_AREA_NAME", v)
@@ -196,7 +204,7 @@ public class LandClaimGUI {
 
     private MenuItem menuItemRemoveArea(Player player, Area area, Callback<Player> onCancel) {
         return new MenuItem(
-                AssetManager.getIcon("square-minus"),
+                AssetManager.getIcon("icon-ki-delete-claim"),
                 t.get("TC_MENU_AREA_RELEASE", player),
                 (p) -> {
                     UIElement confirmDialog = UIDialogFactory.getConfirmDangerDialog(p,
@@ -220,7 +228,7 @@ public class LandClaimGUI {
 
     private MenuItem menuItemListAreaForSale(Player player, Area area, Callback<Player> onCancel) {
         return new MenuItem(
-                AssetManager.getIcon("selling"),
+                AssetManager.getIcon("icon-ki-for-sale"),
                 t.get("TC_MENU_AREA_SALE_LIST", player),
                 (p) -> {
                     UIElement priceWindow = UIDialogFactory.getTextInput(p,
@@ -287,7 +295,7 @@ public class LandClaimGUI {
 
     private MenuItem menuItemBuyArea(Player player, Area area, ClaimSaleListing listing, Callback<Player> onCancel) {
         return new MenuItem(
-                AssetManager.getIcon("selling"),
+                AssetManager.getIcon("icon-ki-for-sale"),
                 t.get("TC_MENU_AREA_SALE_BUY", player),
                 (p) -> {
                     UIElement confirmDialog = UIDialogFactory.getConfirmDialog(p,
@@ -522,7 +530,7 @@ public class LandClaimGUI {
 
     private MenuItem menuItemPermissionManager(Player player, Area area, Callback<Player> onResponse) {
         return new MenuItem(
-                AssetManager.getIcon("users-gear"),
+                AssetManager.getIcon("icon-ki-permissions"),
                 t.get("TC_MENU_AREA_PERMISSIONS", player),
                 (p) -> {
                     UIElement overlay = (UIElement) p.getAttribute(PermissionOverlay.ATTRIBUTE_KEY);
@@ -542,7 +550,7 @@ public class LandClaimGUI {
 
     private MenuItem menuItemAdminCleanup(Player uiPlayer, Callback<Player> onResponse) {
         return new MenuItem(
-                AssetManager.getIcon("admin-cleanup"),
+                AssetManager.getIcon("icon-ki-zone-administration"),
                 t.get("TC_MENU_ADMIN_CLEANUP", uiPlayer),
                 (p) -> {
                     UIElement overlay = (UIElement) p.getAttribute(AdminCleanupOverlay.ATTRIBUTE_KEY);
@@ -568,20 +576,25 @@ public class LandClaimGUI {
         if (currentArea == null) {
             Area virtualArea = ChunkClaimUtil.getVirtualAreaFromChunkVector(uiPlayer.getChunkPosition());
             // special areas
-            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "icon-star", "TC_MENU_SPECIAL_AREA_CREATE", virtualArea,
+            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "icon-ki-neutral-zone", "TC_MENU_SPECIAL_AREA_CREATE",
+                    virtualArea,
                     s.specialAreaPermission, onBack));
-            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "sword", "TC_MENU_SPECIAL_AREA_PVP", virtualArea,
-                    s.specialPvPAreaPermission, onBack));
-            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "bed", "TC_MENU_SPECIAL_AREA_REST", virtualArea,
-                    s.specialRestAreaPermission, onBack));
+            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "icon-ki-static-zone", "TC_MENU_SPECIAL_AREA_STATIC",
+                    virtualArea, s.specialStaticAreaPermission, onBack));
+            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "icon-ki-combat-zone", "TC_MENU_SPECIAL_AREA_PVP",
+                    virtualArea, s.specialPvPAreaPermission, onBack));
+            menuItems.add(
+                    menuItemCreateSpecialArea(uiPlayer, "icon-ki-rest-zone", "TC_MENU_SPECIAL_AREA_REST", virtualArea,
+                            s.specialRestAreaPermission, onBack));
             menuItems
-                    .add(menuItemCreateSpecialArea(uiPlayer, "user-forbidden", "TC_MENU_SPECIAL_AREA_TRAP", virtualArea,
+                    .add(menuItemCreateSpecialArea(uiPlayer, "icon-ki-trap-zone", "TC_MENU_SPECIAL_AREA_TRAP",
+                            virtualArea,
                             s.specialTrapAreaPermission, onBack));
         }
         // show extend menu if area exist
         if (currentArea != null) {
             menuItems.add(new MenuItem(
-                    AssetManager.getIcon("resize"),
+                    AssetManager.getIcon("icon-ki-expand-menu"),
                     t.get("TC_MENU_AREA_EXPAND_OPTION", uiPlayer),
                     (p) -> {
                         openExpandAreaMenu(p, onBackReopen);
@@ -608,7 +621,7 @@ public class LandClaimGUI {
         if (developerMode) {
 
             menuItems.add(new MenuItem(
-                    AssetManager.getIcon("debug"),
+                    AssetManager.getIcon("error-bug"),
                     t.get("TC_MENU_ADMIN_DEBUG", uiPlayer),
                     (p) -> {
                         Area3DUtils.updateAreaFramesForPlayer(p);
@@ -645,7 +658,7 @@ public class LandClaimGUI {
         }
         if (!isDefaultArea)
             menuItems.add(new MenuItem(
-                    AssetManager.getIcon("square-star"),
+                    AssetManager.getIcon("icon-ki-special-zones"),
                     t.get("TC_MENU_SPECIAL_AREA", uiPlayer),
                     (p) -> openSpecialAreaMenu(p, onBackReopen)));
         if (chunkCount > 1)
@@ -669,7 +682,7 @@ public class LandClaimGUI {
 
         if (isOwner) {
             menuItems.add(new MenuItem(
-                    AssetManager.getIcon("resize"),
+                    AssetManager.getIcon("icon-ki-expand-menu"),
                     t.get("TC_MENU_AREA_EXPAND_OPTION", uiPlayer),
                     (p) -> {
                         openExpandAreaMenu(p, onBackReopen);
@@ -708,17 +721,18 @@ public class LandClaimGUI {
         Callback<Player> onBackReopen = (Player player) -> openExpandAreaMenu(player, onBack);
 
         if (currentArea != null) {
-            menuItems.add(menuItemExpandArea(uiPlayer, currentArea, Direction.NORTH, "compass-north",
+            menuItems.add(menuItemExpandArea(uiPlayer, currentArea, Direction.NORTH, "icon-ki-expand-north",
                     "TC_MENU_AREA_EXPAND_NORTH", onBackReopen, onBackReopen));
-            menuItems.add(menuItemExpandArea(uiPlayer, currentArea, Direction.EAST, "compass-east",
+            menuItems.add(menuItemExpandArea(uiPlayer, currentArea, Direction.EAST, "icon-ki-expand-east",
                     "TC_MENU_AREA_EXPAND_EAST", onBackReopen, onBackReopen));
-            menuItems.add(menuItemExpandArea(uiPlayer, currentArea, Direction.SOUTH, "compass-south",
+            menuItems.add(menuItemExpandArea(uiPlayer, currentArea, Direction.SOUTH, "icon-ki-expand-south",
                     "TC_MENU_AREA_EXPAND_SOUTH", onBackReopen, onBackReopen));
-            menuItems.add(menuItemExpandArea(uiPlayer, currentArea, Direction.WEST, "compass-west",
+            menuItems.add(menuItemExpandArea(uiPlayer, currentArea, Direction.WEST, "icon-ki-expand-west",
                     "TC_MENU_AREA_EXPAND_WEST", onBackReopen, onBackReopen));
-            menuItems.add(menuItemExpandArea(uiPlayer, currentArea, Direction.UP, "up", "TC_MENU_AREA_EXPAND_UP",
+            menuItems.add(menuItemExpandArea(uiPlayer, currentArea, Direction.UP, "icon-ki-expand-up",
+                    "TC_MENU_AREA_EXPAND_UP",
                     onBackReopen, onBackReopen));
-            menuItems.add(menuItemExpandArea(uiPlayer, currentArea, Direction.DOWN, "down",
+            menuItems.add(menuItemExpandArea(uiPlayer, currentArea, Direction.DOWN, "icon-ki-expand-down",
                     "TC_MENU_AREA_EXPAND_DOWN", onBackReopen, onBackReopen));
         }
         menuItems.add(MenuItem.closeMenu(uiPlayer));
@@ -776,7 +790,7 @@ public class LandClaimGUI {
         List<MenuItem> menuItems = new ArrayList<>();
 
         menuItems.add(new MenuItem(
-                AssetManager.getIcon(showCurrentChunkFrame ? "hideCurrentChunk" : "showCurrentChunk"),
+                AssetManager.getIcon(showCurrentChunkFrame ? "icon-ki-current-on" : "icon-ki-current-off"),
                 t.get(showCurrentChunkFrame ? "TC_MENU_VISIBILITY_CURRENT_HIDE" : "TC_MENU_VISIBILITY_CURRENT_SHOW",
                         uiPlayer),
                 (p) -> {
@@ -790,7 +804,7 @@ public class LandClaimGUI {
                 }));
 
         menuItems.add(new MenuItem(
-                AssetManager.getIcon(showOwnedAreaFrames ? "hideOwnedAreas" : "showOwnedAreas"),
+                AssetManager.getIcon(showOwnedAreaFrames ? "icon-ki-owned-on" : "icon-ki-owned-off"),
                 t.get(showOwnedAreaFrames ? "TC_MENU_VISIBILITY_OWNED_HIDE" : "TC_MENU_VISIBILITY_OWNED_SHOW",
                         uiPlayer),
                 (p) -> {
@@ -802,7 +816,7 @@ public class LandClaimGUI {
                 }));
 
         menuItems.add(new MenuItem(
-                AssetManager.getIcon(showOtherAreaFrames ? "hideOtherAreas" : "showOtherAreas"),
+                AssetManager.getIcon(showOtherAreaFrames ? "icon-ki-others-on" : "icon-ki-others-off"),
                 t.get(showOtherAreaFrames ? "TC_MENU_VISIBILITY_OTHER_HIDE" : "TC_MENU_VISIBILITY_OTHER_SHOW",
                         uiPlayer),
                 (p) -> {
@@ -828,7 +842,7 @@ public class LandClaimGUI {
         List<MenuItem> menuItems = new ArrayList<>();
 
         menuItems.add(new MenuItem(
-                AssetManager.getIcon("visibilityMenu"),
+                AssetManager.getIcon("icon-ki-claim-visibility"),
                 t.get("TC_MENU_VISIBILITY", uiPlayer),
                 (p) -> {
                     openVisibilitySettingsMenu(p);
@@ -836,7 +850,7 @@ public class LandClaimGUI {
 
         if (uiPlayer.isAdmin())
             menuItems.add(new MenuItem(
-                    AssetManager.getIcon("admin-menu"),
+                    AssetManager.getIcon("icon-ki-zone-admin"),
                     t.get("TC_MENU_ADMIN", uiPlayer),
                     (p) -> {
                         openAdminMenu(p, (Player player) -> openMainMenu(player));
@@ -844,7 +858,7 @@ public class LandClaimGUI {
 
         if (canClaimArea)
             menuItems.add(new MenuItem(
-                    AssetManager.getIcon("claim-chunk"),
+                    AssetManager.getIcon("icon-ki-create-claim"),
                     t.get("TC_MENU_CLAIM", uiPlayer),
                     (p) -> {
                         Area createdArea = chunkClaimUtil.claimArea(p,
@@ -878,7 +892,7 @@ public class LandClaimGUI {
         }
         if (currentArea != null) {
             menuItems.add(new MenuItem(
-                    AssetManager.getIcon("claim-chunk"),
+                    AssetManager.getIcon("icon-ki-create-claim"),
                     t.get("TC_MENU_AREA_OPTION", uiPlayer),
                     (p) -> {
                         openClaimOptionsMenu(p, (Player player) -> openMainMenu(player));

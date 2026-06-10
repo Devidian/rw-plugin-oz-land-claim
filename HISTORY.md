@@ -4,6 +4,11 @@
 
 ## [unreleased]
 
+## [0.11.0] - 2026-06-10 | Static area support and new icons
+
+- feat: new special area "static" added, like "visitors only" area
+- change: exchanged all flat icons with AI created icons to align with other plugins
+
 ## [0.10.0] - 2026-06-08 | Shortcut visibility and shutdown cleanup
 
 - feat: add LandClaim player shortcut visibility setting for `/ozt` and inventory shortcuts

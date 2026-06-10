@@ -34,6 +34,9 @@ public class Area3DUtils {
         AREA_COLORS.put(s.specialPvPAreaPermission,
                 new AreaColors(s.pvpAreaBorderColor, s.pvpAreaFrameColor));
 
+        AREA_COLORS.put(s.specialStaticAreaPermission,
+                new AreaColors(s.staticAreaBorderColor, s.staticAreaFrameColor));
+
         AREA_COLORS.put(s.specialTrapAreaPermission,
                 new AreaColors(s.trapAreaBorderColor, s.trapAreaFrameColor));
 

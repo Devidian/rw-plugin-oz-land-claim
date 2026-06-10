@@ -120,7 +120,7 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
 
         // Load Plugin Menu into Main Plugin Menu
         PluginMenuManager
-                .registerPluginMenu(new MenuItem(name, AssetManager.getIcon("oz-lc-logo"), "Land Claim", (Player p) -> {
+                .registerPluginMenu(new MenuItem(name, AssetManager.getIcon("icon-ki-plugin-logo"), "Land Claim", (Player p) -> {
                     gui.openMainMenu(p);
                 }));
         PluginShortcutVisibility.register(name, LandClaimPlayerPluginSettings::shortcutVisible);
@@ -401,6 +401,7 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
                 "ozlc-exiled.json",
                 "ozlc-special-rest.json",
                 "ozlc-special-pvp.json",
+                "ozlc-special-static.json",
                 "ozlc-special-trap.json",
                 "ozlc-special.json"
         };

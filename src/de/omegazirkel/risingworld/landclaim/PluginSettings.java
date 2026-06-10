@@ -70,6 +70,7 @@ public class PluginSettings {
         // permissions to use
         public String specialRestAreaPermission = "ozlc-special-rest";
         public String specialPvPAreaPermission = "ozlc-special-pvp";
+        public String specialStaticAreaPermission = "ozlc-special-static";
         public String specialTrapAreaPermission = "ozlc-special-trap";
         public String specialAreaPermission = "ozlc-special";
         public String defaultAreaPermission = "ozlc-guest";
@@ -90,6 +91,8 @@ public class PluginSettings {
         public ColorRGBA forSaleAreaBorderColor = new ColorRGBA(0x00FFFF10);
         // color="#FFFFFF15"
         public ColorRGBA specialAreaBorderColor = new ColorRGBA(0xFFFFFF10);
+        // color="#81D4FA10"
+        public ColorRGBA staticAreaBorderColor = new ColorRGBA(0x81D4FA10);
         // color="#FF000015"
         public ColorRGBA pvpAreaBorderColor = new ColorRGBA(0xFF000010);
         // color="#6fff8215"
@@ -107,6 +110,8 @@ public class PluginSettings {
         public ColorRGBA forSaleAreaFrameColor = new ColorRGBA(0x00FFFF50);
         // color="#FFFFFF50"
         public ColorRGBA specialAreaFrameColor = new ColorRGBA(0xFFFFFF50);
+        // color="#81D4FA50"
+        public ColorRGBA staticAreaFrameColor = new ColorRGBA(0x81D4FA50);
         // color="#FF000050"
         public ColorRGBA pvpAreaFrameColor = new ColorRGBA(0xFF000050);
         // color="#6fff82AA"
@@ -234,6 +239,8 @@ public class PluginSettings {
                         // Area permissions
                         specialRestAreaPermission = settings.getProperty("specialRestAreaPermission",
                                         "ozlc-special-rest");
+                        specialStaticAreaPermission = settings.getProperty("specialStaticAreaPermission",
+                                        "ozlc-special-static");
                         specialPvPAreaPermission = settings.getProperty("specialPvPAreaPermission", "ozlc-special-pvp");
                         specialTrapAreaPermission = settings.getProperty("specialTrapAreaPermission",
                                         "ozlc-special-trap");
