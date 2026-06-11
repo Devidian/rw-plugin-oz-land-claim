@@ -4,6 +4,10 @@
 
 ## [unreleased]
 
+## [0.11.1] - 2026-06-11 | Restore deleted icon
+
+- fix: restore deleted icon
+
 ## [0.11.0] - 2026-06-10 | Static area support and new icons
 
 - feat: new special area "static" added, like "visitors only" area
