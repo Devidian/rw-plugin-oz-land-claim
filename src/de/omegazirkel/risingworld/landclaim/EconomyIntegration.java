@@ -53,7 +53,7 @@ public class EconomyIntegration {
                     "Adds one extra LandClaim claim capacity.",
                     Math.max(0, settings.extraClaimBasePrice),
                     settings.extraClaimShopCurrencyIdentifier,
-                    "claim-chunk",
+                    "icon-ki-owned-on",
                     "OZ - Land Claim",
                     callback,
                     priceResolver);

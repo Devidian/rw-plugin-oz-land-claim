@@ -2,7 +2,12 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
-## [unreleased]
+## [0.11.2] - 2026-06-13 | Permission UI and claim icon
+
+- refactor: align area permissions with the shared plugin overlay layout
+- fix: move area owner status to the footer and use the inherited top-right close button
+- fix: improve special-area name contrast on the dark chunk-info overlay
+- fix: use the available owned-claim icon for the extra-claim Shop offer
 
 ## [0.11.1] - 2026-06-11 | Restore deleted icon
 
