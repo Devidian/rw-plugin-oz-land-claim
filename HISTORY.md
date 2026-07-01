@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## Unreleased
+
+- feat: add route-ready active claim-sale export DTOs, service, and exposure setting for manager bridges
+
 ## [0.11.2] - 2026-06-13 | Permission UI and claim icon
 
 - refactor: align area permissions with the shared plugin overlay layout

@@ -46,6 +46,7 @@ public class PluginSettings {
         public Integer autoClaimRemovalDelaySeconds = 60;
         public Boolean allowClaimSale = false;
         public Boolean allowClaimBuyExceedLimit = false;
+        public Boolean exposeClaimSales = true;
         public Boolean enableExtraClaimShopOffer = true;
         public Integer extraClaimBasePrice = 200;
         public Integer extraClaimPriceIncreasePercent = 10;
@@ -180,6 +181,7 @@ public class PluginSettings {
                         allowClaimSale = settings.getProperty("allowClaimSale", "false").contentEquals("true");
                         allowClaimBuyExceedLimit = settings.getProperty("allowClaimBuyExceedLimit", "false")
                                         .contentEquals("true");
+                        exposeClaimSales = settings.getProperty("exposeClaimSales", "true").contentEquals("true");
                         enableExtraClaimShopOffer = settings.getProperty("enableExtraClaimShopOffer", "true")
                                         .contentEquals("true");
                         extraClaimBasePrice = Integer.parseInt(settings.getProperty("extraClaimBasePrice", "200"));
@@ -304,7 +306,7 @@ public class PluginSettings {
                                         settings.getProperty("trapAreaFrameColor", "0xff9100AA").replace("0x", ""),
                                         16));
 
-                        logger().info(plugin.getName() + " Plugin settings loaded");
+                        logger().info((plugin == null ? "OZLandClaim" : plugin.getName()) + " Plugin settings loaded");
 
                 } catch (IOException ex) {
                         logger().error("IOException on initSettings: " + ex.getMessage());
@@ -371,6 +373,11 @@ public class PluginSettings {
                                 entry("allowClaimBuyExceedLimit", "Buy above limit",
                                                 "Allows claim purchases to exceed the buyer's normal claim limit.",
                                                 allowClaimBuyExceedLimit, "false", AdminSettingsType.BOOLEAN),
+                                AdminSettingsEntry.group("exportRoutes", "Export routes",
+                                                "Route-ready read exposure for manager bridges."),
+                                entry("exposeClaimSales", "Expose claim sales",
+                                                "Allows bridge/native route layers to expose active claim-sale listings.",
+                                                exposeClaimSales, "true", AdminSettingsType.BOOLEAN),
                                 AdminSettingsEntry.group("extraClaims", "Extra claim shop",
                                                 "Shop offer for purchasing additional claim capacity."),
                                 entry("enableExtraClaimShopOffer", "Extra claim shop offer",

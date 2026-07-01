@@ -68,6 +68,7 @@ All settings can be adjusted in the `settings.properties` file located in the pl
 | `autoClaimRemovalDelaySeconds`      | `60` | Delay after server start before automatic claim removal runs. |
 | `allowClaimSale`                    | `false` | Enables owner sale listings and Wallet-backed claim purchases when Wallet is installed. |
 | `allowClaimBuyExceedLimit`          | `false` | Allows claim purchases to exceed the buyer's normal claim limit. Keep disabled unless this is intentional. |
+| `exposeClaimSales`                  | `true`  | Allows bridge or future native route layers to expose active claim-sale listing metadata. |
 | `enableExtraClaimShopOffer`         | `true` | Registers an extra-claim capacity offer in OZ Shop when Shop is installed. |
 | `extraClaimBasePrice`               | `200` | Price for the first purchased extra-claim capacity. |
 | `extraClaimPriceIncreasePercent`    | `10` | Linear percent increase per already purchased extra-claim capacity. |
@@ -90,6 +91,8 @@ You can override the default colors for the chunk visualizations by uncommenting
 ### Migration Notes
 
 Claim economy support adds new SQLite tables for purchased extra-claim capacity and claim sale listings. They are created automatically on startup. No manual migration is required, and `allowClaimSale=false` keeps claim sale behavior disabled until an admin enables it.
+
+Route-ready claim-sale exports read active listings from `claimSaleListings` by `world` and use `listed_at` as the `lastChange` cursor. LandClaim exports only plugin-owned sale metadata; world area geometry remains owned by world/AdminUtils routes.
 
 ### Future Settings (Not yet implemented)
 
