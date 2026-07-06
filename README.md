@@ -30,7 +30,8 @@ Wallet and Shop are detected optionally for economy features; core claim protect
 - **Claim Protection:** Protect inactive players' areas from being claimed by others for a configurable amount of time.
 - **Admin Tools:** Includes commands for repairing and managing zones.
 - **Admin Cleanup:** Admins can review active claim owners and claimed areas, delete claim records, clean up abandoned chunks, or teleport to listed areas.
-- **Special Zones for Admins:** Admins can create special zones such as default special, PvP, rest, and trap zones directly from the UI.
+- **Special Zones for Admins:** Admins can create special zones such as default special, PvP, rest, trap, and renew zones directly from the UI.
+- **Renew Zones:** Renew zones are configurable special zones that reset their chunk columns on a persisted hourly interval. The hourly scheduler starts after the first player joins a server session, so world data is loaded before reset checks run. Admins can create them from the special-zone radial menu and edit the interval with `/lc config` or the admin radial zone configuration action.
 - **UI-based Permissions:** Manage who has access to your claimed areas directly in-game.
 - **Claim Sales:** Claim sale listings are stored with owner, area, price, listing time, buyer, purchase time, and status. When `allowClaimSale=true`, owners can list an owned area for sale or withdraw its active sale listing from the radial area menu. Active sale areas show a shared Tools indicator, and buyers see listed areas in the current chunk overlay and can buy them through Wallet-backed settlement. A completed purchase withdraws the buyer payment, clears old area permissions, assigns the buyer as the only owner, credits the seller, and rolls back on failure.
 - **Recently Online Players:** The permission UI can also list players who were online recently, even if they are offline now.
@@ -45,6 +46,7 @@ The main command is `/lc`. You can also use the alias `/landclaim`.
 | Command           | Description                                     | Permission           |
 | :---------------- | :---------------------------------------------- | :------------------- |
 | `/lc open`        | Opens the main radial menu for land management. | (everyone)           |
+| `/lc config`      | Opens the configuration UI for the current configurable zone. | Admin zone context |
 | `/lc status` or `/lc info` | Opens the shared Tools Info/Status panel. | (everyone)           |
 | `/lc repairareas` | (Admin) Scans and repairs all claim areas.      | `oz.landclaim.admin` |
 
@@ -66,9 +68,13 @@ All settings can be adjusted in the `settings.properties` file located in the pl
 | `enableAutoClaimRemoval`            | `false` | Runs one delayed server-start cleanup for owners inactive longer than the configured threshold. This removes claims and areas but does not reset chunks. |
 | `autoClaimRemovalInactiveDays`      | `90` | Inactivity threshold in days for automatic claim removal. |
 | `autoClaimRemovalDelaySeconds`      | `60` | Delay after server start before automatic claim removal runs. |
+| `renewZoneDefaultIntervalHours`     | `24` | Default interval in hours for newly created renew zones. |
+| `renewZoneResetAnnouncementTarget`  | `none` | Who receives renew-zone reset announcements: `none`, `all`, or `admins`. |
+| `discordRenewZoneLogChannelId`      | `0` | Discord channel id for renew-zone reset logs. `0` disables logging. |
 | `allowClaimSale`                    | `false` | Enables owner sale listings and Wallet-backed claim purchases when Wallet is installed. |
 | `allowClaimBuyExceedLimit`          | `false` | Allows claim purchases to exceed the buyer's normal claim limit. Keep disabled unless this is intentional. |
 | `exposeClaimSales`                  | `true`  | Allows bridge or future native route layers to expose active claim-sale listing metadata. |
+| `exposeRenewZones`                  | `true`  | Allows bridge or future native route layers to expose renew-zone metadata. |
 | `enableExtraClaimShopOffer`         | `true` | Registers an extra-claim capacity offer in OZ Shop when Shop is installed. |
 | `extraClaimBasePrice`               | `200` | Price for the first purchased extra-claim capacity. |
 | `extraClaimPriceIncreasePercent`    | `10` | Linear percent increase per already purchased extra-claim capacity. |
@@ -87,12 +93,15 @@ You can override the default colors for the chunk visualizations by uncommenting
 - `pvpAreaBorderColor` / `pvpAreaFrameColor`
 - `restAreaBorderColor` / `restAreaFrameColor`
 - `trapAreaBorderColor` / `trapAreaFrameColor`
+- `renewAreaBorderColor` / `renewAreaFrameColor`
 
 ### Migration Notes
 
-Claim economy support adds new SQLite tables for purchased extra-claim capacity and claim sale listings. They are created automatically on startup. No manual migration is required, and `allowClaimSale=false` keeps claim sale behavior disabled until an admin enables it.
+Claim economy support adds new SQLite tables for purchased extra-claim capacity and claim sale listings. Renew-zone support adds `renewZoneConfigs`. They are created automatically on startup. No manual migration is required, and `allowClaimSale=false` keeps claim sale behavior disabled until an admin enables it.
 
 Route-ready claim-sale exports read active listings from `claimSaleListings` by `world` and use `listed_at` as the `lastChange` cursor. LandClaim exports only plugin-owned sale metadata; world area geometry remains owned by world/AdminUtils routes.
+
+Route-ready renew-zone exports read `renewZoneConfigs` by `world` and use `updated_at` as the `lastChange` cursor. The payload includes `areaId`, `intervalHours`, `lastResetAt`, `nextRenewalAt`, and the configured renew-zone colors so manager map layers can decorate the matching area geometry.
 
 ### Future Settings (Not yet implemented)
 

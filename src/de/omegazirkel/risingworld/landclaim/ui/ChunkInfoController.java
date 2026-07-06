@@ -199,6 +199,10 @@ public class ChunkInfoController {
             return t().get("TC_CHUNKINFO_SPECIAL_TRAP_AREA", player)
                     .replace("PH_AREA_NAME", areaName);
         }
+        if (defaultPermission.equals(s.specialRenewAreaPermission)) {
+            return t().get("TC_CHUNKINFO_SPECIAL_RENEW_AREA", player)
+                    .replace("PH_AREA_NAME", areaName);
+        }
         return null;
     }
 

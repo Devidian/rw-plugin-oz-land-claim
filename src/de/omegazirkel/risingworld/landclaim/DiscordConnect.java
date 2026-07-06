@@ -108,4 +108,9 @@ public class DiscordConnect {
             sendDiscordMessage(message, s.discordBuyAccouncementChannelId);
     }
 
+    public static void sendDiscordRenewZoneLog(String message) {
+        if (s.discordRenewZoneLogChannelId > 0)
+            sendDiscordMessage(message, s.discordRenewZoneLogChannelId);
+    }
+
 }

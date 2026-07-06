@@ -2,8 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
-## Unreleased
+## [0.12.0] - 2026-07-06 | Renew zones
 
+- feat: add configurable renew zones with persisted interval, hourly reset scheduler, announcements, Discord logging, and manager map export metadata
+- fix: start the renew-zone hourly scheduler after the first player joins a server session to avoid pre-world-load reset checks
 - feat: add route-ready active claim-sale export DTOs, service, and exposure setting for manager bridges
 
 ## [0.11.2] - 2026-06-13 | Permission UI and claim icon

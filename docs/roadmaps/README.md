@@ -1,5 +1,6 @@
 # Roadmaps
 
+- [Renew Zone](renew-zone.md)
 - [Roadmap Plan 04 Plugin Runtime Standards](roadmap-plan-04-plugin-runtime-standards.md)
 - [Roadmap Plan 03 Sector Visibility](roadmap-plan-03-sector-visibility.md)
 - [Roadmap Plan 02 Plugin Standardization](roadmap-plan-02-plugin-standardization.md)

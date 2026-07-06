@@ -15,10 +15,12 @@ import de.omegazirkel.risingworld.landclaim.LandClaimGUI;
 import de.omegazirkel.risingworld.landclaim.LandClaimPluginInfoStatusProvider;
 import de.omegazirkel.risingworld.landclaim.PermissionFileUtil;
 import de.omegazirkel.risingworld.landclaim.PluginSettings;
+import de.omegazirkel.risingworld.landclaim.RenewZoneResetService;
 import de.omegazirkel.risingworld.landclaim.db.ClaimSaleListingService;
 import de.omegazirkel.risingworld.landclaim.db.ExtraClaimCapacityService;
 import de.omegazirkel.risingworld.landclaim.db.LandClaimChunkService;
 import de.omegazirkel.risingworld.landclaim.db.LandClaimChunkStore;
+import de.omegazirkel.risingworld.landclaim.db.RenewZoneConfigService;
 import de.omegazirkel.risingworld.landclaim.ui.ClaimSaleIndicatorProvider;
 import de.omegazirkel.risingworld.landclaim.ui.ChunkInfoManager;
 import de.omegazirkel.risingworld.landclaim.ui.LandClaimPlayerPluginData;
@@ -37,6 +39,7 @@ import de.omegazirkel.risingworld.tools.ui.PluginInfoStatusProviders;
 import de.omegazirkel.risingworld.tools.ui.PluginMenuManager;
 import de.omegazirkel.risingworld.tools.ui.PluginShortcutVisibility;
 import de.omegazirkel.risingworld.tools.ui.SharedIndicators;
+import net.risingworld.api.Timer;
 import net.risingworld.api.Plugin;
 import net.risingworld.api.Server;
 import net.risingworld.api.events.EventMethod;
@@ -67,6 +70,9 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
     private static EconomyIntegration economyIntegration;
     private static ExtraClaimCapacityService extraClaimCapacityService;
     private static ClaimSaleListingService claimSaleListingService;
+    private static RenewZoneConfigService renewZoneConfigService;
+    private static RenewZoneResetService renewZoneResetService;
+    private Timer renewZoneTimer;
     public static String name;
     // only for workaround with area bugs
     // public static WorldDatabase wdbAreas;
@@ -102,6 +108,8 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
             lccStore = new LandClaimChunkStore(sqliteCon);
             extraClaimCapacityService = new ExtraClaimCapacityService(sqliteCon);
             claimSaleListingService = new ClaimSaleListingService(sqliteCon);
+            renewZoneConfigService = new RenewZoneConfigService(sqliteCon);
+            renewZoneResetService = new RenewZoneResetService(renewZoneConfigService, s);
         } catch (Exception e) {
             logger().error(e.getMessage());
             e.printStackTrace();
@@ -155,6 +163,10 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
         logger().warn("⚠️ Disabling " + this.getName() + " ...");
         if (chunkInfoManager != null)
             chunkInfoManager.stop();
+        if (renewZoneTimer != null) {
+            renewZoneTimer.kill();
+            renewZoneTimer = null;
+        }
         if (name != null) {
             PluginShortcutVisibility.unregister(name);
             PluginInfoStatusProviders.unregisterProvider(name);
@@ -192,6 +204,14 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
         return claimSaleListingService;
     }
 
+    public static RenewZoneConfigService renewZoneConfigService() {
+        return renewZoneConfigService;
+    }
+
+    public static RenewZoneResetService renewZoneResetService() {
+        return renewZoneResetService;
+    }
+
     public static EconomyIntegration economyIntegration() {
         return economyIntegration;
     }
@@ -223,6 +243,41 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
                     .replace("PH_DAYS", String.valueOf(result.inactiveDays()));
             DiscordConnect.sendDiscordReleaseAccouncement(message);
         });
+    }
+
+    private void scheduleRenewZoneReset() {
+        if (renewZoneTimer != null) {
+            renewZoneTimer.kill();
+        }
+        float delaySeconds = secondsUntilNextFullHour();
+        renewZoneTimer = new Timer(3600f, delaySeconds, -1, () -> {
+            if (renewZoneResetService == null) {
+                return;
+            }
+            RenewZoneResetService.RenewZoneResetResult result = renewZoneResetService
+                    .resetDueZones(System.currentTimeMillis());
+            if (result.zonesChecked() > 0) {
+                logger().info("Renew zone hourly check completed. Checked: " + result.zonesChecked()
+                        + ", reset: " + result.zonesReset()
+                        + ", chunk columns reset: " + result.chunksReset()
+                        + ", stale configs removed: " + result.staleConfigsRemoved());
+            }
+        });
+        renewZoneTimer.start();
+        logger().info("Renew zone hourly check scheduled in " + Math.round(delaySeconds) + " seconds.");
+    }
+
+    private void ensureRenewZoneResetScheduled() {
+        if (renewZoneTimer != null) {
+            return;
+        }
+        scheduleRenewZoneReset();
+    }
+
+    private float secondsUntilNextFullHour() {
+        long nowMs = System.currentTimeMillis();
+        long nextHourMs = ((nowMs / 3_600_000L) + 1L) * 3_600_000L;
+        return Math.max(1f, (nextHourMs - nowMs) / 1000f);
     }
 
     @EventMethod
@@ -268,6 +323,9 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
                     break;
                 case "open":
                     gui.openMainMenu(player);
+                    break;
+                case "config":
+                    gui.openCurrentAreaConfig(player, (Player p) -> gui.openMainMenu(p));
                     break;
                 default:
                     player.sendTextMessage(t.get("TC_ERR_CMD_UNKNOWN").replace("PH_PLUGIN_CMD", pluginCMD));
@@ -336,6 +394,7 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
         Vector3i chunkPos = player.getChunkPosition();
         eventLogger().debug("Player " + player.getName() + " connected to the server. Current chunk position: "
                 + chunkPos.toString());
+        ensureRenewZoneResetScheduled();
         Integer dbId = player.getDbID();
         // ensure values are set
         if (!player.hasAttribute(LandClaimPlayerPluginSettings.DEVELOPER_MODE_KEY))
@@ -403,6 +462,7 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
                 "ozlc-special-pvp.json",
                 "ozlc-special-static.json",
                 "ozlc-special-trap.json",
+                "ozlc-special-renew.json",
                 "ozlc-special.json"
         };
 

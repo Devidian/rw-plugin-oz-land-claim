@@ -8,6 +8,7 @@ import java.util.Map;
 import de.omegazirkel.risingworld.LandClaim;
 import de.omegazirkel.risingworld.landclaim.EconomyIntegration.WalletOperationResult;
 import de.omegazirkel.risingworld.landclaim.db.ClaimSaleListing;
+import de.omegazirkel.risingworld.landclaim.db.RenewZoneConfig;
 import de.omegazirkel.risingworld.landclaim.ui.AdminCleanupOverlay;
 import de.omegazirkel.risingworld.landclaim.ChunkClaimUtil.Direction;
 import de.omegazirkel.risingworld.landclaim.ui.LandClaimPlayerPluginSettings;
@@ -129,6 +130,7 @@ public class LandClaimGUI {
         AssetManager.loadIconFromPlugin(p, "icon-ki-rest-zone"); // create rest area
         AssetManager.loadIconFromPlugin(p, "icon-ki-combat-zone"); // create pvp area
         AssetManager.loadIconFromPlugin(p, "icon-ki-static-zone"); // static area
+        AssetManager.loadIconFromPlugin(p, "icon-ki-renew-zone"); // renew area
 
         return getInstance();
     }
@@ -470,6 +472,14 @@ public class LandClaimGUI {
         }
     }
 
+    private int parsePositiveInt(String value) {
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException ex) {
+            return 0;
+        }
+    }
+
     private String areaName(Area area) {
         return area == null || area.getName() == null || area.getName().isBlank() ? "Unnamed Area" : area.getName();
     }
@@ -488,6 +498,13 @@ public class LandClaimGUI {
                     Area createdArea = chunkClaimUtil.claimArea(uiPlayer, area, permission, null);
 
                     if (createdArea != null) {
+                        if (permission.equals(s.specialRenewAreaPermission)
+                                && LandClaim.renewZoneConfigService() != null) {
+                            LandClaim.renewZoneConfigService().save(
+                                    createdArea.getID(),
+                                    s.renewZoneDefaultIntervalHours,
+                                    System.currentTimeMillis());
+                        }
                         createSpecialAreaAnnouncement(area, uiPlayer);
                         Area3DUtils.updateAreaFramesForAllPlayers();
                     }
@@ -566,6 +583,61 @@ public class LandClaimGUI {
                 });
     }
 
+    private MenuItem menuItemAreaConfig(Player player, Callback<Player> onResponse) {
+        return new MenuItem(
+                AssetManager.getIcon("icon-ki-renew-zone"),
+                t.get("TC_MENU_AREA_CONFIG", player),
+                (p) -> openCurrentAreaConfig(p, onResponse));
+    }
+
+    public void openCurrentAreaConfig(Player player, Callback<Player> onCancel) {
+        Area area = player.getCurrentArea();
+        if (!isRenewArea(area)) {
+            player.sendTextMessage(t.get("TC_AREA_CONFIG_UNAVAILABLE", player));
+            onCancel.onCall(player);
+            return;
+        }
+        openRenewZoneConfig(player, area, onCancel);
+    }
+
+    private void openRenewZoneConfig(Player player, Area area, Callback<Player> onCancel) {
+        if (LandClaim.renewZoneConfigService() == null) {
+            player.sendTextMessage(t.get("TC_AREA_CONFIG_UNAVAILABLE", player));
+            onCancel.onCall(player);
+            return;
+        }
+        RenewZoneConfig config = LandClaim.renewZoneConfigService()
+                .find(area.getID())
+                .orElse(new RenewZoneConfig(area.getID(), s.renewZoneDefaultIntervalHours, 0L));
+        UIElement intervalWindow = UIDialogFactory.getTextInput(player,
+                t.get("TC_DIALOG_RENEW_ZONE_CONFIG_TITLE", player),
+                String.valueOf(config.intervalHours()),
+                (String value) -> {
+                    int intervalHours = parsePositiveInt(value);
+                    if (intervalHours <= 0) {
+                        player.sendTextMessage(t.get("TC_RENEW_ZONE_CONFIG_INVALID_INTERVAL", player));
+                        onCancel.onCall(player);
+                        return;
+                    }
+                    RenewZoneConfig saved = LandClaim.renewZoneConfigService().save(
+                            area.getID(),
+                            intervalHours,
+                            config.lastResetAt());
+                    if (saved == null) {
+                        player.sendTextMessage(t.get("TC_RENEW_ZONE_CONFIG_SAVE_FAILED", player));
+                    } else {
+                        player.sendTextMessage(t.get("TC_RENEW_ZONE_CONFIG_SAVED", player)
+                                .replace("PH_INTERVAL_HOURS", String.valueOf(saved.intervalHours())));
+                    }
+                    onCancel.onCall(player);
+                },
+                onCancel);
+
+        player.addUIElement(intervalWindow, UITarget.HUD);
+        CursorManager.show(player);
+        player.hideRadialMenu(false);
+    }
+
     public void openSpecialAreaMenu(Player uiPlayer, Callback<Player> onBack) {
         List<MenuItem> menuItems = new ArrayList<>();
 
@@ -590,6 +662,10 @@ public class LandClaimGUI {
                     .add(menuItemCreateSpecialArea(uiPlayer, "icon-ki-trap-zone", "TC_MENU_SPECIAL_AREA_TRAP",
                             virtualArea,
                             s.specialTrapAreaPermission, onBack));
+            menuItems
+                    .add(menuItemCreateSpecialArea(uiPlayer, "icon-ki-renew-zone", "TC_MENU_SPECIAL_AREA_RENEW",
+                            virtualArea,
+                            s.specialRenewAreaPermission, onBack));
         }
         // show extend menu if area exist
         if (currentArea != null) {
@@ -653,6 +729,9 @@ public class LandClaimGUI {
         menuItems.add(menuItemAdminCleanup(uiPlayer, onBackReopen));
         if (currentArea != null) {
             menuItems.add(menuItemRenameArea(uiPlayer, currentArea, onBackReopen));
+            if (isRenewArea(currentArea)) {
+                menuItems.add(menuItemAreaConfig(uiPlayer, onBackReopen));
+            }
             menuItems.add(menuItemPermissionManager(uiPlayer, currentArea, onBackReopen));
             menuItems.add(menuItemRemoveArea(uiPlayer, currentArea, onBackReopen));
         }
@@ -915,6 +994,10 @@ public class LandClaimGUI {
     private boolean isOwner(Player player, Area area) {
         String areaPermission = area == null ? null : area.getPlayerPermission(player);
         return areaPermission != null && areaPermission.equals(s.ownerAreaPermission);
+    }
+
+    private boolean isRenewArea(Area area) {
+        return area != null && s.specialRenewAreaPermission.equals(area.getDefaultPermission());
     }
 
 }

@@ -40,6 +40,9 @@ public class Area3DUtils {
         AREA_COLORS.put(s.specialTrapAreaPermission,
                 new AreaColors(s.trapAreaBorderColor, s.trapAreaFrameColor));
 
+        AREA_COLORS.put(s.specialRenewAreaPermission,
+                new AreaColors(s.renewAreaBorderColor, s.renewAreaFrameColor));
+
         AREA_COLORS.put(s.specialAreaPermission,
                 new AreaColors(s.specialAreaBorderColor, s.specialAreaFrameColor));
 

@@ -105,7 +105,8 @@ public class PlayerPermissionRow {
                 s.specialPvPAreaPermission, t().get("TC_UI_PERMISSION_PVP", forPlayer),
                 s.specialStaticAreaPermission, t().get("TC_UI_PERMISSION_STATIC", forPlayer),
                 s.specialRestAreaPermission, t().get("TC_UI_PERMISSION_REST", forPlayer),
-                s.specialTrapAreaPermission, t().get("TC_UI_PERMISSION_TRAP", forPlayer));
+                s.specialTrapAreaPermission, t().get("TC_UI_PERMISSION_TRAP", forPlayer),
+                s.specialRenewAreaPermission, t().get("TC_UI_PERMISSION_RENEW", forPlayer));
 
         // WORKAROUND fix dropdown!
         Map<String, String> permissionLabelMap = Map.of(

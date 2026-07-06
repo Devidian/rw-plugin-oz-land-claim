@@ -1,0 +1,101 @@
+{
+  "area": {
+    "addplayer": false,
+    "canenter": true,
+    "canleave": true,
+    "removeplayer": false,
+    "setname": false
+  },
+  "blueprint": {
+    "create": false,
+    "createown": false,
+    "maxelements": -1,
+    "maxsize": -1,
+    "place": false,
+    "placelimitsession": -1,
+    "placeterrain": false,
+    "placevegetation": false
+  },
+  "creative": {
+    "allrecipes": false,
+    "areatools": false,
+    "edittools": false,
+    "fly": false,
+    "freecrafting": false,
+    "godmode": false,
+    "infiniteitems": false,
+    "instantdigging": false,
+    "light": false,
+    "placementtools": false,
+    "removaltools": false,
+    "terraintools": false,
+    "watertools": false
+  },
+  "general": {
+    "changeblockshape": true,
+    "changegamemode": false,
+    "destroyitems": true,
+    "dropitems": true,
+    "editnpc": true,
+    "fixedspawn": false,
+    "fly": false,
+    "godmode": false,
+    "instantdigging": false,
+    "keepinventory": true,
+    "noclipping": false,
+    "nofalldamage": false,
+    "nohungerthirst": false,
+    "nostamina": false,
+    "notemperature": false,
+    "pickupitems": true,
+    "placeitems": true,
+    "peacefulmode": true,
+    "pve": true,
+    "pvp": true,
+    "ridemounts": true,
+    "unlockalldoors": true,
+    "useallfurnaces": true,
+    "usealldoors": true,
+    "useallchests": true,
+    "usealllights": true,
+    "useallobjects": true,
+    "useallvehicles": true,
+    "voicechat": true
+  },
+  "image": {
+    "delete": false,
+    "deleteown": true,
+    "maxamount": 0,
+    "maxresolution": 512
+  },
+  "map": {
+    "allicons": false,
+    "createglobalmarker": false,
+    "createlocalmarker": true
+  },
+  "world": {
+    "destroyconstructions": true,
+    "destroyobjects": true,
+    "destroyownconstructions": true,
+    "destroyownobjects": true,
+    "destroyownvegetations": true,
+    "destroyterrain": true,
+    "destroyvegetations": true,
+    "editconstructions": true,
+    "editobjects": true,
+    "editownconstructions": true,
+    "editownobjects": true,
+    "editownvegetations": true,
+    "editvegetations": true,
+    "placeconstructions": true,
+    "placeobjects": true,
+    "placeobjectsexception": [],
+    "placeterrain": true,
+    "placevegetations": true
+  },
+  "forbidden": {
+    "crafting": [],
+    "items": [],
+    "objects": []
+  }
+}

@@ -44,9 +44,13 @@ public class PluginSettings {
         public Boolean enableAutoClaimRemoval = false;
         public Integer autoClaimRemovalInactiveDays = 90;
         public Integer autoClaimRemovalDelaySeconds = 60;
+        public Integer renewZoneDefaultIntervalHours = 24;
+        public String renewZoneResetAnnouncementTarget = "none";
+        public long discordRenewZoneLogChannelId = 0;
         public Boolean allowClaimSale = false;
         public Boolean allowClaimBuyExceedLimit = false;
         public Boolean exposeClaimSales = true;
+        public Boolean exposeRenewZones = true;
         public Boolean enableExtraClaimShopOffer = true;
         public Integer extraClaimBasePrice = 200;
         public Integer extraClaimPriceIncreasePercent = 10;
@@ -73,6 +77,7 @@ public class PluginSettings {
         public String specialPvPAreaPermission = "ozlc-special-pvp";
         public String specialStaticAreaPermission = "ozlc-special-static";
         public String specialTrapAreaPermission = "ozlc-special-trap";
+        public String specialRenewAreaPermission = "ozlc-special-renew";
         public String specialAreaPermission = "ozlc-special";
         public String defaultAreaPermission = "ozlc-guest";
         public String ownerAreaPermission = "ozlc-owner";
@@ -100,6 +105,8 @@ public class PluginSettings {
         public ColorRGBA restAreaBorderColor = new ColorRGBA(0x6fff829c);
         // color="#ff910015"
         public ColorRGBA trapAreaBorderColor = new ColorRGBA(0xff91009c);
+        // color="#00C2A815"
+        public ColorRGBA renewAreaBorderColor = new ColorRGBA(0x00C2A89c);
         // -- Frame colors --
         // color="#FFFF0050"
         public ColorRGBA currentChunkFrameColor = new ColorRGBA(0xFFFF0050);
@@ -119,6 +126,8 @@ public class PluginSettings {
         public ColorRGBA restAreaFrameColor = new ColorRGBA(0x6fff82AA);
         // color="#ff9100AA"
         public ColorRGBA trapAreaFrameColor = new ColorRGBA(0xff9100AA);
+        // color="#00C2A8AA"
+        public ColorRGBA renewAreaFrameColor = new ColorRGBA(0x00C2A8AA);
 
         // settings end
 
@@ -177,11 +186,16 @@ public class PluginSettings {
                                         .parseInt(settings.getProperty("autoClaimRemovalInactiveDays", "90"));
                         autoClaimRemovalDelaySeconds = Integer
                                         .parseInt(settings.getProperty("autoClaimRemovalDelaySeconds", "60"));
+                        renewZoneDefaultIntervalHours = Integer
+                                        .parseInt(settings.getProperty("renewZoneDefaultIntervalHours", "24"));
+                        renewZoneResetAnnouncementTarget = settings
+                                        .getProperty("renewZoneResetAnnouncementTarget", "none");
                         // trade settings
                         allowClaimSale = settings.getProperty("allowClaimSale", "false").contentEquals("true");
                         allowClaimBuyExceedLimit = settings.getProperty("allowClaimBuyExceedLimit", "false")
                                         .contentEquals("true");
                         exposeClaimSales = settings.getProperty("exposeClaimSales", "true").contentEquals("true");
+                        exposeRenewZones = settings.getProperty("exposeRenewZones", "true").contentEquals("true");
                         enableExtraClaimShopOffer = settings.getProperty("enableExtraClaimShopOffer", "true")
                                         .contentEquals("true");
                         extraClaimBasePrice = Integer.parseInt(settings.getProperty("extraClaimBasePrice", "200"));
@@ -211,6 +225,8 @@ public class PluginSettings {
                                         .parseLong(settings.getProperty("discordForSaleAccouncementChannelId", "0"));
                         discordBuyAccouncementChannelId = Long
                                         .parseLong(settings.getProperty("discordBuyAccouncementChannelId", "0"));
+                        discordRenewZoneLogChannelId = Long
+                                        .parseLong(settings.getProperty("discordRenewZoneLogChannelId", "0"));
                         enableDiscordClaimAnnouncement = settings.getProperty("enableDiscordClaimAnnouncement", "false")
                                         .contentEquals("true");
                         enableDiscordExpandAnnouncement = settings
@@ -246,6 +262,8 @@ public class PluginSettings {
                         specialPvPAreaPermission = settings.getProperty("specialPvPAreaPermission", "ozlc-special-pvp");
                         specialTrapAreaPermission = settings.getProperty("specialTrapAreaPermission",
                                         "ozlc-special-trap");
+                        specialRenewAreaPermission = settings.getProperty("specialRenewAreaPermission",
+                                        "ozlc-special-renew");
                         specialAreaPermission = settings.getProperty("specialAreaPermission", "ozlc-special");
                         defaultAreaPermission = settings.getProperty("defaultAreaPermission", "ozlc-guest");
                         ownerAreaPermission = settings.getProperty("ownerAreaPermission", "ozlc-owner");
@@ -281,6 +299,9 @@ public class PluginSettings {
                         trapAreaBorderColor = new ColorRGBA((int) Long.parseUnsignedLong(
                                         settings.getProperty("trapAreaBorderColor", "0xff91009c").replace("0x", ""),
                                         16));
+                        renewAreaBorderColor = new ColorRGBA((int) Long.parseUnsignedLong(
+                                        settings.getProperty("renewAreaBorderColor", "0x00C2A89c").replace("0x", ""),
+                                        16));
 
                         currentChunkFrameColor = new ColorRGBA((int) Long.parseUnsignedLong(
                                         settings.getProperty("currentChunkFrameColor", "0xFFFF0050").replace("0x", ""),
@@ -304,6 +325,9 @@ public class PluginSettings {
                                         16));
                         trapAreaFrameColor = new ColorRGBA((int) Long.parseUnsignedLong(
                                         settings.getProperty("trapAreaFrameColor", "0xff9100AA").replace("0x", ""),
+                                        16));
+                        renewAreaFrameColor = new ColorRGBA((int) Long.parseUnsignedLong(
+                                        settings.getProperty("renewAreaFrameColor", "0x00C2A8AA").replace("0x", ""),
                                         16));
 
                         logger().info((plugin == null ? "OZLandClaim" : plugin.getName()) + " Plugin settings loaded");
@@ -365,6 +389,17 @@ public class PluginSettings {
                                 entry("autoClaimRemovalDelaySeconds", "Removal delay",
                                                 "Delay in seconds before the automatic removal check runs after startup.",
                                                 autoClaimRemovalDelaySeconds, "60", AdminSettingsType.INTEGER),
+                                AdminSettingsEntry.group("renewZones", "Renew zones",
+                                                "Default interval for newly created renew zones."),
+                                entry("renewZoneDefaultIntervalHours", "Default renew interval",
+                                                "Default interval in hours for newly created renew zones.",
+                                                renewZoneDefaultIntervalHours, "24", AdminSettingsType.INTEGER),
+                                entry("renewZoneResetAnnouncementTarget", "Reset announcements",
+                                                "Who receives renew-zone reset announcements: none, all, or admins.",
+                                                renewZoneResetAnnouncementTarget, "none", AdminSettingsType.STRING),
+                                entry("discordRenewZoneLogChannelId", "Discord renew-zone log",
+                                                "Discord channel id for renew-zone reset logs. 0 disables logging.",
+                                                discordRenewZoneLogChannelId, "0", AdminSettingsType.INTEGER),
                                 AdminSettingsEntry.group("claimSales", "Claim sales",
                                                 "Wallet-backed claim sale and purchase behavior."),
                                 entry("allowClaimSale", "Allow claim sale",
@@ -378,6 +413,9 @@ public class PluginSettings {
                                 entry("exposeClaimSales", "Expose claim sales",
                                                 "Allows bridge/native route layers to expose active claim-sale listings.",
                                                 exposeClaimSales, "true", AdminSettingsType.BOOLEAN),
+                                entry("exposeRenewZones", "Expose renew zones",
+                                                "Allows bridge/native route layers to expose renew-zone metadata.",
+                                                exposeRenewZones, "true", AdminSettingsType.BOOLEAN),
                                 AdminSettingsEntry.group("extraClaims", "Extra claim shop",
                                                 "Shop offer for purchasing additional claim capacity."),
                                 entry("enableExtraClaimShopOffer", "Extra claim shop offer",
