@@ -128,7 +128,7 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
 
         // Load Plugin Menu into Main Plugin Menu
         PluginMenuManager
-                .registerPluginMenu(new MenuItem(name, AssetManager.getIcon("icon-ki-plugin-logo"), "Land Claim", (Player p) -> {
+                .registerPluginMenu(new MenuItem(name, "icon-ki-plugin-logo", "Land Claim", (Player p) -> {
                     gui.openMainMenu(p);
                 }));
         PluginShortcutVisibility.register(name, LandClaimPlayerPluginSettings::shortcutVisible);

@@ -143,8 +143,7 @@ public class LandClaimGUI {
     }
 
     private MenuItem menuItemSplitArea(Player uiPlayer, Area area, Callback<Player> onCancel) {
-        return new MenuItem(
-                AssetManager.getIcon("icon-ki-split-claim"),
+        return new MenuItem("icon-ki-split-claim",
                 t.get("TC_MENU_AREA_SPLIT", uiPlayer),
                 (p) -> {
                     UIElement confirmDialog = UIDialogFactory.getConfirmDangerDialog(p,
@@ -173,8 +172,7 @@ public class LandClaimGUI {
 
     private MenuItem menuItemRenameArea(Player player, Area area, Callback<Player> onCancel) {
         final String currentName = area.getName();
-        return new MenuItem(
-                AssetManager.getIcon("icon-ki-rename-claim"),
+        return new MenuItem("icon-ki-rename-claim",
                 t.get("TC_MENU_AREA_RENAME", player),
                 (p) -> {
                     UIElement renameWindow = UIDialogFactory.getTextInput(p,
@@ -205,8 +203,7 @@ public class LandClaimGUI {
     }
 
     private MenuItem menuItemRemoveArea(Player player, Area area, Callback<Player> onCancel) {
-        return new MenuItem(
-                AssetManager.getIcon("icon-ki-delete-claim"),
+        return new MenuItem("icon-ki-delete-claim",
                 t.get("TC_MENU_AREA_RELEASE", player),
                 (p) -> {
                     UIElement confirmDialog = UIDialogFactory.getConfirmDangerDialog(p,
@@ -229,8 +226,7 @@ public class LandClaimGUI {
     }
 
     private MenuItem menuItemListAreaForSale(Player player, Area area, Callback<Player> onCancel) {
-        return new MenuItem(
-                AssetManager.getIcon("icon-ki-for-sale"),
+        return new MenuItem("icon-ki-for-sale",
                 t.get("TC_MENU_AREA_SALE_LIST", player),
                 (p) -> {
                     UIElement priceWindow = UIDialogFactory.getTextInput(p,
@@ -269,8 +265,7 @@ public class LandClaimGUI {
 
     private MenuItem menuItemWithdrawAreaSale(Player player, Area area, ClaimSaleListing listing,
             Callback<Player> onCancel) {
-        return new MenuItem(
-                AssetManager.getIcon("undo"),
+        return new MenuItem("undo",
                 t.get("TC_MENU_AREA_SALE_WITHDRAW", player),
                 (p) -> {
                     UIElement confirmDialog = UIDialogFactory.getConfirmDialog(p,
@@ -296,8 +291,7 @@ public class LandClaimGUI {
     }
 
     private MenuItem menuItemBuyArea(Player player, Area area, ClaimSaleListing listing, Callback<Player> onCancel) {
-        return new MenuItem(
-                AssetManager.getIcon("icon-ki-for-sale"),
+        return new MenuItem("icon-ki-for-sale",
                 t.get("TC_MENU_AREA_SALE_BUY", player),
                 (p) -> {
                     UIElement confirmDialog = UIDialogFactory.getConfirmDialog(p,
@@ -491,8 +485,7 @@ public class LandClaimGUI {
             Area area,
             String permission,
             Callback<Player> onBack) {
-        return new MenuItem(
-                AssetManager.getIcon(iconKey),
+        return new MenuItem(iconKey,
                 t.get(labelKey, uiPlayer),
                 (p) -> {
                     Area createdArea = chunkClaimUtil.claimArea(uiPlayer, area, permission, null);
@@ -515,8 +508,7 @@ public class LandClaimGUI {
 
     private MenuItem menuItemExpandArea(Player player, Area area, Direction direction, String iconKey, String labelKey,
             Callback<Player> onCancel, Callback<Player> onBack) {
-        return new MenuItem(
-                AssetManager.getIcon(iconKey),
+        return new MenuItem(iconKey,
                 t.get(labelKey, player),
                 (p) -> {
                     UIElement confirmDialog = UIDialogFactory.getConfirmDangerDialog(p,
@@ -546,8 +538,7 @@ public class LandClaimGUI {
     }
 
     private MenuItem menuItemPermissionManager(Player player, Area area, Callback<Player> onResponse) {
-        return new MenuItem(
-                AssetManager.getIcon("icon-ki-permissions"),
+        return new MenuItem("icon-ki-permissions",
                 t.get("TC_MENU_AREA_PERMISSIONS", player),
                 (p) -> {
                     UIElement overlay = (UIElement) p.getAttribute(PermissionOverlay.ATTRIBUTE_KEY);
@@ -566,8 +557,7 @@ public class LandClaimGUI {
     }
 
     private MenuItem menuItemAdminCleanup(Player uiPlayer, Callback<Player> onResponse) {
-        return new MenuItem(
-                AssetManager.getIcon("icon-ki-zone-administration"),
+        return new MenuItem("icon-ki-zone-administration",
                 t.get("TC_MENU_ADMIN_CLEANUP", uiPlayer),
                 (p) -> {
                     UIElement overlay = (UIElement) p.getAttribute(AdminCleanupOverlay.ATTRIBUTE_KEY);
@@ -584,8 +574,7 @@ public class LandClaimGUI {
     }
 
     private MenuItem menuItemAreaConfig(Player player, Callback<Player> onResponse) {
-        return new MenuItem(
-                AssetManager.getIcon("icon-ki-renew-zone"),
+        return new MenuItem("icon-ki-renew-zone",
                 t.get("TC_MENU_AREA_CONFIG", player),
                 (p) -> openCurrentAreaConfig(p, onResponse));
     }
@@ -669,8 +658,7 @@ public class LandClaimGUI {
         }
         // show extend menu if area exist
         if (currentArea != null) {
-            menuItems.add(new MenuItem(
-                    AssetManager.getIcon("icon-ki-expand-menu"),
+            menuItems.add(new MenuItem("icon-ki-expand-menu",
                     t.get("TC_MENU_AREA_EXPAND_OPTION", uiPlayer),
                     (p) -> {
                         openExpandAreaMenu(p, onBackReopen);
@@ -696,8 +684,7 @@ public class LandClaimGUI {
 
         if (developerMode) {
 
-            menuItems.add(new MenuItem(
-                    AssetManager.getIcon("error-bug"),
+            menuItems.add(new MenuItem("error-bug",
                     t.get("TC_MENU_ADMIN_DEBUG", uiPlayer),
                     (p) -> {
                         Area3DUtils.updateAreaFramesForPlayer(p);
@@ -713,8 +700,7 @@ public class LandClaimGUI {
                         else
                             p.sendTextMessage("no areas found Server.getAllAreas() == null");
                     }));
-            menuItems.add(new MenuItem(
-                    AssetManager.getIcon("tools"),
+            menuItems.add(new MenuItem("tools",
                     t.get("TC_MENU_ADMIN_SYNC_REPAIR", uiPlayer),
                     (p) -> {
                         if (p.isAdmin()) {
@@ -736,8 +722,7 @@ public class LandClaimGUI {
             menuItems.add(menuItemRemoveArea(uiPlayer, currentArea, onBackReopen));
         }
         if (!isDefaultArea)
-            menuItems.add(new MenuItem(
-                    AssetManager.getIcon("icon-ki-special-zones"),
+            menuItems.add(new MenuItem("icon-ki-special-zones",
                     t.get("TC_MENU_SPECIAL_AREA", uiPlayer),
                     (p) -> openSpecialAreaMenu(p, onBackReopen)));
         if (chunkCount > 1)
@@ -760,8 +745,7 @@ public class LandClaimGUI {
         Callback<Player> onBackReopen = (Player player) -> openClaimOptionsMenu(player, onBack);
 
         if (isOwner) {
-            menuItems.add(new MenuItem(
-                    AssetManager.getIcon("icon-ki-expand-menu"),
+            menuItems.add(new MenuItem("icon-ki-expand-menu",
                     t.get("TC_MENU_AREA_EXPAND_OPTION", uiPlayer),
                     (p) -> {
                         openExpandAreaMenu(p, onBackReopen);
@@ -868,8 +852,7 @@ public class LandClaimGUI {
 
         List<MenuItem> menuItems = new ArrayList<>();
 
-        menuItems.add(new MenuItem(
-                AssetManager.getIcon(showCurrentChunkFrame ? "icon-ki-current-on" : "icon-ki-current-off"),
+        menuItems.add(new MenuItem(showCurrentChunkFrame ? "icon-ki-current-on" : "icon-ki-current-off",
                 t.get(showCurrentChunkFrame ? "TC_MENU_VISIBILITY_CURRENT_HIDE" : "TC_MENU_VISIBILITY_CURRENT_SHOW",
                         uiPlayer),
                 (p) -> {
@@ -882,8 +865,7 @@ public class LandClaimGUI {
                     openVisibilitySettingsMenu(p);
                 }));
 
-        menuItems.add(new MenuItem(
-                AssetManager.getIcon(showOwnedAreaFrames ? "icon-ki-owned-on" : "icon-ki-owned-off"),
+        menuItems.add(new MenuItem(showOwnedAreaFrames ? "icon-ki-owned-on" : "icon-ki-owned-off",
                 t.get(showOwnedAreaFrames ? "TC_MENU_VISIBILITY_OWNED_HIDE" : "TC_MENU_VISIBILITY_OWNED_SHOW",
                         uiPlayer),
                 (p) -> {
@@ -894,8 +876,7 @@ public class LandClaimGUI {
                     Area3DUtils.updateAreaFramesForPlayer(p);
                 }));
 
-        menuItems.add(new MenuItem(
-                AssetManager.getIcon(showOtherAreaFrames ? "icon-ki-others-on" : "icon-ki-others-off"),
+        menuItems.add(new MenuItem(showOtherAreaFrames ? "icon-ki-others-on" : "icon-ki-others-off",
                 t.get(showOtherAreaFrames ? "TC_MENU_VISIBILITY_OTHER_HIDE" : "TC_MENU_VISIBILITY_OTHER_SHOW",
                         uiPlayer),
                 (p) -> {
@@ -920,24 +901,21 @@ public class LandClaimGUI {
 
         List<MenuItem> menuItems = new ArrayList<>();
 
-        menuItems.add(new MenuItem(
-                AssetManager.getIcon("icon-ki-claim-visibility"),
+        menuItems.add(new MenuItem("icon-ki-claim-visibility",
                 t.get("TC_MENU_VISIBILITY", uiPlayer),
                 (p) -> {
                     openVisibilitySettingsMenu(p);
                 }));
 
         if (uiPlayer.isAdmin())
-            menuItems.add(new MenuItem(
-                    AssetManager.getIcon("icon-ki-zone-admin"),
+            menuItems.add(new MenuItem("icon-ki-zone-admin",
                     t.get("TC_MENU_ADMIN", uiPlayer),
                     (p) -> {
                         openAdminMenu(p, (Player player) -> openMainMenu(player));
                     }));
 
         if (canClaimArea)
-            menuItems.add(new MenuItem(
-                    AssetManager.getIcon("icon-ki-create-claim"),
+            menuItems.add(new MenuItem("icon-ki-create-claim",
                     t.get("TC_MENU_CLAIM", uiPlayer),
                     (p) -> {
                         Area createdArea = chunkClaimUtil.claimArea(p,
@@ -970,8 +948,7 @@ public class LandClaimGUI {
                     (Player player) -> openMainMenu(player)));
         }
         if (currentArea != null) {
-            menuItems.add(new MenuItem(
-                    AssetManager.getIcon("icon-ki-create-claim"),
+            menuItems.add(new MenuItem("icon-ki-create-claim",
                     t.get("TC_MENU_AREA_OPTION", uiPlayer),
                     (p) -> {
                         openClaimOptionsMenu(p, (Player player) -> openMainMenu(player));
