@@ -73,6 +73,7 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
     private static RenewZoneConfigService renewZoneConfigService;
     private static RenewZoneResetService renewZoneResetService;
     private Timer renewZoneTimer;
+    private long nextRenewZoneCheckMs;
     public static String name;
     // only for workaround with area bugs
     // public static WorldDatabase wdbAreas;
@@ -128,7 +129,7 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
 
         // Load Plugin Menu into Main Plugin Menu
         PluginMenuManager
-                .registerPluginMenu(new MenuItem(name, "icon-ki-plugin-logo", "Land Claim", (Player p) -> {
+                .registerPluginMenu(new MenuItem(name, "oz-land-claim", "Land Claim", (Player p) -> {
                     gui.openMainMenu(p);
                 }));
         PluginShortcutVisibility.register(name, LandClaimPlayerPluginSettings::shortcutVisible);
@@ -250,17 +251,25 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
             renewZoneTimer.kill();
         }
         float delaySeconds = secondsUntilNextFullHour();
-        renewZoneTimer = new Timer(3600f, delaySeconds, -1, () -> {
+        nextRenewZoneCheckMs = System.currentTimeMillis() + Math.round(delaySeconds * 1000f);
+        renewZoneTimer = new Timer(1f, 1f, -1, () -> {
             if (renewZoneResetService == null) {
                 return;
             }
+            long nowMs = System.currentTimeMillis();
+            if (nowMs < nextRenewZoneCheckMs) {
+                return;
+            }
             RenewZoneResetService.RenewZoneResetResult result = renewZoneResetService
-                    .resetDueZones(System.currentTimeMillis());
+                    .resetNextDueZone(nowMs);
             if (result.zonesChecked() > 0) {
-                logger().info("Renew zone hourly check completed. Checked: " + result.zonesChecked()
+                logger().info("Renew zone reset check completed. Checked: " + result.zonesChecked()
                         + ", reset: " + result.zonesReset()
                         + ", chunk columns reset: " + result.chunksReset()
                         + ", stale configs removed: " + result.staleConfigsRemoved());
+                nextRenewZoneCheckMs = nowMs + renewZoneResetDelayMs(result.chunksReset());
+            } else {
+                nextRenewZoneCheckMs = nextFullHourMs(nowMs);
             }
         });
         renewZoneTimer.start();
@@ -276,8 +285,19 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
 
     private float secondsUntilNextFullHour() {
         long nowMs = System.currentTimeMillis();
-        long nextHourMs = ((nowMs / 3_600_000L) + 1L) * 3_600_000L;
+        long nextHourMs = nextFullHourMs(nowMs);
         return Math.max(1f, (nextHourMs - nowMs) / 1000f);
+    }
+
+    private long nextFullHourMs(long nowMs) {
+        return ((nowMs / 3_600_000L) + 1L) * 3_600_000L;
+    }
+
+    private long renewZoneResetDelayMs(int chunksReset) {
+        long baseDelayMs = Math.max(0, s.renewZoneResetBaseDelaySeconds) * 1000L;
+        long chunkDelayMs = Math.max(0, s.renewZoneResetDelayPerChunkMillis) * (long) Math.max(0, chunksReset);
+        long maxDelayMs = Math.max(baseDelayMs, Math.max(0, s.renewZoneResetMaxDelaySeconds) * 1000L);
+        return Math.min(maxDelayMs, baseDelayMs + chunkDelayMs);
     }
 
     @EventMethod

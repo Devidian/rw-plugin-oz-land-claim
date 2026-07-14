@@ -23,35 +23,29 @@ public class RenewZoneResetService {
         this.settings = settings;
     }
 
-    public RenewZoneResetResult resetDueZones(long nowMs) {
+    public synchronized RenewZoneResetResult resetNextDueZone(long nowMs) {
         if (configService == null) {
             return new RenewZoneResetResult(0, 0, 0, 0);
         }
-        int zonesChecked = 0;
-        int zonesReset = 0;
-        int chunksReset = 0;
-        int staleConfigsRemoved = 0;
-        for (RenewZoneConfig config : configService.dueAt(nowMs)) {
-            zonesChecked++;
-            Area area = Server.getArea(config.areaId());
-            if (area == null || !settings.specialRenewAreaPermission.equals(area.getDefaultPermission())) {
-                if (configService.delete(config.areaId())) {
-                    staleConfigsRemoved++;
-                }
-                continue;
+        RenewZoneConfig config = configService.dueAt(nowMs).stream().findFirst().orElse(null);
+        if (config == null) {
+            return new RenewZoneResetResult(0, 0, 0, 0);
+        }
+        Area area = Server.getArea(config.areaId());
+        if (area == null || !settings.specialRenewAreaPermission.equals(area.getDefaultPermission())) {
+            boolean removed = configService.delete(config.areaId());
+            if (removed) {
+                Area3DUtils.updateAreaFramesForAllPlayers();
             }
-            int resetCount = resetAreaColumns(area);
-            configService.markReset(config.areaId(), nowMs);
-            zonesReset++;
-            chunksReset += resetCount;
-            LandClaim.logger().info("Renew zone reset completed for area " + areaName(area)
-                    + " (#" + area.getID() + "), reset chunk columns: " + resetCount);
-            announceReset(area, resetCount);
+            return new RenewZoneResetResult(1, 0, 0, removed ? 1 : 0);
         }
-        if (zonesChecked > 0) {
-            Area3DUtils.updateAreaFramesForAllPlayers();
-        }
-        return new RenewZoneResetResult(zonesChecked, zonesReset, chunksReset, staleConfigsRemoved);
+        int resetCount = resetAreaColumns(area);
+        configService.markReset(config.areaId(), nowMs);
+        LandClaim.logger().info("Renew zone reset completed for area " + areaName(area)
+                + " (#" + area.getID() + "), reset chunk columns: " + resetCount);
+        announceReset(area, resetCount);
+        Area3DUtils.updateAreaFramesForAllPlayers();
+        return new RenewZoneResetResult(1, 1, resetCount, 0);
     }
 
     private int resetAreaColumns(Area area) {

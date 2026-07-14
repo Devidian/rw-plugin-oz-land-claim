@@ -70,6 +70,9 @@ All settings can be adjusted in the `settings.properties` file located in the pl
 | `autoClaimRemovalDelaySeconds`      | `60` | Delay after server start before automatic claim removal runs. |
 | `renewZoneDefaultIntervalHours`     | `24` | Default interval in hours for newly created renew zones. |
 | `renewZoneResetAnnouncementTarget`  | `none` | Who receives renew-zone reset announcements: `none`, `all`, or `admins`. |
+| `renewZoneResetBaseDelaySeconds`    | `2` | Minimum delay before processing the next due renew zone. |
+| `renewZoneResetDelayPerChunkMillis` | `25` | Additional delay per reset chunk column before the next due renew zone. |
+| `renewZoneResetMaxDelaySeconds`     | `60` | Upper limit for the delay between due renew zones. |
 | `discordRenewZoneLogChannelId`      | `0` | Discord channel id for renew-zone reset logs. `0` disables logging. |
 | `allowClaimSale`                    | `false` | Enables owner sale listings and Wallet-backed claim purchases when Wallet is installed. |
 | `allowClaimBuyExceedLimit`          | `false` | Allows claim purchases to exceed the buyer's normal claim limit. Keep disabled unless this is intentional. |

@@ -46,6 +46,9 @@ public class PluginSettings {
         public Integer autoClaimRemovalDelaySeconds = 60;
         public Integer renewZoneDefaultIntervalHours = 24;
         public String renewZoneResetAnnouncementTarget = "none";
+        public Integer renewZoneResetBaseDelaySeconds = 2;
+        public Integer renewZoneResetDelayPerChunkMillis = 25;
+        public Integer renewZoneResetMaxDelaySeconds = 60;
         public long discordRenewZoneLogChannelId = 0;
         public Boolean allowClaimSale = false;
         public Boolean allowClaimBuyExceedLimit = false;
@@ -190,6 +193,12 @@ public class PluginSettings {
                                         .parseInt(settings.getProperty("renewZoneDefaultIntervalHours", "24"));
                         renewZoneResetAnnouncementTarget = settings
                                         .getProperty("renewZoneResetAnnouncementTarget", "none");
+                        renewZoneResetBaseDelaySeconds = Integer
+                                        .parseInt(settings.getProperty("renewZoneResetBaseDelaySeconds", "2"));
+                        renewZoneResetDelayPerChunkMillis = Integer
+                                        .parseInt(settings.getProperty("renewZoneResetDelayPerChunkMillis", "25"));
+                        renewZoneResetMaxDelaySeconds = Integer
+                                        .parseInt(settings.getProperty("renewZoneResetMaxDelaySeconds", "60"));
                         // trade settings
                         allowClaimSale = settings.getProperty("allowClaimSale", "false").contentEquals("true");
                         allowClaimBuyExceedLimit = settings.getProperty("allowClaimBuyExceedLimit", "false")
@@ -395,8 +404,17 @@ public class PluginSettings {
                                                 "Default interval in hours for newly created renew zones.",
                                                 renewZoneDefaultIntervalHours, "24", AdminSettingsType.INTEGER),
                                 entry("renewZoneResetAnnouncementTarget", "Reset announcements",
-                                                "Who receives renew-zone reset announcements: none, all, or admins.",
-                                                renewZoneResetAnnouncementTarget, "none", AdminSettingsType.STRING),
+                                        "Who receives renew-zone reset announcements: none, all, or admins.",
+                                        renewZoneResetAnnouncementTarget, "none", AdminSettingsType.STRING),
+                                entry("renewZoneResetBaseDelaySeconds", "Base reset delay",
+                                                "Minimum delay in seconds before the next due renew zone is reset.",
+                                                renewZoneResetBaseDelaySeconds, "2", AdminSettingsType.INTEGER),
+                                entry("renewZoneResetDelayPerChunkMillis", "Reset delay per chunk",
+                                                "Additional delay in milliseconds per reset chunk column before the next zone.",
+                                                renewZoneResetDelayPerChunkMillis, "25", AdminSettingsType.INTEGER),
+                                entry("renewZoneResetMaxDelaySeconds", "Maximum reset delay",
+                                                "Maximum delay in seconds before the next due renew zone is reset.",
+                                                renewZoneResetMaxDelaySeconds, "60", AdminSettingsType.INTEGER),
                                 entry("discordRenewZoneLogChannelId", "Discord renew-zone log",
                                                 "Discord channel id for renew-zone reset logs. 0 disables logging.",
                                                 discordRenewZoneLogChannelId, "0", AdminSettingsType.INTEGER),

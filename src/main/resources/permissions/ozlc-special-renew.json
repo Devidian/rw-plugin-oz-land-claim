@@ -49,7 +49,7 @@
     "notemperature": false,
     "pickupitems": true,
     "placeitems": true,
-    "peacefulmode": true,
+    "peacefulmode": false,
     "pve": true,
     "pvp": true,
     "ridemounts": true,

@@ -1,6 +1,6 @@
 name: "OZ - Land Claim"
 main: de.omegazirkel.risingworld.LandClaim
-version: 0.12.0
+version: 0.12.1
 author: "Maik 'Devidian' Laschober"
 team: "Omega Zirkel"
 description: "Claim your own property and protect it from other players"

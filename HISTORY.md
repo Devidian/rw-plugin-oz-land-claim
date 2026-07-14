@@ -2,6 +2,13 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.12.1] - 2026-07-14 | Icon set and renew-zone stability
+
+- change: use shared OZTools ownership for debug and tools menu icons
+- change: rename LandClaim icon keys to their final semantic names
+- change: regenerate all Classic Land Claim icons with brighter fills and high-contrast navy contours for dark in-game backgrounds
+- fix: process due renew zones one at a time and delay subsequent resets based on the number of reset chunk columns
+
 ## [0.12.0] - 2026-07-06 | Renew zones
 
 - feat: add configurable renew zones with persisted interval, hourly reset scheduler, announcements, Discord logging, and manager map export metadata

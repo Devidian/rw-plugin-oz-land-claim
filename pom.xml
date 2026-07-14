@@ -8,7 +8,7 @@
 
     <groupId>com.github.devidian</groupId>
     <artifactId>rw-plugin-oz-land-claim</artifactId>
-    <version>0.12.0</version>
+    <version>0.12.1</version>
 
     <name>OZLandClaim</name>
     <description>Claim your own property and protect it from other players</description>
@@ -62,7 +62,7 @@
         <dependency>
             <groupId>com.github.devidian</groupId>
             <artifactId>rw-plugin-oz-tools</artifactId>
-            <version>0.22.0</version>
+            <version>0.22.1</version>
         </dependency>
 
         <!-- Rising World PluginAPI -->

@@ -42,5 +42,5 @@ Keep filtering at the display layer where possible. If visibility behavior is wr
 - Phase 1 complete: claim area-frame visibility is rendered in `Area3DUtils.updateAreaFramesForPlayer`, which previously iterated every `Server.getAllAreas()` result for each player.
 - Phase 2 complete: `Area3DUtils` now filters frame rendering to the player's current sector plus neighboring sectors when the runtime sector position matches the chunk-derived sector model. If coordinates cannot be derived safely, it falls back to showing rather than hiding.
 - Phase 3 complete at code level: the filter includes current sector, direct neighbors, and diagonal neighbors before a sector crossing; `PlayerEnterSectorEvent` refreshes frames after a sector transition.
-- Phase 4 complete: the LandClaim radial menu includes an Info/Status action using the shared Tools `icon-ki-info-status` asset, and `/lc info` routes to the same panel as `/lc status`.
+- Phase 4 complete: the LandClaim radial menu includes an Info/Status action using the shared Tools `info-status` asset, and `/lc info` routes to the same panel as `/lc status`.
 - Phase 5 complete: README/HISTORY were updated and validation passed with `mvn -B test` and `mvn -B -DskipTests package`.

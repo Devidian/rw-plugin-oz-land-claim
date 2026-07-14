@@ -21,6 +21,6 @@ public class ClaimSaleIndicatorProvider implements SharedIndicatorProvider {
 
     @Override
     public String getIcon(Player player) {
-        return "icon-ki-zone-indicator-sale";
+        return "zone-sale-indicator";
     }
 }
