@@ -41,6 +41,13 @@ public class PluginSettings {
         public double claimSaleFee = 0.01;
         public Boolean adminIgnoreLimit = true;
         public Boolean adminIgnoreTime = true;
+        public Boolean allowAdminOverride = false;
+        public Boolean showSpecialAreaFrames = true;
+        public Boolean showStaticAreaFrames = true;
+        public Boolean showPvPAreaFrames = true;
+        public Boolean showRestAreaFrames = true;
+        public Boolean showTrapAreaFrames = true;
+        public Boolean showRenewAreaFrames = false;
         public Boolean enableAutoClaimRemoval = false;
         public Integer autoClaimRemovalInactiveDays = 90;
         public Integer autoClaimRemovalDelaySeconds = 60;
@@ -183,6 +190,13 @@ public class PluginSettings {
                         // admin only settings
                         adminIgnoreLimit = settings.getProperty("adminIgnoreLimit", "false").contentEquals("true");
                         adminIgnoreTime = settings.getProperty("adminIgnoreTime", "false").contentEquals("true");
+                        allowAdminOverride = settings.getProperty("allowAdminOverride", "false").contentEquals("true");
+                        showSpecialAreaFrames = settings.getProperty("showSpecialAreaFrames", "true").contentEquals("true");
+                        showStaticAreaFrames = settings.getProperty("showStaticAreaFrames", "true").contentEquals("true");
+                        showPvPAreaFrames = settings.getProperty("showPvPAreaFrames", "true").contentEquals("true");
+                        showRestAreaFrames = settings.getProperty("showRestAreaFrames", "true").contentEquals("true");
+                        showTrapAreaFrames = settings.getProperty("showTrapAreaFrames", "true").contentEquals("true");
+                        showRenewAreaFrames = settings.getProperty("showRenewAreaFrames", "false").contentEquals("true");
                         enableAutoClaimRemoval = settings.getProperty("enableAutoClaimRemoval", "false")
                                         .contentEquals("true");
                         autoClaimRemovalInactiveDays = Integer
@@ -372,6 +386,29 @@ public class PluginSettings {
                                                 AdminSettingsType.BOOLEAN),
                                 entry("adminIgnoreTime", "Admin ignores claim time",
                                                 "Lets admins bypass claim wait time.", adminIgnoreTime, "true",
+                                                AdminSettingsType.BOOLEAN),
+                                entry("allowAdminOverride", "Allow admin override",
+                                                "Lets admins see hidden special-zone frames.", allowAdminOverride, "false",
+                                                AdminSettingsType.BOOLEAN),
+                                AdminSettingsEntry.group("specialZoneVisibility", "Special-zone visibility",
+                                                "Controls which special zones players see when showing other areas."),
+                                entry("showSpecialAreaFrames", "Show special areas",
+                                                "Shows neutral special-zone frames to players.", showSpecialAreaFrames, "true",
+                                                AdminSettingsType.BOOLEAN),
+                                entry("showStaticAreaFrames", "Show static areas",
+                                                "Shows static special-zone frames to players.", showStaticAreaFrames, "true",
+                                                AdminSettingsType.BOOLEAN),
+                                entry("showPvPAreaFrames", "Show PvP areas",
+                                                "Shows PvP special-zone frames to players.", showPvPAreaFrames, "true",
+                                                AdminSettingsType.BOOLEAN),
+                                entry("showRestAreaFrames", "Show rest areas",
+                                                "Shows rest special-zone frames to players.", showRestAreaFrames, "true",
+                                                AdminSettingsType.BOOLEAN),
+                                entry("showTrapAreaFrames", "Show trap areas",
+                                                "Shows trap special-zone frames to players.", showTrapAreaFrames, "true",
+                                                AdminSettingsType.BOOLEAN),
+                                entry("showRenewAreaFrames", "Show renew zones",
+                                                "Shows renew-zone frames to players.", showRenewAreaFrames, "false",
                                                 AdminSettingsType.BOOLEAN),
                                 AdminSettingsEntry.group("claimRules", "Claim rules",
                                                 "Base claim timing and limit behavior."),

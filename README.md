@@ -38,6 +38,7 @@ Wallet and Shop are detected optionally for economy features; core claim protect
 - **Permission Status Column:** The permission UI shows whether listed players are currently online or offline.
 - **Current Chunk Overlay:** A compact top-screen overlay shows whether the current chunk is claimable, part of one of your areas, owned by another player, or a special area. The overlay hides while the inventory is open; the current PluginAPI exposes a reliable inventory toggle event but no equivalent crafting/map visibility hook.
 - **Area Frame Visibility:** Owned/other area frame rendering is limited to the current sector and neighboring sectors when the API coordinate model can be matched safely. Claim protection itself is not filtered by visibility.
+- **Special-Zone Visibility:** Admins can independently show or hide neutral, static, PvP, rest, trap, and renew-zone frames for other players. A player always sees the frame of their current special zone; the optional administrator override bypasses these filters.
 
 ## Commands
 
@@ -78,6 +79,13 @@ All settings can be adjusted in the `settings.properties` file located in the pl
 | `allowClaimBuyExceedLimit`          | `false` | Allows claim purchases to exceed the buyer's normal claim limit. Keep disabled unless this is intentional. |
 | `exposeClaimSales`                  | `true`  | Allows bridge or future native route layers to expose active claim-sale listing metadata. |
 | `exposeRenewZones`                  | `true`  | Allows bridge or future native route layers to expose renew-zone metadata. |
+| `allowAdminOverride`                 | `false` | Lets administrators bypass special-zone frame visibility filters. |
+| `showSpecialAreaFrames`              | `true`  | Shows neutral special-zone frames for other players. |
+| `showStaticAreaFrames`               | `true`  | Shows static-zone frames for other players. |
+| `showPvPAreaFrames`                  | `true`  | Shows PvP-zone frames for other players. |
+| `showRestAreaFrames`                 | `true`  | Shows rest-zone frames for other players. |
+| `showTrapAreaFrames`                 | `true`  | Shows trap-zone frames for other players. |
+| `showRenewAreaFrames`                | `false` | Shows renew-zone frames for other players. |
 | `enableExtraClaimShopOffer`         | `true` | Registers an extra-claim capacity offer in OZ Shop when Shop is installed. |
 | `extraClaimBasePrice`               | `200` | Price for the first purchased extra-claim capacity. |
 | `extraClaimPriceIncreasePercent`    | `10` | Linear percent increase per already purchased extra-claim capacity. |

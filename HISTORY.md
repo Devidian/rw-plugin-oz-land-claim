@@ -2,6 +2,12 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.13.0] - 2026-07-15 | Special-zone visibility controls
+
+- feat: add per-zone frame visibility controls for neutral, static, PvP, rest, trap, and renew areas
+- feat: keep the frame of a player's current special zone visible and allow an explicit administrator override
+- fix: refresh special-zone frames when settings change and when players enter or leave an area
+
 ## [0.12.1] - 2026-07-14 | Icon set and renew-zone stability
 
 - change: use shared OZTools ownership for debug and tools menu icons

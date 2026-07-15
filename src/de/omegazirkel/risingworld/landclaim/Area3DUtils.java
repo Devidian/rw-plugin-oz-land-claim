@@ -57,6 +57,10 @@ public class Area3DUtils {
     }
 
     public static void updateAreaFramesForPlayer(Player player) {
+        updateAreaFramesForPlayer(player, player.getChunkPosition());
+    }
+
+    public static void updateAreaFramesForPlayer(Player player, Vector3i playerChunk) {
         fillColorMap(false);
         Boolean showOwned = (Boolean) player.getAttribute(LandClaimPlayerPluginSettings.SHOW_OWNED_AREA_FRAMES_KEY);
         Boolean showOther = (Boolean) player.getAttribute(LandClaimPlayerPluginSettings.SHOW_OTHER_AREA_FRAMES_KEY);
@@ -90,6 +94,7 @@ public class Area3DUtils {
             String areaPermission = area.getPlayerPermission(player);
             boolean isOwner = areaPermission != null && areaPermission.equals(s.ownerAreaPermission);
             boolean shouldShow = (isOwner ? Boolean.TRUE.equals(showOwned) : Boolean.TRUE.equals(showOther))
+                    && (isOwner || specialAreaVisibleTo(player, playerChunk, area))
                     && isAreaInVisibleSectorNeighborhood(player, area);
 
             Area3D existing = frames.get(areaId);
@@ -132,6 +137,50 @@ public class Area3DUtils {
         return AREA_COLORS.getOrDefault(
                 defaultAreaPermission,
                 new AreaColors(s.otherAreaBorderColor, s.otherAreaFrameColor));
+    }
+
+    private static boolean specialAreaVisibleTo(Player player, Vector3i playerChunk, Area area) {
+        if (area == null) {
+            return false;
+        }
+        if (isChunkInsideArea(playerChunk, area)) {
+            return true;
+        }
+        if (Boolean.TRUE.equals(s.allowAdminOverride) && player.isAdmin()) {
+            return true;
+        }
+        String permission = area.getDefaultPermission();
+        if (s.specialAreaPermission.equals(permission)) {
+            return Boolean.TRUE.equals(s.showSpecialAreaFrames);
+        }
+        if (s.specialStaticAreaPermission.equals(permission)) {
+            return Boolean.TRUE.equals(s.showStaticAreaFrames);
+        }
+        if (s.specialPvPAreaPermission.equals(permission)) {
+            return Boolean.TRUE.equals(s.showPvPAreaFrames);
+        }
+        if (s.specialRestAreaPermission.equals(permission)) {
+            return Boolean.TRUE.equals(s.showRestAreaFrames);
+        }
+        if (s.specialTrapAreaPermission.equals(permission)) {
+            return Boolean.TRUE.equals(s.showTrapAreaFrames);
+        }
+        if (s.specialRenewAreaPermission.equals(permission)) {
+            return Boolean.TRUE.equals(s.showRenewAreaFrames);
+        }
+        return true;
+    }
+
+    private static boolean isChunkInsideArea(Vector3i chunk, Area area) {
+        if (chunk == null || area == null || area.getStartChunkPosition() == null || area.getEndChunkPosition() == null) {
+            return false;
+        }
+        Vector3i start = area.getStartChunkPosition();
+        Vector3i end = area.getEndChunkPosition();
+        return chunk.x >= Math.min(start.x, end.x)
+                && chunk.x <= Math.max(start.x, end.x)
+                && chunk.z >= Math.min(start.z, end.z)
+                && chunk.z <= Math.max(start.z, end.z);
     }
 
     private static boolean isListedForSale(Area area) {

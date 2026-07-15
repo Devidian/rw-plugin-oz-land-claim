@@ -36,7 +36,7 @@
     "changegamemode": false,
     "destroyitems": true,
     "dropitems": true,
-    "editnpc": true,
+    "editnpc": false,
     "fixedspawn": false,
     "fly": false,
     "godmode": false,

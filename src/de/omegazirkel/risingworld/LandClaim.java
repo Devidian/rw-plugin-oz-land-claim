@@ -195,6 +195,7 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
             economyIntegration.logStatus();
             economyIntegration.registerExtraClaimOffer(s);
         }
+        Area3DUtils.updateAreaFramesForAllPlayers();
     }
 
     public static ExtraClaimCapacityService extraClaimCapacityService() {
@@ -374,6 +375,10 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
 
         chunkClaimUtil.leaveChunk(player, oldChunkPos);
         chunkClaimUtil.enterChunk(player, chunkPos);
+        // Player#getCurrentArea() is updated after this event. Pass the event's
+        // destination explicitly so entering a special zone refreshes its frame
+        // immediately as well as leaving it.
+        Area3DUtils.updateAreaFramesForPlayer(player, chunkPos);
 
         // if player has "oz.landclaim.showCurrentChunkFrame" enabled, show chunk area
         if (player.hasAttribute(LandClaimPlayerPluginSettings.SHOW_CURRENT_CHUNK_FRAME_KEY)
