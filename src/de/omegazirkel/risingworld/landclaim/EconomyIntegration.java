@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 import de.omegazirkel.risingworld.LandClaim;
+import de.omegazirkel.risingworld.tools.I18n;
 import net.risingworld.api.Plugin;
 import net.risingworld.api.objects.Player;
 
@@ -40,13 +41,16 @@ public class EconomyIntegration {
         try {
             Class<?> callbackType = Class.forName("de.omegazirkel.risingworld.shop.ShopPurchaseCallback");
             Class<?> priceResolverType = Class.forName("de.omegazirkel.risingworld.shop.ShopPriceResolver");
+            Class<?> localizationType = Class.forName("de.omegazirkel.risingworld.shop.ShopOfferLocalization");
             Object callback = Proxy.newProxyInstance(callbackType.getClassLoader(), new Class<?>[] { callbackType },
                     extraClaimCallback());
             Object priceResolver = Proxy.newProxyInstance(priceResolverType.getClassLoader(),
                     new Class<?>[] { priceResolverType }, extraClaimPriceResolver(settings));
+            Object localization = Proxy.newProxyInstance(localizationType.getClassLoader(),
+                    new Class<?>[] { localizationType }, extraClaimLocalization());
             Method registerOffer = shopPlugin.getClass().getMethod("registerOffer",
                     String.class, String.class, String.class, long.class, String.class, String.class, String.class,
-                    callbackType, priceResolverType);
+                    callbackType, priceResolverType, localizationType);
             Object result = registerOffer.invoke(shopPlugin,
                     "ozlandclaim.extra-claim",
                     "Extra claim capacity",
@@ -56,13 +60,26 @@ public class EconomyIntegration {
                     "zone-visibility-owned-on",
                     "OZ - Land Claim",
                     callback,
-                    priceResolver);
+                    priceResolver,
+                    localization);
             if (!resultSuccess(result)) {
                 LandClaim.logger().warn("Could not register LandClaim extra-claim Shop offer: " + resultMessage(result));
             }
         } catch (ReflectiveOperationException ex) {
             LandClaim.logger().warn("Could not register LandClaim extra-claim Shop offer: " + ex.getMessage());
         }
+    }
+
+    private InvocationHandler extraClaimLocalization() {
+        I18n translations = I18n.getInstance(owner);
+        return (proxy, method, args) -> {
+            Player player = args != null && args.length > 0 && args[0] instanceof Player p ? p : null;
+            return switch (method.getName()) {
+                case "title" -> translations.get("LANDCLAIM_SHOP_EXTRA_CLAIM_TITLE", player);
+                case "description" -> translations.get("LANDCLAIM_SHOP_EXTRA_CLAIM_DESC", player);
+                default -> objectMethodValue(proxy, method);
+            };
+        };
     }
 
     public WalletOperationResult withdrawDefault(int playerDbId, long value, String reason) {

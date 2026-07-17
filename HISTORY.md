@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.13.1] - 2026-07-17 | Localized economy integration
+
+- feat: expose localized Shop offer data through the updated Wallet integration
+
 ## [0.13.0] - 2026-07-15 | Special-zone visibility controls
 
 - feat: add per-zone frame visibility controls for neutral, static, PvP, rest, trap, and renew areas
