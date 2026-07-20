@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.13.2] - 2026-07-20 | Update metadata
+
+- change: publish the canonical GitHub release source for OZ Tools update management
+
 ## [0.13.1] - 2026-07-17 | Localized economy integration
 
 - feat: expose localized Shop offer data through the updated Wallet integration
