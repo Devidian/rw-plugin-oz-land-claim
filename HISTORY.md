@@ -2,6 +2,11 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.13.3] - 2026-07-20 | Settings completion
+
+- change: Discord announcements use their configured channel IDs directly
+- feat: expose decimal claim timing and sale settings in the admin UI
+
 ## [0.13.2] - 2026-07-20 | Update metadata
 
 - change: publish the canonical GitHub release source for OZ Tools update management

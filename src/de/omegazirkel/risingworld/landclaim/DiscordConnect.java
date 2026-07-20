@@ -59,52 +59,52 @@ public class DiscordConnect {
     }
 
     public static void sendDiscordClaimAnnouncement(String message) {
-        if (s.enableDiscordClaimAnnouncement)
+        if (s.discordClaimAnnouncementChannelId > 0)
             sendDiscordMessage(message, s.discordClaimAnnouncementChannelId);
     }
 
     public static void sendDiscordClaimAnnouncement(String message, byte[] image) {
-        if (s.enableDiscordClaimAnnouncement)
+        if (s.discordClaimAnnouncementChannelId > 0)
             sendDiscordMessage(message, s.discordClaimAnnouncementChannelId);
     }
 
     public static void sendDiscordExpandAnnouncement(String message) {
-        if (s.enableDiscordExpandAnnouncement)
+        if (s.discordExpandAnnouncementChannelId > 0)
             sendDiscordMessage(message, s.discordExpandAnnouncementChannelId);
     }
 
     public static void sendDiscordExpandAnnouncement(String message, byte[] image) {
-        if (s.enableDiscordExpandAnnouncement)
+        if (s.discordExpandAnnouncementChannelId > 0)
             sendDiscordMessage(message, s.discordExpandAnnouncementChannelId, image);
     }
 
     public static void sendDiscordReleaseAccouncement(String message) {
-        if (s.enableDiscordReleaseAccouncement)
+        if (s.discordReleaseAccouncementChannelId > 0)
             sendDiscordMessage(message, s.discordReleaseAccouncementChannelId);
     }
 
     public static void sendDiscordReleaseAccouncement(String message, byte[] image) {
-        if (s.enableDiscordReleaseAccouncement)
+        if (s.discordReleaseAccouncementChannelId > 0)
             sendDiscordMessage(message, s.discordReleaseAccouncementChannelId);
     }
 
     public static void sendDiscordForSaleAccouncement(String message) {
-        if (s.enableDiscordForSaleAccouncement)
+        if (s.discordForSaleAccouncementChannelId > 0)
             sendDiscordMessage(message, s.discordForSaleAccouncementChannelId);
     }
 
     public static void sendDiscordForSaleAccouncement(String message, byte[] image) {
-        if (s.enableDiscordForSaleAccouncement)
+        if (s.discordForSaleAccouncementChannelId > 0)
             sendDiscordMessage(message, s.discordForSaleAccouncementChannelId);
     }
 
     public static void sendDiscordBuyAccouncement(String message) {
-        if (s.enableDiscordBuyAccouncement)
+        if (s.discordBuyAccouncementChannelId > 0)
             sendDiscordMessage(message, s.discordBuyAccouncementChannelId);
     }
 
     public static void sendDiscordBuyAccouncement(String message, byte[] image) {
-        if (s.enableDiscordBuyAccouncement)
+        if (s.discordBuyAccouncementChannelId > 0)
             sendDiscordMessage(message, s.discordBuyAccouncementChannelId);
     }
 

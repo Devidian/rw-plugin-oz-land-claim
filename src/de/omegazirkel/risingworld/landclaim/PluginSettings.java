@@ -71,11 +71,6 @@ public class PluginSettings {
         public long discordReleaseAccouncementChannelId = 0;
         public long discordForSaleAccouncementChannelId = 0;
         public long discordBuyAccouncementChannelId = 0;
-        public Boolean enableDiscordClaimAnnouncement = true;
-        public Boolean enableDiscordExpandAnnouncement = true;
-        public Boolean enableDiscordReleaseAccouncement = true;
-        public Boolean enableDiscordForSaleAccouncement = true;
-        public Boolean enableDiscordBuyAccouncement = true;
         // Ingame event announcements
         public Boolean enableIngameClaimAnnouncement = true;
         public Boolean enableIngameExpandAnnouncement = true;
@@ -250,19 +245,6 @@ public class PluginSettings {
                                         .parseLong(settings.getProperty("discordBuyAccouncementChannelId", "0"));
                         discordRenewZoneLogChannelId = Long
                                         .parseLong(settings.getProperty("discordRenewZoneLogChannelId", "0"));
-                        enableDiscordClaimAnnouncement = settings.getProperty("enableDiscordClaimAnnouncement", "false")
-                                        .contentEquals("true");
-                        enableDiscordExpandAnnouncement = settings
-                                        .getProperty("enableDiscordExpandAnnouncement", "false")
-                                        .contentEquals("true");
-                        enableDiscordReleaseAccouncement = settings
-                                        .getProperty("enableDiscordReleaseAccouncement", "false")
-                                        .contentEquals("true");
-                        enableDiscordForSaleAccouncement = settings
-                                        .getProperty("enableDiscordForSaleAccouncement", "false")
-                                        .contentEquals("true");
-                        enableDiscordBuyAccouncement = settings.getProperty("enableDiscordBuyAccouncement", "false")
-                                        .contentEquals("true");
                         // Ingame announcements
                         enableIngameClaimAnnouncement = settings.getProperty("enableIngameClaimAnnouncement", "false")
                                         .contentEquals("true");
@@ -415,15 +397,21 @@ public class PluginSettings {
                                 entry("minutesToClaim", "Minutes to claim",
                                                 "Minimum minutes a player must stay in a chunk before claiming.",
                                                 minutesToClaim, "10", AdminSettingsType.INTEGER),
-                                readOnlyEntry("claimTimeScaleFactor", "Claim time scale",
+                                entry("claimTimeScaleFactor", "Claim time scale",
                                                 "Decimal scale factor for increasing or decreasing claim wait time.",
-                                                claimTimeScaleFactor, "1.01", AdminSettingsType.STRING),
+                                                claimTimeScaleFactor, "1.01", AdminSettingsType.DECIMAL),
                                 entry("basicClaimLimit", "Basic claim limit",
                                                 "Base number of claims a player can own.", basicClaimLimit, "1",
                                                 AdminSettingsType.INTEGER),
-                                readOnlyEntry("playTimeHoursExtraClaimFactor", "Playtime extra-claim factor",
+                                entry("playTimeHoursExtraClaimFactor", "Playtime extra-claim factor",
                                                 "Decimal factor used to grant additional claims from playtime.",
-                                                playTimeHoursExtraClaimFactor, "0.6", AdminSettingsType.STRING),
+                                                playTimeHoursExtraClaimFactor, "0.6", AdminSettingsType.DECIMAL),
+                                entry("claimProtectionBaseTimeDays", "Claim protection days",
+                                                "Base protection time in days for an owned claim.",
+                                                claimProtectionBaseTimeDays, "7", AdminSettingsType.INTEGER),
+                                entry("claimProtectionExtraTimeScale", "Claim protection scale",
+                                                "Decimal scale for additional claim-protection time.",
+                                                claimProtectionExtraTimeScale, "5", AdminSettingsType.DECIMAL),
                                 AdminSettingsEntry.group("autoRemoval", "Auto removal",
                                                 "Inactive-owner automatic claim removal behavior."),
                                 entry("enableAutoClaimRemoval", "Auto claim removal",
@@ -463,6 +451,9 @@ public class PluginSettings {
                                 entry("allowClaimBuyExceedLimit", "Buy above limit",
                                                 "Allows claim purchases to exceed the buyer's normal claim limit.",
                                                 allowClaimBuyExceedLimit, "false", AdminSettingsType.BOOLEAN),
+                                entry("claimSaleFee", "Claim sale fee",
+                                                "Decimal Wallet fee fraction charged for a claim sale.",
+                                                claimSaleFee, "0.01", AdminSettingsType.DECIMAL),
                                 AdminSettingsEntry.group("exportRoutes", "Export routes",
                                                 "Route-ready read exposure for manager bridges."),
                                 entry("exposeClaimSales", "Expose claim sales",
