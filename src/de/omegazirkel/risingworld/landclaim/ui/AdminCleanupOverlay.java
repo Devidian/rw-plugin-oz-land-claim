@@ -13,6 +13,7 @@ import de.omegazirkel.risingworld.landclaim.ClaimCleanupService.SpecialAreaSumma
 import de.omegazirkel.risingworld.landclaim.DiscordConnect;
 import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.ui.AdvancedButtonFactory;
+import de.omegazirkel.risingworld.tools.ui.BasePluginOverlayWithTabs;
 import de.omegazirkel.risingworld.tools.ui.CursorManager;
 import de.omegazirkel.risingworld.tools.ui.AdvancedButton;
 import de.omegazirkel.risingworld.tools.ui.OZUIElement;
@@ -24,181 +25,65 @@ import net.risingworld.api.objects.Player;
 import net.risingworld.api.ui.UIElement;
 import net.risingworld.api.ui.UILabel;
 import net.risingworld.api.ui.UITarget;
-import net.risingworld.api.ui.style.Font;
 import net.risingworld.api.ui.style.Pivot;
-import net.risingworld.api.ui.style.Position;
 import net.risingworld.api.ui.style.TextAnchor;
 import net.risingworld.api.ui.style.Unit;
 
-public class AdminCleanupOverlay extends OZUIElement {
+public class AdminCleanupOverlay extends BasePluginOverlayWithTabs {
     public static final String ATTRIBUTE_KEY = "landclaim-admin-cleanup-overlay";
 
     private enum Tab {
         OWNERS, AREAS, SPECIAL_AREAS
     }
 
-    private static final float PANEL_WIDTH_PERCENT = 88f;
-    private static final float PANEL_HEIGHT_PIXELS = 620f;
-    private static final float BODY_HEIGHT_PIXELS = 438f;
     private static final float TABLE_SCROLL_BODY_HEIGHT = 398f;
-
-    private static I18n t() {
-        return I18n.getInstance(LandClaim.name);
-    }
 
     private final Player player;
     private final ClaimCleanupService cleanupService;
-    private final Callback<Player> onClose;
     private Tab activeTab = Tab.OWNERS;
-    private OZUIElement panel;
-    private OZUIElement body;
-    private OZUIElement ownersTab;
-    private OZUIElement areasTab;
-    private OZUIElement specialAreasTab;
 
     public AdminCleanupOverlay(Player player, ClaimCleanupService cleanupService, Callback<Player> onClose) {
+        super(player, onClose);
         this.player = player;
         this.cleanupService = cleanupService;
-        this.onClose = onClose;
-        setClickable(false);
-        setPivot(Pivot.UpperLeft);
-        setSize(100, 100, true);
-        setBackgroundColor(0, 0, 0, 0.4f);
         rebuild();
     }
 
-    private void rebuild() {
-        removeAllChilds();
-        panel = new OZUIElement();
-        panel.setPivot(Pivot.MiddleCenter);
-        panel.setPosition(50f, 50f, true);
-        panel.style.width.set(PANEL_WIDTH_PERCENT, Unit.Percent);
-        panel.style.height.set(PANEL_HEIGHT_PIXELS, Unit.Pixel);
-        panel.setBackgroundColor(0, 0, 0, 0.86f);
-        panel.setBorderColor(0.95f, 0.75f, 0.25f, 0.6f);
-        panel.setBorder(1);
-        panel.setBorderEdgeRadius(6, false);
-        addChild(panel);
-
-        setupHeader();
-        setupTabs();
-        setupBody();
-        setupFooter();
+    @Override
+    protected I18n t() {
+        return I18n.getInstance(LandClaim.name);
     }
 
-    private void setupHeader() {
-        UILabel title = new UILabel(t().get("TC_UI_ADMIN_CLEANUP_TITLE", player));
-        title.setPivot(Pivot.UpperLeft);
-        title.setPosition(24, 18, false);
-        title.setFont(Font.DefaultBold);
-        title.setFontSize(24);
-        panel.addChild(title);
-
-        UILabel subtitle = new UILabel(t().get("TC_UI_ADMIN_CLEANUP_SUBTITLE", player));
-        subtitle.setPivot(Pivot.UpperLeft);
-        subtitle.setPosition(24, 52, false);
-        subtitle.setFont(Font.Default);
-        subtitle.setFontSize(12);
-        panel.addChild(subtitle);
-
-        OZUIElement closeButton = new OZUIElement();
-        closeButton.setPivot(Pivot.UpperRight);
-        closeButton.style.position.set(Position.Absolute);
-        closeButton.style.right.set(0, Unit.Pixel);
-        closeButton.style.top.set(20, Unit.Pixel);
-        closeButton.setSize(34, 34, false);
-        closeButton.setBorder(1);
-        closeButton.setBorderColor(0.95f, 0.75f, 0.25f, 0.54f);
-        closeButton.setBorderEdgeRadius(4, false);
-        closeButton.setBackgroundColor(0.12f, 0.10f, 0.08f, 0.9f);
-        closeButton.setHoverBackgroundColor(0x611F1AF2);
-        closeButton.setClickable(true);
-        closeButton.setClickAction(event -> close());
-        UILabel closeLabel = new UILabel("X");
-        closeLabel.setPivot(Pivot.MiddleCenter);
-        closeLabel.setPosition(50, 50, true);
-        closeLabel.setSize(100, 100, true);
-        closeLabel.setFont(Font.DefaultBold);
-        closeLabel.setFontSize(18);
-        closeLabel.setTextAlign(TextAnchor.MiddleCenter);
-        closeButton.addChild(closeLabel);
-        panel.addChild(closeButton);
+    @Override
+    protected String titleText() {
+        return t().get("TC_UI_ADMIN_CLEANUP_TITLE", player);
     }
 
-    private void setupTabs() {
-        ownersTab = tab(t().get("TC_UI_ADMIN_CLEANUP_TAB_OWNERS", player), 24, 86, 180, () -> {
+    @Override
+    protected String descriptionText() {
+        return t().get("TC_UI_ADMIN_CLEANUP_SUBTITLE", player);
+    }
+
+    @Override
+    protected String legendText() {
+        return t().get("TC_UI_ADMIN_CLEANUP_ACTION_LEGEND", player);
+    }
+
+    @Override
+    protected void setupTabs() {
+        setupTabContainer();
+        addTab(t().get("TC_UI_ADMIN_CLEANUP_TAB_OWNERS", player), 180, activeTab == Tab.OWNERS, true, () -> {
             activeTab = Tab.OWNERS;
             rebuild();
         });
-        panel.addChild(ownersTab);
-
-        areasTab = tab(t().get("TC_UI_ADMIN_CLEANUP_TAB_AREAS", player), 204, 86, 180, () -> {
+        addTab(t().get("TC_UI_ADMIN_CLEANUP_TAB_AREAS", player), 180, activeTab == Tab.AREAS, true, () -> {
             activeTab = Tab.AREAS;
             rebuild();
         });
-        panel.addChild(areasTab);
-
-        specialAreasTab = tab(t().get("TC_UI_ADMIN_CLEANUP_TAB_SPECIAL_AREAS", player), 384, 86, 220, () -> {
+        addTab(t().get("TC_UI_ADMIN_CLEANUP_TAB_SPECIAL_AREAS", player), 220, activeTab == Tab.SPECIAL_AREAS, true, () -> {
             activeTab = Tab.SPECIAL_AREAS;
             rebuild();
         });
-        panel.addChild(specialAreasTab);
-
-        applyTabStyles();
-    }
-
-    private OZUIElement tab(String text, float x, float y, float width, Runnable action) {
-        OZUIElement tab = new OZUIElement();
-        tab.setPivot(Pivot.UpperLeft);
-        tab.setPosition(x, y, false);
-        tab.setSize(width, 38, false);
-        tab.setBorder(1);
-        tab.setBorderEdgeRadius(4, false);
-        tab.setClickable(true);
-        tab.setClickAction(event -> action.run());
-
-        UILabel label = new UILabel(text);
-        label.setPivot(Pivot.MiddleCenter);
-        label.setPosition(50, 50, true);
-        label.setSize(100, 100, true);
-        label.setFont(Font.DefaultBold);
-        label.setFontSize(15);
-        label.setTextAlign(TextAnchor.MiddleCenter);
-        tab.addChild(label);
-        return tab;
-    }
-
-    private void applyTabStyles() {
-        styleTab(ownersTab, activeTab == Tab.OWNERS);
-        styleTab(areasTab, activeTab == Tab.AREAS);
-        styleTab(specialAreasTab, activeTab == Tab.SPECIAL_AREAS);
-    }
-
-    private void styleTab(OZUIElement tab, boolean active) {
-        if (tab == null) {
-            return;
-        }
-        if (active) {
-            tab.setBackgroundColor(0.08f, 0.08f, 0.08f, 0.82f);
-            tab.setBorderColor(0.95f, 0.75f, 0.25f, 0.74f);
-        } else {
-            tab.setBackgroundColor(0.10f, 0.10f, 0.10f, 0.38f);
-            tab.setBorderColor(0.95f, 0.75f, 0.25f, 0.24f);
-        }
-    }
-
-    private void setupBody() {
-        body = new OZUIElement();
-        body.setPivot(Pivot.UpperLeft);
-        body.setPosition(24, 124, false);
-        body.style.width.set(96, Unit.Percent);
-        body.style.height.set(BODY_HEIGHT_PIXELS, Unit.Pixel);
-        body.setBackgroundColor(0.08f, 0.08f, 0.08f, 0.55f);
-        body.setBorder(1);
-        body.setBorderColor(0.95f, 0.75f, 0.25f, 0.48f);
-        body.setBorderEdgeRadius(4, false);
-        panel.addChild(body);
-
         if (activeTab == Tab.OWNERS) {
             setupOwnerTable();
         } else if (activeTab == Tab.AREAS) {
@@ -501,18 +386,9 @@ public class AdminCleanupOverlay extends OZUIElement {
         return t().get("TC_UI_ADMIN_CLEANUP_DAYS", player).replace("PH_DAYS", String.valueOf(inactiveDays));
     }
 
-    private void setupFooter() {
-        UILabel legend = new UILabel(t().get("TC_UI_ADMIN_CLEANUP_ACTION_LEGEND", player));
-        legend.setPivot(Pivot.LowerLeft);
-        legend.setPosition(24, PANEL_HEIGHT_PIXELS - 18, false);
-        legend.setFontSize(12);
-        panel.addChild(legend);
-    }
-
-    private void close() {
-        player.removeUIElement(this);
-        CursorManager.hide(player);
+    @Override
+    protected void close() {
         player.deleteAttribute(ATTRIBUTE_KEY);
-        onClose.onCall(player);
+        super.close();
     }
 }

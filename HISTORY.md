@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.13.5] - 2026-07-20 | Shared claim administration
+
+- refactor: move claim cleanup administration to the shared tabbed overlay layout
+
 ## [0.13.4] - 2026-07-20 | Advanced button controls
 
 - change: use the stable shared OZ button controls in claim and administration overlays
