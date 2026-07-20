@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.13.4] - 2026-07-20 | Advanced button controls
+
+- change: use the stable shared OZ button controls in claim and administration overlays
+
 ## [0.13.3] - 2026-07-20 | Settings completion
 
 - change: Discord announcements use their configured channel IDs directly

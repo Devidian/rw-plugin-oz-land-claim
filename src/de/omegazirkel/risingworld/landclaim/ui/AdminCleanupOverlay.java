@@ -12,9 +12,9 @@ import de.omegazirkel.risingworld.landclaim.ClaimCleanupService.OwnerSummary;
 import de.omegazirkel.risingworld.landclaim.ClaimCleanupService.SpecialAreaSummary;
 import de.omegazirkel.risingworld.landclaim.DiscordConnect;
 import de.omegazirkel.risingworld.tools.I18n;
-import de.omegazirkel.risingworld.tools.ui.ButtonFactory;
+import de.omegazirkel.risingworld.tools.ui.AdvancedButtonFactory;
 import de.omegazirkel.risingworld.tools.ui.CursorManager;
-import de.omegazirkel.risingworld.tools.ui.InfoButton;
+import de.omegazirkel.risingworld.tools.ui.AdvancedButton;
 import de.omegazirkel.risingworld.tools.ui.OZUIElement;
 import de.omegazirkel.risingworld.tools.ui.table.TableCell;
 import de.omegazirkel.risingworld.tools.ui.table.TableRow;
@@ -344,7 +344,7 @@ public class AdminCleanupOverlay extends OZUIElement {
     }
 
     private UIElement actionButton(String text, float leftPercent, Runnable action) {
-        InfoButton button = ButtonFactory.info(text, event -> action.run());
+        AdvancedButton button = AdvancedButtonFactory.defaultButton(text, event -> action.run());
         button.setPivot(Pivot.UpperLeft);
         button.setPosition(leftPercent, 10, true);
         button.setSize(28, 22, false);
@@ -353,7 +353,7 @@ public class AdminCleanupOverlay extends OZUIElement {
         return button;
     }
 
-    private void applyActionButtonColor(InfoButton button, String text) {
+    private void applyActionButtonColor(AdvancedButton button, String text) {
         if ("C".equals(text)) {
             button.setBackgroundColor(0.78f, 0.16f, 0.12f, 1f);
             button.setHoverBackgroundColor(0xDD3228FF);

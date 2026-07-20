@@ -2,11 +2,11 @@ package de.omegazirkel.risingworld.landclaim.ui;
 
 import de.omegazirkel.risingworld.LandClaim;
 import de.omegazirkel.risingworld.tools.I18n;
-import de.omegazirkel.risingworld.tools.ui.ButtonFactory;
-import de.omegazirkel.risingworld.tools.ui.CancelButton;
+import de.omegazirkel.risingworld.tools.ui.AdvancedButtonFactory;
+import de.omegazirkel.risingworld.tools.ui.AdvancedButton;
 import de.omegazirkel.risingworld.tools.ui.CursorManager;
-import de.omegazirkel.risingworld.tools.ui.DangerButton;
-import de.omegazirkel.risingworld.tools.ui.OkButton;
+import de.omegazirkel.risingworld.tools.ui.AdvancedButton;
+import de.omegazirkel.risingworld.tools.ui.AdvancedButton;
 import net.risingworld.api.callbacks.Callback;
 import net.risingworld.api.objects.Player;
 import net.risingworld.api.ui.UIElement;
@@ -101,7 +101,7 @@ public class UIDialogFactory {
         lbl.setSize(CONFIRM_BODY_WIDTH - 32, CONFIRM_BODY_HEIGHT - 20, false);
         body.addChild(lbl);
 
-        DangerButton btnOk = ButtonFactory.danger(t.get("TC_UI_BTN_YES", player), event -> {
+        AdvancedButton btnOk = AdvancedButtonFactory.danger(t.get("TC_UI_BTN_YES", player), event -> {
             player.removeUIElement(window);
             CursorManager.hide(player);
             onOk.onCall(true);
@@ -112,7 +112,7 @@ public class UIDialogFactory {
         styleFooterButton(btnOk);
         window.addChild(btnOk);
 
-        OkButton btnCancel = ButtonFactory.ok(t.get("TC_UI_BTN_NO", player), event -> {
+        AdvancedButton btnCancel = AdvancedButtonFactory.ok(t.get("TC_UI_BTN_NO", player), event -> {
             player.removeUIElement(window);
             CursorManager.hide(player);
             onCancel.onCall(player);
@@ -150,7 +150,7 @@ public class UIDialogFactory {
         lbl.setSize(CONFIRM_BODY_WIDTH - 32, CONFIRM_BODY_HEIGHT - 20, false);
         body.addChild(lbl);
 
-        OkButton btnOk = ButtonFactory.ok(t.get("TC_UI_BTN_YES", player), event -> {
+        AdvancedButton btnOk = AdvancedButtonFactory.ok(t.get("TC_UI_BTN_YES", player), event -> {
             player.removeUIElement(window);
             CursorManager.hide(player);
             onOk.onCall(true);
@@ -161,7 +161,7 @@ public class UIDialogFactory {
         styleFooterButton(btnOk);
         window.addChild(btnOk);
 
-        CancelButton btnCancel = ButtonFactory.cancel(t.get("TC_UI_BTN_NO", player), event -> {
+        AdvancedButton btnCancel = AdvancedButtonFactory.cancel(t.get("TC_UI_BTN_NO", player), event -> {
             player.removeUIElement(window);
             CursorManager.hide(player);
             onCancel.onCall(player);
@@ -210,7 +210,7 @@ public class UIDialogFactory {
         txt.setBorderEdgeRadius(4, false);
         body.addChild(txt);
 
-        OkButton btnOk = ButtonFactory.ok(t.get("TC_UI_BTN_OK", player), event -> {
+        AdvancedButton btnOk = AdvancedButtonFactory.ok(t.get("TC_UI_BTN_OK", player), event -> {
             txt.getCurrentText(player, (String text) -> {
                 player.removeUIElement(window);
                 CursorManager.hide(player);
@@ -223,7 +223,7 @@ public class UIDialogFactory {
         styleFooterButton(btnOk);
         window.addChild(btnOk);
 
-        CancelButton btnCancel = ButtonFactory.cancel(t.get("TC_UI_BTN_CANCEL", player), event -> {
+        AdvancedButton btnCancel = AdvancedButtonFactory.cancel(t.get("TC_UI_BTN_CANCEL", player), event -> {
             player.removeUIElement(window);
             CursorManager.hide(player);
             onCancel.onCall(player);

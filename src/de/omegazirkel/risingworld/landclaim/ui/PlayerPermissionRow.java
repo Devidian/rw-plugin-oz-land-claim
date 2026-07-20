@@ -7,7 +7,8 @@ import java.util.Map;
 import de.omegazirkel.risingworld.LandClaim;
 import de.omegazirkel.risingworld.landclaim.PluginSettings;
 import de.omegazirkel.risingworld.tools.I18n;
-import de.omegazirkel.risingworld.tools.ui.CancelButton;
+import de.omegazirkel.risingworld.tools.ui.AdvancedButton;
+import de.omegazirkel.risingworld.tools.ui.AdvancedButtonFactory;
 import de.omegazirkel.risingworld.tools.ui.OZUIElement;
 import de.omegazirkel.risingworld.tools.ui.table.TableCell;
 import de.omegazirkel.risingworld.tools.ui.table.TableRow;
@@ -144,7 +145,7 @@ public class PlayerPermissionRow {
                 ? areaPermissionLabelMap.get(currentPermission)
                 : permissionLabelMap.get(currentPermission);
 
-        CancelButton permissionButton = new CancelButton(buttonLabel, event -> {
+        AdvancedButton permissionButton = AdvancedButtonFactory.defaultButton(buttonLabel, event -> {
             if (selectPanes.containsKey(forPlayer.getDbID())) {
                 selectPanes.get(forPlayer.getDbID()).setVisible(false);
                 selectPanes.get(forPlayer.getDbID()).removeFromParent();
@@ -161,7 +162,7 @@ public class PlayerPermissionRow {
 
         Integer row = 0;
         for (Map.Entry<String, String> entry : permissionLabelMap.entrySet()) {
-            CancelButton cb = new CancelButton(entry.getValue(), event -> {
+            AdvancedButton cb = AdvancedButtonFactory.defaultButton(entry.getValue(), event -> {
                 selectPane.setVisible(false);
                 callback.onCall(entry.getKey());
                 permissionButton.setText(entry.getValue());
@@ -174,7 +175,7 @@ public class PlayerPermissionRow {
             selectPane.addChild(cb);
         }
         String defaultLabel = areaPermissionLabelMap.get(defaultPermission);
-        CancelButton cb = new CancelButton(defaultLabel, event -> {
+        AdvancedButton cb = AdvancedButtonFactory.defaultButton(defaultLabel, event -> {
             selectPane.setVisible(false);
             callback.onCall(defaultPermission);
             permissionButton.setText(defaultLabel);
