@@ -8,7 +8,7 @@
 
     <groupId>com.github.devidian</groupId>
     <artifactId>rw-plugin-oz-land-claim</artifactId>
-    <version>0.13.5</version>
+    <version>0.13.6</version>
 
     <name>OZLandClaim</name>
     <description>Claim your own property and protect it from other players</description>
@@ -53,12 +53,6 @@
             <scope>provided</scope>
             <optional>true</optional>
         </dependency> -->
-        <dependency>
-            <groupId>com.github.devidian</groupId>
-            <artifactId>rw-plugin-oz-discord-connect</artifactId>
-            <version>0.22.0</version>
-            <optional>true</optional>
-        </dependency>
         <dependency>
             <groupId>com.github.devidian</groupId>
             <artifactId>rw-plugin-oz-tools</artifactId>

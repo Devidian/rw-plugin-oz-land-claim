@@ -2,6 +2,11 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.13.6] - 2026-07-21 | Standalone Discord bridge
+
+- fix: remove the Discord Connect build dependency while preserving optional bridge behavior
+- change: update the shared OZ Tools dependency to version 0.23.1
+
 ## [0.13.5] - 2026-07-20 | Shared claim administration
 
 - refactor: move claim cleanup administration to the shared tabbed overlay layout
