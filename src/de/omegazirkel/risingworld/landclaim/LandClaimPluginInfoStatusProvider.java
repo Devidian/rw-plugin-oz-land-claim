@@ -43,8 +43,8 @@ public class LandClaimPluginInfoStatusProvider implements PluginInfoStatusProvid
                 .replace("PH_WALLET_STATUS", available(economy != null && economy.isWalletAvailable()))
                 .replace("PH_SHOP_STATUS", available(economy != null && economy.isShopAvailable()))
                 .replace("PH_AUTO_REMOVAL", String.valueOf(settings.enableAutoClaimRemoval))
-                .replace("PH_LANGUAGE", player.getLanguage() + " / " + player.getSystemLanguage())
-                .replace("PH_USEDLANG", t().getLanguageUsed(player.getSystemLanguage()))
+                .replace("PH_LANGUAGE", player.getLanguage() + " / " + de.omegazirkel.risingworld.OZTools.getPlayerLanguage(player))
+                .replace("PH_USEDLANG", t().getLanguageUsed(de.omegazirkel.risingworld.OZTools.getPlayerLanguage(player)))
                 .replace("PH_LANG_AVAILABLE", t().getLanguageAvailable());
     }
 

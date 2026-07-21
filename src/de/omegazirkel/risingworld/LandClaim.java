@@ -304,7 +304,7 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
     @EventMethod
     public void onPlayerCommand(PlayerCommandEvent event) {
         Player player = event.getPlayer();
-        String lang = player.getSystemLanguage();
+        String lang = de.omegazirkel.risingworld.OZTools.getPlayerLanguage(player);
         String commandLine = event.getCommand();
         // Vector3f pos = player.getPosition();
 
@@ -458,7 +458,7 @@ public class LandClaim extends Plugin implements Listener, FileChangeListener {
 
         if (s.enableWelcomeMessage) {
             // Player player = event.getPlayer();
-            String lang = player.getSystemLanguage();
+            String lang = de.omegazirkel.risingworld.OZTools.getPlayerLanguage(player);
             player.sendTextMessage(t.get("TC_MSG_PLUGIN_WELCOME", lang)
                     .replace("PH_PLUGIN_NAME", getDescription("name"))
                     .replace("PH_PLUGIN_CMD", pluginCMD)
