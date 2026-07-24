@@ -37,7 +37,7 @@ Wallet and Shop are detected optionally for economy features; core claim protect
 - **Recently Online Players:** The permission UI can also list players who were online recently, even if they are offline now.
 - **Permission Status Column:** The permission UI shows whether listed players are currently online or offline.
 - **Current Chunk Overlay:** A compact top-screen overlay shows whether the current chunk is claimable, part of one of your areas, owned by another player, or a special area. The overlay hides while the inventory is open; the current PluginAPI exposes a reliable inventory toggle event but no equivalent crafting/map visibility hook.
-- **Area Frame Visibility:** Owned/other area frame rendering is limited to the current sector and neighboring sectors when the API coordinate model can be matched safely. Claim protection itself is not filtered by visibility.
+- **Area Frame Visibility:** Owned/other area frame rendering is limited to a persisted per-player three-dimensional chunk radius. The default radius is `15`; players can select `1`, `5`, `10`, `15`, `32`, or `64` chunks in the shared plugin settings. An area that intersects the radius is always rendered in full. Claim protection itself is not filtered by visibility.
 - **Special-Zone Visibility:** Admins can independently show or hide neutral, static, PvP, rest, trap, and renew-zone frames for other players. A player always sees the frame of their current special zone; the optional administrator override bypasses these filters.
 
 ## Commands

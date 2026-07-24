@@ -4,6 +4,11 @@
 
 ## Unreleased
 
+## [0.14.0] - 2026-07-25 | Configurable area-frame visibility
+
+- feat: add a persisted per-player area-frame chunk radius with a default of 15 chunks
+- perf: replace coarse sector visibility transitions with bounded chunk intersection and differential frame updates
+
 ## [0.13.9] - 2026-07-24 | Shared runtime bridges
 
 - refactor: use the synchronized optional Discord bridge for configured bot-language messages

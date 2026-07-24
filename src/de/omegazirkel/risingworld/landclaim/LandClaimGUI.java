@@ -685,7 +685,7 @@ public class LandClaimGUI {
             menuItems.add(new MenuItem("menu-debug",
                     t.get("TC_MENU_ADMIN_DEBUG", uiPlayer),
                     (p) -> {
-                        Area3DUtils.updateAreaFramesForPlayer(p);
+                        Area3DUtils.refreshAreaFramesForPlayer(p);
                         chunkClaimUtil.idleChunk(p);
                         // if we do not reopen the menu it seems to be frozen and unclickable
                         openAdminMenu(p, onBack);

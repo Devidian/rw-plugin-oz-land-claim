@@ -53,6 +53,9 @@ public class LandClaimPlayerPluginData extends PlayerPluginData {
                 addRow(table, t().get("TC_UI_LABEL_SHOW_OTHER_AREAS", uiPlayer),
                         LandClaimPlayerPluginSettings.SHOW_OTHER_AREA_FRAMES_KEY,
                         booleanValue(uiPlayer, LandClaimPlayerPluginSettings.SHOW_OTHER_AREA_FRAMES_KEY, false));
+                addRow(table, t().get("TC_UI_LABEL_AREA_FRAME_CHUNK_RADIUS", uiPlayer),
+                        LandClaimPlayerPluginSettings.AREA_FRAME_CHUNK_RADIUS_KEY,
+                        String.valueOf(LandClaimPlayerPluginSettings.areaFrameChunkRadius(uiPlayer)));
                 addRow(table, t().get("TC_UI_LABEL_ENABLE_CLAIM_INFO_OVERLAY", uiPlayer),
                         LandClaimPlayerPluginSettings.ENABLE_CLAIM_INFO_OVERLAY_KEY,
                         booleanValue(uiPlayer, LandClaimPlayerPluginSettings.ENABLE_CLAIM_INFO_OVERLAY_KEY, true));

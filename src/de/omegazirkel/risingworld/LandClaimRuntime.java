@@ -46,7 +46,6 @@ import net.risingworld.api.events.player.PlayerConnectEvent;
 import net.risingworld.api.events.player.PlayerDeathEvent;
 import net.risingworld.api.events.player.PlayerDisconnectEvent;
 import net.risingworld.api.events.player.PlayerEnterChunkEvent;
-import net.risingworld.api.events.player.PlayerEnterSectorEvent;
 import net.risingworld.api.events.player.PlayerSpawnEvent;
 import net.risingworld.api.events.player.ui.PlayerToggleInventoryEvent;
 import net.risingworld.api.objects.Area;
@@ -381,10 +380,6 @@ class LandClaimRuntime extends Plugin {
         }
     }
 
-    public void onPlayerEnterSectorEvent(PlayerEnterSectorEvent event) {
-        Area3DUtils.updateAreaFramesForPlayer(event.getPlayer());
-    }
-
     public void onPlayerDisconnectEvent(PlayerDisconnectEvent event) {
         if (chunkInfoManager != null) {
             chunkInfoManager.onPlayerDisconnectEvent(event);
@@ -430,6 +425,7 @@ class LandClaimRuntime extends Plugin {
         if (!player.hasAttribute(LandClaimPlayerPluginSettings.SHOW_OTHER_AREA_FRAMES_KEY))
             player.setAttribute(LandClaimPlayerPluginSettings.SHOW_OTHER_AREA_FRAMES_KEY,
                     ps.getBoolean(dbId, LandClaimPlayerPluginSettings.SHOW_OTHER_AREA_FRAMES_KEY).orElse(false));
+        LandClaimPlayerPluginSettings.areaFrameChunkRadius(player);
         if (!player.hasAttribute(LandClaimPlayerPluginSettings.ENABLE_CLAIM_INFO_OVERLAY_KEY))
             player.setAttribute(LandClaimPlayerPluginSettings.ENABLE_CLAIM_INFO_OVERLAY_KEY,
                     ps.getBoolean(dbId, LandClaimPlayerPluginSettings.ENABLE_CLAIM_INFO_OVERLAY_KEY).orElse(true));

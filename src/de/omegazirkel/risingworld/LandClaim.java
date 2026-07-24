@@ -16,7 +16,6 @@ import net.risingworld.api.events.player.PlayerConnectEvent;
 import net.risingworld.api.events.player.PlayerDeathEvent;
 import net.risingworld.api.events.player.PlayerDisconnectEvent;
 import net.risingworld.api.events.player.PlayerEnterChunkEvent;
-import net.risingworld.api.events.player.PlayerEnterSectorEvent;
 import net.risingworld.api.events.player.PlayerSpawnEvent;
 import net.risingworld.api.events.player.ui.PlayerToggleInventoryEvent;
 
@@ -52,8 +51,6 @@ public final class LandClaim extends LandClaimRuntime implements Listener, FileC
     public void onPlayerCommand(PlayerCommandEvent event) { super.onPlayerCommand(event); }
     @Override @EventMethod
     public void onPlayerEnterChunkEvent(PlayerEnterChunkEvent event) { super.onPlayerEnterChunkEvent(event); }
-    @Override @EventMethod
-    public void onPlayerEnterSectorEvent(PlayerEnterSectorEvent event) { super.onPlayerEnterSectorEvent(event); }
     @Override @EventMethod
     public void onPlayerDisconnectEvent(PlayerDisconnectEvent event) { super.onPlayerDisconnectEvent(event); }
     @Override @EventMethod
