@@ -1,51 +1,27 @@
 package de.omegazirkel.risingworld.landclaim;
 
-import java.lang.reflect.Method;
-
 import de.omegazirkel.risingworld.LandClaim;
+import de.omegazirkel.risingworld.tools.bridge.DiscordBridge;
 import net.risingworld.api.Plugin;
 
-public class DiscordConnect {
+public class DiscordConnect extends DiscordBridge {
 
-    private static Plugin pluginRef = null;
+    private static DiscordConnect bridge;
     private static final PluginSettings s = PluginSettings.getInstance();
+
+    private DiscordConnect(Plugin owner) {
+        super(owner);
+    }
     public static final String botLang(){
-        String lang = (String) callPluginMethod("getBotLanguage", null, null);
-        return lang != null ?  lang : "en";
+        return bridge == null ? "en" : bridge.getBotLanguage();
     }
 
     public static void init(Plugin plugin) {
-        pluginRef = plugin.getPluginByName("OZ - Discord Connect");
-        if (pluginRef != null)
-            LandClaim.logger().info("✅ " + pluginRef.getName() + " found! ID: " + pluginRef.getID());
+        bridge = new DiscordConnect(plugin);
+        if (bridge.isAvailable())
+            LandClaim.logger().info("✅ OZ - Discord Connect found!");
         else
             LandClaim.logger().warn("⚠️ OZ - Discord Connect not available!");
-    }
-
-    private static boolean isPluginAvailable() {
-        try {
-            Class.forName("de.omegazirkel.risingworld.DiscordConnect");
-            return pluginRef != null;
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
-    }
-
-    private static Object callPluginMethod(String methodName, Class<?>[] paramTypes, Object[] args) {
-        if (!isPluginAvailable()) {
-            return null;
-        }
-
-        try {
-            Object plugin = pluginRef;
-            Class<?> clazz = plugin.getClass();
-            Method method = clazz.getMethod(methodName, paramTypes);
-            return method.invoke(plugin, args);
-        } catch (Exception e) {
-            LandClaim.logger().error("Error while calling DiscordConnect Method");
-            e.printStackTrace();
-            return null;
-        }
     }
 
     public static void sendDiscordMessage(String message, long channelId) {
@@ -53,9 +29,7 @@ public class DiscordConnect {
     }
 
     public static void sendDiscordMessage(String message, long channelId, byte[] image) {
-        callPluginMethod("sendDiscordMessageToTextChannel",
-                new Class<?>[] { String.class, long.class, byte[].class },
-                new Object[] { message, channelId, image });
+        if (bridge != null) bridge.sendTextMessage(message, channelId, image);
     }
 
     public static void sendDiscordClaimAnnouncement(String message) {

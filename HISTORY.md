@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## Unreleased
+
+- refactor: use the synchronized optional Discord bridge for configured bot-language messages
+
 ## [0.13.8] - 2026-07-24 | Dialog button interaction
 
 - fix: restore clickable dimensions for land-claim dialog footer buttons
