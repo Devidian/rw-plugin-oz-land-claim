@@ -6,14 +6,12 @@ import java.util.Map;
 
 import de.omegazirkel.risingworld.landclaim.ChunkClaimUtil;
 import net.risingworld.api.Timer;
-import net.risingworld.api.events.EventMethod;
-import net.risingworld.api.events.Listener;
 import net.risingworld.api.events.player.PlayerConnectEvent;
 import net.risingworld.api.events.player.PlayerDisconnectEvent;
 import net.risingworld.api.events.player.ui.PlayerToggleInventoryEvent;
 import net.risingworld.api.objects.Player;
 
-public class ChunkInfoManager implements Listener {
+public final class ChunkInfoManager {
 
     private final ChunkClaimUtil chunkClaimUtil;
     private final Map<Player, ChunkInfoController> controllers = new HashMap<>();
@@ -24,14 +22,12 @@ public class ChunkInfoManager implements Listener {
         this.chunkClaimUtil = util;
     }
 
-    @EventMethod
     public void onPlayerConnectEvent(PlayerConnectEvent event) {
         Player p = event.getPlayer();
         ChunkInfoController controller = new ChunkInfoController(p, chunkClaimUtil);
         controllers.put(p, controller);
     }
 
-    @EventMethod
     public void onPlayerDisconnectEvent(PlayerDisconnectEvent event) {
         Player p = event.getPlayer();
         ChunkInfoController controller = controllers.remove(p);
@@ -40,7 +36,6 @@ public class ChunkInfoManager implements Listener {
         }
     }
 
-    @EventMethod
     public void onPlayerToggleInventoryEvent(PlayerToggleInventoryEvent event) {
         Player p = event.getPlayer();
         ChunkInfoController controller = controllers.get(p);
