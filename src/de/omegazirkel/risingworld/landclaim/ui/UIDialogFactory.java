@@ -5,8 +5,6 @@ import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.ui.AdvancedButtonFactory;
 import de.omegazirkel.risingworld.tools.ui.AdvancedButton;
 import de.omegazirkel.risingworld.tools.ui.CursorManager;
-import de.omegazirkel.risingworld.tools.ui.AdvancedButton;
-import de.omegazirkel.risingworld.tools.ui.AdvancedButton;
 import net.risingworld.api.callbacks.Callback;
 import net.risingworld.api.objects.Player;
 import net.risingworld.api.ui.UIElement;
@@ -36,6 +34,8 @@ public class UIDialogFactory {
     private static final int CONFIRM_FOOTER_Y = 218;
     private static final int TEXT_INPUT_FOOTER_Y = 218;
     private static final int BUTTON_OFFSET_X = 24;
+    private static final int FOOTER_BUTTON_WIDTH = 120;
+    private static final int FOOTER_BUTTON_HEIGHT = 36;
 
     private static UIElement getDialogWindow(int width, int height) {
         UIElement window = new UIElement();
@@ -74,6 +74,9 @@ public class UIDialogFactory {
     }
 
     private static void styleFooterButton(UIElement button) {
+        // AdvancedButton has no intrinsic dimensions. Preserve the legacy dialog
+        // button size so its container receives a real clickable surface.
+        button.setSize(FOOTER_BUTTON_WIDTH, FOOTER_BUTTON_HEIGHT, false);
         button.setBorderEdgeRadius(4, false);
     }
 

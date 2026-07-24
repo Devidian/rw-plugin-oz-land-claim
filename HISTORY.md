@@ -2,6 +2,11 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.13.8] - 2026-07-24 | Dialog button interaction
+
+- fix: restore clickable dimensions for land-claim dialog footer buttons
+- change: update the shared OZ Tools dependency to version 0.23.7
+
 ## [0.13.6] - 2026-07-21 | Standalone Discord bridge
 
 - fix: remove the Discord Connect build dependency while preserving optional bridge behavior
