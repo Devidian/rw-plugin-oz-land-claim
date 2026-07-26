@@ -13,8 +13,9 @@ public class ChunkInfoOverlay {
 
     private final UIElement root;
     private final UILabel label;
+    private final ChunkInfoOverlayState state = new ChunkInfoOverlayState();
 
-    public ChunkInfoOverlay(Player player) {
+    public ChunkInfoOverlay() {
         root = new UIElement();
         root.setPivot(Pivot.UpperCenter);
         root.style.position.set(Position.Absolute);
@@ -42,25 +43,23 @@ public class ChunkInfoOverlay {
         label.setTextWrap(false);
 
         root.addChild(label);
-
-        player.addUIElement(root);
     }
 
     public void updateText(String text) {
-        label.setText(text);
-    }
-
-    public void refresh(Player player) {
-        // we dont know if the element is already shown or not
-        hide(player);
-        show(player);
+        if (state.updateText(text)) {
+            label.setText(text);
+        }
     }
 
     public void show(Player player) {
-        player.addUIElement(root);
+        if (state.markVisible()) {
+            player.addUIElement(root);
+        }
     }
 
     public void hide(Player player) {
-        player.removeUIElement(root);
+        if (state.markHidden()) {
+            player.removeUIElement(root);
+        }
     }
 }

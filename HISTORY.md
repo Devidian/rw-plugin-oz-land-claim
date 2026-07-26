@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+## [0.14.1] - 2026-07-26 | Stable claim-information overlay
+
+- fix: stabilize the upper claim-information overlay with targeted event refreshes, idempotent visibility changes, and isolated per-player timer failures
+
 ## [0.14.0] - 2026-07-25 | Configurable area-frame visibility
 
 - feat: add a persisted per-player area-frame chunk radius with a default of 15 chunks

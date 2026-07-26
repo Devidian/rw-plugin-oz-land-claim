@@ -27,7 +27,7 @@ public class ChunkInfoController {
     public ChunkInfoController(Player player, ChunkClaimUtil chunkClaimUtil) {
         this.player = player;
         this.ccu = chunkClaimUtil;
-        this.overlay = new ChunkInfoOverlay(player);
+        this.overlay = new ChunkInfoOverlay();
     }
 
     public Vector3i getChunkPos() {
@@ -48,12 +48,15 @@ public class ChunkInfoController {
             return enabled;
         }
 
-        overlay.refresh(player);
-
         String text = computeDisplay();
         overlay.updateText(text);
+        overlay.show(player);
 
         return enabled;
+    }
+
+    public void hide() {
+        overlay.hide(player);
     }
 
     private String computeDisplay() {

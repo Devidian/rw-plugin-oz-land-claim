@@ -371,6 +371,11 @@ class LandClaimRuntime extends Plugin {
         // destination explicitly so entering a special zone refreshes its frame
         // immediately as well as leaving it.
         Area3DUtils.updateAreaFramesForPlayer(player, chunkPos);
+        enqueue(() -> {
+            if (chunkInfoManager != null) {
+                chunkInfoManager.refresh(player);
+            }
+        });
 
         // if player has "oz.landclaim.showCurrentChunkFrame" enabled, show chunk area
         if (player.hasAttribute(LandClaimPlayerPluginSettings.SHOW_CURRENT_CHUNK_FRAME_KEY)
@@ -438,6 +443,11 @@ class LandClaimRuntime extends Plugin {
         if ((Boolean) player.getAttribute(LandClaimPlayerPluginSettings.SHOW_CURRENT_CHUNK_FRAME_KEY))
             updatecurrentAreaFrameForPlayer(player);
         Area3DUtils.updateAreaFramesForPlayer(player);
+        enqueue(() -> {
+            if (chunkInfoManager != null) {
+                chunkInfoManager.refresh(player);
+            }
+        });
     }
 
     public void onPlayerSpawnEvent(PlayerSpawnEvent event) {
@@ -446,6 +456,11 @@ class LandClaimRuntime extends Plugin {
         eventLogger().debug("Player " + player.getName() + " spawned. Current chunk position: "
                 + chunkPos.toString());
         chunkClaimUtil.enterChunk(player, chunkPos);
+        enqueue(() -> {
+            if (chunkInfoManager != null) {
+                chunkInfoManager.refresh(player);
+            }
+        });
 
         if (s.enableWelcomeMessage) {
             // Player player = event.getPlayer();
