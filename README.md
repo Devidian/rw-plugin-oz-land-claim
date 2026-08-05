@@ -7,7 +7,7 @@ Server administrators can configure almost all aspects of the plugin to their li
 ## Prerequisites
 
 This plugin requires the **OmegaZirkel Tools** plugin to be installed.
-Use OZTools `0.18.0` or newer with this release.
+Use OZTools `0.23.11` or newer with this release.
 Wallet and Shop are detected optionally for economy features; core claim protection remains usable without them. Claim sales require Wallet. Extra-claim purchases require Shop and Wallet.
 
 1. Download the latest `oz-tools-....zip` from the [OZ-Tools](https://github.com/Devidian/rw-plugin-oz-tools/releases) Releases Page.
@@ -26,6 +26,10 @@ Wallet and Shop are detected optionally for economy features; core claim protect
 - **Easy to use:** Players can manage their claims through an intuitive UI.
 - **Highly Configurable:** Server admins can tweak almost every aspect of the plugin.
 - **Claim Limits:** Control how many chunks a player can claim based on playtime.
+- **Global Claim Modes:** Choose time-based, administrative, geometric land-pricing, or city rules without rewriting existing areas.
+- **Geometric Land Pricing:** Wallet-backed chunk prices use 26-neighbor three-dimensional clusters, persisted additive surcharges, ceiling rounding, and a safe maximum.
+- **Cities and Leaseholds:** Admins can create non-overlapping city cores and leaseholds, manage city treasuries and radius expansion, and offer property for purchase, rent, or rent-to-own.
+- **Daily Rent:** Server-local daily billing is idempotent, does not accrue downtime debt, warns low-balance tenants, and returns unpaid property to its city with Mail or login-dialog fallback.
 - **Extra Claim Capacity:** Purchased extra-claim capacity is stored separately from playtime-derived limits and is included in max-claim calculations. When Shop and Wallet are installed, LandClaim registers an extra-claim capacity offer with per-player linear pricing.
 - **Claim Protection:** Protect inactive players' areas from being claimed by others for a configurable amount of time.
 - **Admin Tools:** Includes commands for repairing and managing zones.
@@ -58,6 +62,14 @@ All settings can be adjusted in the `settings.properties` file located in the pl
 | Setting                         | Default | Description                                                                                                    |
 | :------------------------------ | :------ | :------------------------------------------------------------------------------------------------------------- |
 | `logLevel`                      | `ALL`   | Sets the logging verbosity. Possible values: `OFF`, `FATAL`, `ERROR`, `WARN`, `INFO`, `DEBUG`, `TRACE`, `ALL`. |
+| `claimMode`                     | `TIME_BASED` | Global mode: `TIME_BASED`, `ADMINISTRATIVE`, `LAND_PRICING`, or `CITY`. |
+| `landPriceBase`                 | `1000` | Base chunk price in land-pricing mode. |
+| `landPriceClusterIncrement`     | `0.05` | Additive price multiplier for every occupied chunk in adjacent geometric clusters. |
+| `cityBaseRadius`                | `2` | Initial three-dimensional city radius in chunks. |
+| `cityAllowPrivateClaims`        | `false` | Global default for private player claims inside cities. |
+| `cityPrivateClaimPrice`         | `10000` | Global price per private city chunk. |
+| `cityExpansionBasePrice`        | `50` | Price per newly covered chunk for city radius expansion. |
+| `cityRentBillingHour`           | `0` | Server-local daily rent billing hour, from 0 through 23. |
 | `minutesToClaim`                | `10`    | The minimum time in minutes a player must stay in a chunk before they are allowed to claim it.                 |
 | `basicClaimLimit`               | `1`     | The initial number of chunks a player can claim.                                                               |
 | `playTimeHoursExtraClaimFactor` | `0.6`   | A factor to calculate additional claim slots based on playtime. `HoursPlayed * Factor = ExtraClaims`.          |
@@ -108,7 +120,7 @@ You can override the default colors for the chunk visualizations by uncommenting
 
 ### Migration Notes
 
-Claim economy support adds new SQLite tables for purchased extra-claim capacity and claim sale listings. Renew-zone support adds `renewZoneConfigs`. They are created automatically on startup. No manual migration is required, and `allowClaimSale=false` keeps claim sale behavior disabled until an admin enables it.
+Claim economy support adds SQLite tables for purchased capacity, sale listings, geometric price surcharges, cities, leaseholds, pending notices, and economy-operation reconciliation. They are created additively on startup; existing areas and claims are not rewritten. An absent `claimMode` remains `TIME_BASED`.
 
 Route-ready claim-sale exports read active listings from `claimSaleListings` by `world` and use `listed_at` as the `lastChange` cursor. LandClaim exports only plugin-owned sale metadata; world area geometry remains owned by world/AdminUtils routes.
 

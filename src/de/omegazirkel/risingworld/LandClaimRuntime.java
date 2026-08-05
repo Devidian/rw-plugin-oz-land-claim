@@ -5,6 +5,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import de.omegazirkel.risingworld.landclaim.Area3DUtils;
 import de.omegazirkel.risingworld.landclaim.ClaimCleanupService;
@@ -16,15 +19,22 @@ import de.omegazirkel.risingworld.landclaim.LandClaimPluginInfoStatusProvider;
 import de.omegazirkel.risingworld.landclaim.PermissionFileUtil;
 import de.omegazirkel.risingworld.landclaim.PluginSettings;
 import de.omegazirkel.risingworld.landclaim.RenewZoneResetService;
+import de.omegazirkel.risingworld.landclaim.CityRentService;
 import de.omegazirkel.risingworld.landclaim.db.ClaimSaleListingService;
 import de.omegazirkel.risingworld.landclaim.db.ExtraClaimCapacityService;
 import de.omegazirkel.risingworld.landclaim.db.LandClaimChunkService;
 import de.omegazirkel.risingworld.landclaim.db.LandClaimChunkStore;
 import de.omegazirkel.risingworld.landclaim.db.RenewZoneConfigService;
+import de.omegazirkel.risingworld.landclaim.db.LandPriceService;
+import de.omegazirkel.risingworld.landclaim.db.CityService;
 import de.omegazirkel.risingworld.landclaim.ui.ClaimSaleIndicatorProvider;
 import de.omegazirkel.risingworld.landclaim.ui.ChunkInfoManager;
 import de.omegazirkel.risingworld.landclaim.ui.LandClaimPlayerPluginData;
 import de.omegazirkel.risingworld.landclaim.ui.LandClaimPlayerPluginSettings;
+import de.omegazirkel.risingworld.landclaim.ui.UIDialogFactory;
+import de.omegazirkel.risingworld.tools.ui.CursorManager;
+import net.risingworld.api.ui.UIElement;
+import net.risingworld.api.ui.UITarget;
 import de.omegazirkel.risingworld.tools.Colors;
 import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.OZLogger;
@@ -69,7 +79,12 @@ class LandClaimRuntime extends Plugin {
     private static ClaimSaleListingService claimSaleListingService;
     private static RenewZoneConfigService renewZoneConfigService;
     private static RenewZoneResetService renewZoneResetService;
+    private static LandPriceService landPriceService;
+    private static CityService cityService;
     private Timer renewZoneTimer;
+    private Timer cityRentTimer;
+    private CityRentService cityRentService;
+    private LocalDate nextCityRentBillingDate;
     private long nextRenewZoneCheckMs;
     public static String name;
     // only for workaround with area bugs
@@ -107,6 +122,8 @@ class LandClaimRuntime extends Plugin {
             claimSaleListingService = new ClaimSaleListingService(sqliteCon);
             renewZoneConfigService = new RenewZoneConfigService(sqliteCon);
             renewZoneResetService = new RenewZoneResetService(renewZoneConfigService, s);
+            landPriceService = new LandPriceService(sqliteCon);
+            cityService = new CityService(sqliteCon);
         } catch (Exception e) {
             logger().error(e.getMessage());
             e.printStackTrace();
@@ -134,6 +151,12 @@ class LandClaimRuntime extends Plugin {
         economyIntegration = new EconomyIntegration(this);
         economyIntegration.logStatus();
         economyIntegration.registerExtraClaimOffer(s);
+        landPriceService.refresh();
+        cityRentService = new CityRentService(cityService, economyIntegration, s);
+        scheduleCityRentBilling();
+        int unresolvedEconomyOperations = cityService.countUnresolvedEconomyOperations();
+        if (unresolvedEconomyOperations > 0) logger().warn("LandClaim has " + unresolvedEconomyOperations
+                + " unresolved economy operations requiring reconciliation.");
 
         // init Chunk Info overlay timer
         chunkInfoManager = new ChunkInfoManager(chunkClaimUtil);
@@ -163,6 +186,10 @@ class LandClaimRuntime extends Plugin {
             renewZoneTimer.kill();
             renewZoneTimer = null;
         }
+        if (cityRentTimer != null) {
+            cityRentTimer.kill();
+            cityRentTimer = null;
+        }
         if (name != null) {
             PluginShortcutVisibility.unregister(name);
             PluginInfoStatusProviders.unregisterProvider(name);
@@ -189,6 +216,8 @@ class LandClaimRuntime extends Plugin {
             economyIntegration.logStatus();
             economyIntegration.registerExtraClaimOffer(s);
         }
+        scheduleCityRentBilling();
+        if (landPriceService != null) landPriceService.refresh();
         Area3DUtils.updateAreaFramesForAllPlayers();
     }
 
@@ -210,6 +239,14 @@ class LandClaimRuntime extends Plugin {
 
     public static EconomyIntegration economyIntegration() {
         return economyIntegration;
+    }
+
+    public static LandPriceService landPriceService() {
+        return landPriceService;
+    }
+
+    public static CityService cityService() {
+        return cityService;
     }
 
     public int playerClaimCount(Player player) {
@@ -412,6 +449,11 @@ class LandClaimRuntime extends Plugin {
             chunkInfoManager.onPlayerConnectEvent(event);
         }
         Player player = event.getPlayer();
+        if (cityService != null) {
+            cityService.rememberPlayerLanguage(player.getDbID(),
+                    de.omegazirkel.risingworld.OZTools.getPlayerLanguage(player));
+        }
+        showPendingCityNotifications(player);
         Vector3i chunkPos = player.getChunkPosition();
         eventLogger().debug("Player " + player.getName() + " connected to the server. Current chunk position: "
                 + chunkPos.toString());
@@ -448,6 +490,41 @@ class LandClaimRuntime extends Plugin {
                 chunkInfoManager.refresh(player);
             }
         });
+    }
+
+    private void scheduleCityRentBilling() {
+        if (cityRentTimer != null) cityRentTimer.kill();
+        int hour = Math.max(0, Math.min(23, s.cityRentBillingHour));
+        LocalDateTime now = LocalDateTime.now();
+        nextCityRentBillingDate = now.toLocalTime().isBefore(LocalTime.of(hour, 0))
+                ? now.toLocalDate() : now.toLocalDate().plusDays(1);
+        cityRentTimer = new Timer(30f, 60f, -1, () -> {
+            LocalDateTime current = LocalDateTime.now();
+            if (current.toLocalDate().isBefore(nextCityRentBillingDate)
+                    || current.getHour() < Math.max(0, Math.min(23, s.cityRentBillingHour))) return;
+            CityRentService.RentRunResult result = cityRentService.bill(nextCityRentBillingDate);
+            logger().info("City rent billing checked " + result.checked() + " leaseholds, paid=" + result.paid()
+                    + ", evicted=" + result.evicted() + ", warned=" + result.warned());
+            nextCityRentBillingDate = current.toLocalDate().plusDays(1);
+        });
+        cityRentTimer.start();
+    }
+
+    private void showPendingCityNotifications(Player player) {
+        if (cityService == null) return;
+        var notices = cityService.pendingNotifications(player.getDbID());
+        if (notices.isEmpty()) return;
+        var notice = notices.get(0);
+        String[] arguments = notice.arguments().split("\\t", 2);
+        String message = t.get(notice.messageKey(), player).replace("PH_AREA_NAME", arguments[0]);
+        if (arguments.length > 1) message = message.replace("PH_RENT", arguments[1]);
+        UIElement dialog = UIDialogFactory.getWarningDialog(player, t.get("TC_CITY_NOTICE_TITLE", player), message,
+                closed -> {
+                    cityService.deletePendingNotification(notice.id());
+                    showPendingCityNotifications(closed);
+                });
+        player.addUIElement(dialog, UITarget.HUD);
+        CursorManager.show(player);
     }
 
     public void onPlayerSpawnEvent(PlayerSpawnEvent event) {
@@ -493,6 +570,8 @@ class LandClaimRuntime extends Plugin {
                 "ozlc-special-static.json",
                 "ozlc-special-trap.json",
                 "ozlc-special-renew.json",
+                "ozlc-special-city-core.json",
+                "ozlc-special-city-leasehold.json",
                 "ozlc-special.json"
         };
 

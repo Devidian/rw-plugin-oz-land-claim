@@ -121,6 +121,7 @@ public class ClaimCleanupService {
         if (area == null || !isSpecialArea(area)) {
             return CleanupResult.ok(0, 0);
         }
+        if (isCityManaged(areaId)) return CleanupResult.blocked(area.getStartChunkPosition());
         Server.removeArea(area);
         return CleanupResult.ok(1, 0);
     }
@@ -130,6 +131,7 @@ public class ClaimCleanupService {
         if (area == null || !isSpecialArea(area)) {
             return CleanupResult.ok(0, 0);
         }
+        if (isCityManaged(areaId)) return CleanupResult.blocked(area.getStartChunkPosition());
         Set<String> resetColumns = new HashSet<>();
         for (Vector3i chunk : ChunkClaimUtil.areaToChunks(area)) {
             resetColumns.add(chunk.x + ":" + chunk.z);
@@ -143,6 +145,12 @@ public class ClaimCleanupService {
             }
         }
         return CleanupResult.ok(1, resetCount);
+    }
+
+    private boolean isCityManaged(long areaId) {
+        return LandClaim.cityService() != null
+                && (LandClaim.cityService().findCity(areaId).isPresent()
+                        || LandClaim.cityService().findLeasehold(areaId).isPresent());
     }
 
     public AutoRemovalResult removeInactiveOwners(int inactiveDays) {

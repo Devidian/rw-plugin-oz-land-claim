@@ -86,6 +86,16 @@ public class UIDialogFactory {
             String i18nId,
             Callback<Boolean> onOk,
             Callback<Player> onCancel) {
+        return getConfirmDangerDialog(player, title, i18nId, t.get("TC_UI_BTN_YES", player), onOk, onCancel);
+    }
+
+    public static UIElement getConfirmDangerDialog(
+            Player player,
+            String title,
+            String i18nId,
+            String confirmLabel,
+            Callback<Boolean> onOk,
+            Callback<Player> onCancel) {
 
         // --- Window ---
         UIElement window = getDialogWindow(CONFIRM_DIALOG_WIDTH, CONFIRM_DIALOG_HEIGHT);
@@ -104,7 +114,7 @@ public class UIDialogFactory {
         lbl.setSize(CONFIRM_BODY_WIDTH - 32, CONFIRM_BODY_HEIGHT - 20, false);
         body.addChild(lbl);
 
-        AdvancedButton btnOk = AdvancedButtonFactory.danger(t.get("TC_UI_BTN_YES", player), event -> {
+        AdvancedButton btnOk = AdvancedButtonFactory.danger(confirmLabel, event -> {
             player.removeUIElement(window);
             CursorManager.hide(player);
             onOk.onCall(true);
@@ -175,6 +185,30 @@ public class UIDialogFactory {
         styleFooterButton(btnCancel);
         window.addChild(btnCancel);
 
+        return window;
+    }
+
+    public static UIElement getWarningDialog(Player player, String title, String message, Callback<Player> onClose) {
+        UIElement window = getDialogWindow(CONFIRM_DIALOG_WIDTH, CONFIRM_DIALOG_HEIGHT);
+        addTitle(window, title, CONFIRM_TITLE_Y);
+        UIElement body = addBody(window, CONFIRM_BODY_Y, CONFIRM_BODY_WIDTH, CONFIRM_BODY_HEIGHT);
+        UILabel label = new UILabel(message);
+        label.setRichTextEnabled(true);
+        label.setFontSize(16);
+        label.setTextAlign(TextAnchor.UpperLeft);
+        label.setPivot(Pivot.UpperLeft);
+        label.setPosition(16, 12, false);
+        label.setSize(CONFIRM_BODY_WIDTH - 32, CONFIRM_BODY_HEIGHT - 20, false);
+        body.addChild(label);
+        AdvancedButton close = AdvancedButtonFactory.danger(t.get("TC_UI_BTN_OK", player), event -> {
+            player.removeUIElement(window);
+            CursorManager.hide(player);
+            if (onClose != null) onClose.onCall(player);
+        });
+        close.setPivot(Pivot.LowerRight);
+        close.setPosition(CONFIRM_DIALOG_WIDTH - BUTTON_OFFSET_X, CONFIRM_FOOTER_Y, false);
+        styleFooterButton(close);
+        window.addChild(close);
         return window;
     }
 

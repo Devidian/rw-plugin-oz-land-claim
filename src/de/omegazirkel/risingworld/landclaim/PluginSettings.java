@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
+import java.util.List;
 
 import de.omegazirkel.risingworld.LandClaim;
 import de.omegazirkel.risingworld.tools.OZLogger;
@@ -28,6 +29,7 @@ public class PluginSettings {
         // Public settings
         public String logLevel = "ALL";
         public Boolean reloadOnChange = true;
+        public ClaimMode claimMode = ClaimMode.TIME_BASED;
         public Integer minutesToClaim = 10;
         public double claimTimeScaleFactor = 1.01;
         public Integer basicClaimLimit = 5;
@@ -38,6 +40,13 @@ public class PluginSettings {
         public Integer recentlyOnlinePermissionListHours = 24;
 
         public Integer claimBaseCost = 100;
+        public long landPriceBase = 1000;
+        public double landPriceClusterIncrement = 0.05d;
+        public Integer cityBaseRadius = 2;
+        public Boolean cityAllowPrivateClaims = false;
+        public long cityPrivateClaimPrice = 10000;
+        public long cityExpansionBasePrice = 50;
+        public Integer cityRentBillingHour = 0;
         public double claimSaleFee = 0.01;
         public Boolean adminIgnoreLimit = true;
         public Boolean adminIgnoreTime = true;
@@ -83,6 +92,8 @@ public class PluginSettings {
         public String specialStaticAreaPermission = "ozlc-special-static";
         public String specialTrapAreaPermission = "ozlc-special-trap";
         public String specialRenewAreaPermission = "ozlc-special-renew";
+        public String specialCityCorePermission = "ozlc-special-city-core";
+        public String specialCityLeaseholdPermission = "ozlc-special-city-leasehold";
         public String specialAreaPermission = "ozlc-special";
         public String defaultAreaPermission = "ozlc-guest";
         public String ownerAreaPermission = "ozlc-owner";
@@ -112,6 +123,12 @@ public class PluginSettings {
         public ColorRGBA trapAreaBorderColor = new ColorRGBA(0xff91009c);
         // color="#00C2A815"
         public ColorRGBA renewAreaBorderColor = new ColorRGBA(0x00C2A89c);
+        // color="#7B61FF15"
+        public ColorRGBA cityCoreBorderColor = new ColorRGBA(0x7B61FF10);
+        // color="#00BFA515"
+        public ColorRGBA cityLeaseholdAvailableBorderColor = new ColorRGBA(0x00BFA510);
+        // color="#FF980015"
+        public ColorRGBA cityLeaseholdOccupiedBorderColor = new ColorRGBA(0xFF980010);
         // -- Frame colors --
         // color="#FFFF0050"
         public ColorRGBA currentChunkFrameColor = new ColorRGBA(0xFFFF0050);
@@ -133,6 +150,12 @@ public class PluginSettings {
         public ColorRGBA trapAreaFrameColor = new ColorRGBA(0xff9100AA);
         // color="#00C2A8AA"
         public ColorRGBA renewAreaFrameColor = new ColorRGBA(0x00C2A8AA);
+        // color="#7B61FF50"
+        public ColorRGBA cityCoreFrameColor = new ColorRGBA(0x7B61FF50);
+        // color="#00BFA550"
+        public ColorRGBA cityLeaseholdAvailableFrameColor = new ColorRGBA(0x00BFA550);
+        // color="#FF980050"
+        public ColorRGBA cityLeaseholdOccupiedFrameColor = new ColorRGBA(0xFF980050);
 
         // settings end
 
@@ -178,6 +201,7 @@ public class PluginSettings {
                         // fill properties
                         logLevel = settings.getProperty("logLevel", "ALL");
                         reloadOnChange = settings.getProperty("reloadOnChange", "true").contentEquals("true");
+                        claimMode = ClaimMode.parse(settings.getProperty("claimMode", "TIME_BASED"));
                         enableWelcomeMessage = settings.getProperty("enableWelcomeMessage", "false")
                                         .contentEquals("true");
                         recentlyOnlinePermissionListHours = Integer
@@ -223,6 +247,14 @@ public class PluginSettings {
                         // claim settings
                         minutesToClaim = Integer.parseInt(settings.getProperty("minutesToClaim", "10"));
                         claimTimeScaleFactor = Double.parseDouble(settings.getProperty("claimTimeScaleFactor", "1.01"));
+                        landPriceBase = Long.parseLong(settings.getProperty("landPriceBase", "1000"));
+                        landPriceClusterIncrement = Double
+                                        .parseDouble(settings.getProperty("landPriceClusterIncrement", "0.05"));
+                        cityBaseRadius = Integer.parseInt(settings.getProperty("cityBaseRadius", "2"));
+                        cityAllowPrivateClaims = Boolean.parseBoolean(settings.getProperty("cityAllowPrivateClaims", "false"));
+                        cityPrivateClaimPrice = Long.parseLong(settings.getProperty("cityPrivateClaimPrice", "10000"));
+                        cityExpansionBasePrice = Long.parseLong(settings.getProperty("cityExpansionBasePrice", "50"));
+                        cityRentBillingHour = Integer.parseInt(settings.getProperty("cityRentBillingHour", "0"));
                         basicClaimLimit = Integer.parseInt(settings.getProperty("basicClaimLimit", "5"));
                         playTimeHoursExtraClaimFactor = Double
                                         .parseDouble(settings.getProperty("playTimeHoursExtraClaimFactor", "0.6"));
@@ -269,6 +301,10 @@ public class PluginSettings {
                                         "ozlc-special-trap");
                         specialRenewAreaPermission = settings.getProperty("specialRenewAreaPermission",
                                         "ozlc-special-renew");
+                        specialCityCorePermission = settings.getProperty("specialCityCorePermission",
+                                        "ozlc-special-city-core");
+                        specialCityLeaseholdPermission = settings.getProperty("specialCityLeaseholdPermission",
+                                        "ozlc-special-city-leasehold");
                         specialAreaPermission = settings.getProperty("specialAreaPermission", "ozlc-special");
                         defaultAreaPermission = settings.getProperty("defaultAreaPermission", "ozlc-guest");
                         ownerAreaPermission = settings.getProperty("ownerAreaPermission", "ozlc-owner");
@@ -307,6 +343,12 @@ public class PluginSettings {
                         renewAreaBorderColor = new ColorRGBA((int) Long.parseUnsignedLong(
                                         settings.getProperty("renewAreaBorderColor", "0x00C2A89c").replace("0x", ""),
                                         16));
+                        cityCoreBorderColor = new ColorRGBA((int) Long.parseUnsignedLong(
+                                        settings.getProperty("cityCoreBorderColor", "0x7B61FF10").replace("0x", ""), 16));
+                        cityLeaseholdAvailableBorderColor = new ColorRGBA((int) Long.parseUnsignedLong(settings
+                                        .getProperty("cityLeaseholdAvailableBorderColor", "0x00BFA510").replace("0x", ""), 16));
+                        cityLeaseholdOccupiedBorderColor = new ColorRGBA((int) Long.parseUnsignedLong(settings
+                                        .getProperty("cityLeaseholdOccupiedBorderColor", "0xFF980010").replace("0x", ""), 16));
 
                         currentChunkFrameColor = new ColorRGBA((int) Long.parseUnsignedLong(
                                         settings.getProperty("currentChunkFrameColor", "0xFFFF0050").replace("0x", ""),
@@ -334,6 +376,12 @@ public class PluginSettings {
                         renewAreaFrameColor = new ColorRGBA((int) Long.parseUnsignedLong(
                                         settings.getProperty("renewAreaFrameColor", "0x00C2A8AA").replace("0x", ""),
                                         16));
+                        cityCoreFrameColor = new ColorRGBA((int) Long.parseUnsignedLong(
+                                        settings.getProperty("cityCoreFrameColor", "0x7B61FF50").replace("0x", ""), 16));
+                        cityLeaseholdAvailableFrameColor = new ColorRGBA((int) Long.parseUnsignedLong(settings
+                                        .getProperty("cityLeaseholdAvailableFrameColor", "0x00BFA550").replace("0x", ""), 16));
+                        cityLeaseholdOccupiedFrameColor = new ColorRGBA((int) Long.parseUnsignedLong(settings
+                                        .getProperty("cityLeaseholdOccupiedFrameColor", "0xFF980050").replace("0x", ""), 16));
 
                         logger().info((plugin == null ? "OZLandClaim" : plugin.getName()) + " Plugin settings loaded");
 
@@ -393,25 +441,25 @@ public class PluginSettings {
                                                 "Shows renew-zone frames to players.", showRenewAreaFrames, "false",
                                                 AdminSettingsType.BOOLEAN),
                                 AdminSettingsEntry.group("claimRules", "Claim rules",
-                                                "Base claim timing and limit behavior."),
+                                                "Global acquisition mode and base claim-limit behavior."),
+                                selectEntry("claimMode", "Claim mode",
+                                                "Global acquisition and ownership rules for all claim areas.",
+                                                claimMode.name(), "TIME_BASED",
+                                                List.of("TIME_BASED", "ADMINISTRATIVE", "LAND_PRICING", "CITY")),
+                                entry("basicClaimLimit", "Basic claim limit",
+                                                "Base number of claims a player can own.", basicClaimLimit, "1",
+                                                AdminSettingsType.INTEGER),
+                                AdminSettingsEntry.group("timeModeRules", "Time-mode rules",
+                                                "Rules used by the TIME_BASED acquisition mode."),
                                 entry("minutesToClaim", "Minutes to claim",
                                                 "Minimum minutes a player must stay in a chunk before claiming.",
                                                 minutesToClaim, "10", AdminSettingsType.INTEGER),
                                 entry("claimTimeScaleFactor", "Claim time scale",
                                                 "Decimal scale factor for increasing or decreasing claim wait time.",
                                                 claimTimeScaleFactor, "1.01", AdminSettingsType.DECIMAL),
-                                entry("basicClaimLimit", "Basic claim limit",
-                                                "Base number of claims a player can own.", basicClaimLimit, "1",
-                                                AdminSettingsType.INTEGER),
                                 entry("playTimeHoursExtraClaimFactor", "Playtime extra-claim factor",
                                                 "Decimal factor used to grant additional claims from playtime.",
                                                 playTimeHoursExtraClaimFactor, "0.6", AdminSettingsType.DECIMAL),
-                                entry("claimProtectionBaseTimeDays", "Claim protection days",
-                                                "Base protection time in days for an owned claim.",
-                                                claimProtectionBaseTimeDays, "7", AdminSettingsType.INTEGER),
-                                entry("claimProtectionExtraTimeScale", "Claim protection scale",
-                                                "Decimal scale for additional claim-protection time.",
-                                                claimProtectionExtraTimeScale, "5", AdminSettingsType.DECIMAL),
                                 AdminSettingsEntry.group("autoRemoval", "Auto removal",
                                                 "Inactive-owner automatic claim removal behavior."),
                                 entry("enableAutoClaimRemoval", "Auto claim removal",
@@ -443,6 +491,31 @@ public class PluginSettings {
                                 entry("discordRenewZoneLogChannelId", "Discord renew-zone log",
                                                 "Discord channel id for renew-zone reset logs. 0 disables logging.",
                                                 discordRenewZoneLogChannelId, "0", AdminSettingsType.INTEGER),
+                                AdminSettingsEntry.group("landPricingRules", "Land-pricing rules",
+                                                "Rules used by the LAND_PRICING acquisition mode."),
+                                entry("landPriceBase", "Land base price",
+                                                "Base price for one free chunk in LAND_PRICING mode.",
+                                                landPriceBase, "1000", AdminSettingsType.INTEGER),
+                                entry("landPriceClusterIncrement", "Cluster increment",
+                                                "Additive price increment per occupied chunk in an adjacent cluster.",
+                                                landPriceClusterIncrement, "0.05", AdminSettingsType.DECIMAL),
+                                AdminSettingsEntry.group("cityModeRules", "City-mode rules",
+                                                "Rules used by the CITY acquisition mode."),
+                                entry("cityBaseRadius", "City base radius",
+                                                "Initial three-dimensional city radius in chunks.",
+                                                cityBaseRadius, "2", AdminSettingsType.INTEGER),
+                                entry("cityAllowPrivateClaims", "Private city claims",
+                                                "Allows private player claims inside city bounds by default.",
+                                                cityAllowPrivateClaims, "false", AdminSettingsType.BOOLEAN),
+                                entry("cityPrivateClaimPrice", "Private claim price",
+                                                "Default price per private city claim chunk.",
+                                                cityPrivateClaimPrice, "10000", AdminSettingsType.INTEGER),
+                                entry("cityExpansionBasePrice", "City expansion base price",
+                                                "Price per newly covered chunk when a city radius grows.",
+                                                cityExpansionBasePrice, "50", AdminSettingsType.INTEGER),
+                                entry("cityRentBillingHour", "Rent billing hour",
+                                                "Server-local hour (0-23) for daily city rent billing.",
+                                                cityRentBillingHour, "0", AdminSettingsType.INTEGER),
                                 AdminSettingsEntry.group("claimSales", "Claim sales",
                                                 "Wallet-backed claim sale and purchase behavior."),
                                 entry("allowClaimSale", "Allow claim sale",
@@ -475,7 +548,15 @@ public class PluginSettings {
                                                 extraClaimPriceIncreasePercent, "10", AdminSettingsType.INTEGER),
                                 entry("extraClaimShopCurrencyIdentifier", "Extra claim currency",
                                                 "Currency identifier for extra-claim Shop purchases. Empty uses Wallet default.",
-                                                extraClaimShopCurrencyIdentifier, "", AdminSettingsType.STRING));
+                                                extraClaimShopCurrencyIdentifier, "", AdminSettingsType.STRING),
+                                AdminSettingsEntry.group("unusedRules", "Currently unused rules",
+                                                "Reserved settings without current gameplay effect."),
+                                entry("claimProtectionBaseTimeDays", "Claim protection days",
+                                                "Reserved base protection time; currently not used.",
+                                                claimProtectionBaseTimeDays, "7", AdminSettingsType.INTEGER),
+                                entry("claimProtectionExtraTimeScale", "Claim protection scale",
+                                                "Reserved additional protection scale; currently not used.",
+                                                claimProtectionExtraTimeScale, "5", AdminSettingsType.DECIMAL));
         }
 
         private AdminSettingsEntry entry(String key, String label, String description, Object value, String defaultValue,
@@ -502,6 +583,20 @@ public class PluginSettings {
                                 type,
                                 false,
                                 null);
+        }
+
+        private AdminSettingsEntry selectEntry(String key, String label, String description, Object value,
+                        String defaultValue, List<String> options) {
+                return new AdminSettingsEntry(
+                                key,
+                                label,
+                                description,
+                                String.valueOf(value),
+                                defaultValue,
+                                AdminSettingsType.SELECT,
+                                false,
+                                newValue -> SettingsFileEditor.writeValue(settingsPath(), key, newValue),
+                                options);
         }
 
         private Path settingsPath() {

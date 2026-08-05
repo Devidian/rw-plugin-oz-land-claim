@@ -57,7 +57,7 @@ public class ClaimSaleListingService {
     }
 
     public ClaimSaleListing listForSale(Player owner, long areaId, long price) {
-        if (owner == null || areaId <= 0 || price <= 0) {
+        if (owner == null || areaId <= 0 || price < 0) {
             return null;
         }
         withdrawActiveListing(areaId);

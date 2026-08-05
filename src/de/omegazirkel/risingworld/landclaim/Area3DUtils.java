@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import de.omegazirkel.risingworld.LandClaim;
 // import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.landclaim.ui.LandClaimPlayerPluginSettings;
+import de.omegazirkel.risingworld.landclaim.db.LeaseholdRecord;
 import net.risingworld.api.Server;
 import net.risingworld.api.objects.Area;
 import net.risingworld.api.objects.Player;
@@ -155,15 +156,25 @@ public class Area3DUtils {
     }
 
     private static AreaColors colorsFor(Area area, boolean isOwner) {
+        String defaultPermission = area.getDefaultPermission();
+        if (s.specialCityCorePermission.equals(defaultPermission)) {
+            return new AreaColors(s.cityCoreBorderColor, s.cityCoreFrameColor);
+        }
+        if (s.specialCityLeaseholdPermission.equals(defaultPermission)) {
+            LeaseholdRecord lease = LandClaim.cityService() == null ? null
+                    : LandClaim.cityService().findLeasehold(area.getID()).orElse(null);
+            return lease != null && lease.occupied()
+                    ? new AreaColors(s.cityLeaseholdOccupiedBorderColor, s.cityLeaseholdOccupiedFrameColor)
+                    : new AreaColors(s.cityLeaseholdAvailableBorderColor, s.cityLeaseholdAvailableFrameColor);
+        }
         if (isListedForSale(area)) {
             return new AreaColors(s.forSaleAreaBorderColor, s.forSaleAreaFrameColor);
         }
         if (isOwner) {
             return new AreaColors(s.ownedAreaBorderColor, s.ownedAreaFrameColor);
         }
-        String defaultAreaPermission = area.getDefaultPermission();
         return AREA_COLORS.getOrDefault(
-                defaultAreaPermission,
+                defaultPermission,
                 new AreaColors(s.otherAreaBorderColor, s.otherAreaFrameColor));
     }
 
@@ -212,7 +223,9 @@ public class Area3DUtils {
     }
 
     private static boolean isListedForSale(Area area) {
-        return s.allowClaimSale
+        boolean walletAvailable = LandClaim.economyIntegration() != null
+                && LandClaim.economyIntegration().hasSystemAccountApi();
+        return ClaimModePolicy.salesAvailable(s.allowClaimSale, walletAvailable)
                 && area != null
                 && LandClaim.claimSaleListingService() != null
                 && LandClaim.claimSaleListingService().activeListing(area.getID()).isPresent();

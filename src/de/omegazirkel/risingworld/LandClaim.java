@@ -7,6 +7,8 @@ import de.omegazirkel.risingworld.landclaim.RenewZoneResetService;
 import de.omegazirkel.risingworld.landclaim.db.ClaimSaleListingService;
 import de.omegazirkel.risingworld.landclaim.db.ExtraClaimCapacityService;
 import de.omegazirkel.risingworld.landclaim.db.RenewZoneConfigService;
+import de.omegazirkel.risingworld.landclaim.db.LandPriceService;
+import de.omegazirkel.risingworld.landclaim.db.CityService;
 import de.omegazirkel.risingworld.tools.FileChangeListener;
 import de.omegazirkel.risingworld.tools.OZLogger;
 import net.risingworld.api.events.EventMethod;
@@ -37,6 +39,8 @@ public final class LandClaim extends LandClaimRuntime implements Listener, FileC
         return LandClaimRuntime.renewZoneResetService();
     }
     public static EconomyIntegration economyIntegration() { return LandClaimRuntime.economyIntegration(); }
+    public static LandPriceService landPriceService() { return LandClaimRuntime.landPriceService(); }
+    public static CityService cityService() { return LandClaimRuntime.cityService(); }
 
     @Override
     public void onEnable() {

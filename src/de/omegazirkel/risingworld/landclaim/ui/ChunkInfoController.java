@@ -4,8 +4,11 @@ import java.util.Map;
 
 import de.omegazirkel.risingworld.LandClaim;
 import de.omegazirkel.risingworld.landclaim.ChunkClaimUtil;
+import de.omegazirkel.risingworld.landclaim.ClaimModePolicy;
+import de.omegazirkel.risingworld.landclaim.ClaimMode;
 import de.omegazirkel.risingworld.landclaim.PluginSettings;
 import de.omegazirkel.risingworld.landclaim.db.ClaimSaleListing;
+import de.omegazirkel.risingworld.landclaim.db.LeaseholdRecord;
 import de.omegazirkel.risingworld.tools.I18n;
 import net.risingworld.api.Server;
 import net.risingworld.api.objects.Area;
@@ -76,19 +79,51 @@ public class ChunkInfoController {
                 return t().get("TC_CHUNKINFO_FOR_SALE", player)
                         .replace("PH_PLAYER_NAME", getOwnerName())
                         .replace("PH_AREA_NAME", getAreaName())
-                        .replace("PH_PRICE", String.valueOf(listing.price()));
+                        .replace("PH_PRICE", String.valueOf(listing.price()))
+                        .replace("PH_CURRENCY", defaultCurrency());
             }
             return t().get("TC_CHUNKINFO_OWNED_BY", player)
                     .replace("PH_PLAYER_NAME", getOwnerName())
                     .replace("PH_AREA_NAME", getAreaName());
         }
+        boolean cityPrivateClaim = ClaimModePolicy.current() == ClaimMode.CITY && !player.isAdmin()
+                && ccu.isCityPrivateClaimLocationAllowed(
+                        ChunkClaimUtil.getVirtualAreaFromChunkVector(getChunkPos()));
+        if (ClaimModePolicy.current() == ClaimMode.CITY && !player.isAdmin() && !cityPrivateClaim) {
+            return t().get("TC_CHUNKINFO_CITY_ONLY", player);
+        }
         // check claim limit
+        if (!ClaimModePolicy.mayCreatePlayerClaim(player.isAdmin(), walletAvailable()) && !cityPrivateClaim) {
+            return t().get(ClaimModePolicy.requiresWallet()
+                    ? "TC_CHUNKINFO_WALLET_REQUIRED"
+                    : "TC_CHUNKINFO_CLAIM_BLOCKED", player);
+        }
+        if (ClaimModePolicy.current() == ClaimMode.CITY && !walletAvailable()) {
+            return t().get("TC_CHUNKINFO_WALLET_REQUIRED", player);
+        }
         long maxClaims = ccu.getPlayerMaxClaims(player);
         Integer claimCount = ccu.getPlayerClaimCount(player);
         if (claimCount >= maxClaims) {
             return t().get("TC_CHUNKINFO_CLAIM_LIMIT", player)
                     .replace("PH_MAX_CLAIMS", maxClaims + "")
                     .replace("PH_CLAIM_COUNT", claimCount + "");
+        }
+        if (!ClaimModePolicy.usesClaimTime()) {
+            if (ClaimModePolicy.current() == de.omegazirkel.risingworld.landclaim.ClaimMode.LAND_PRICING
+                    && LandClaim.landPriceService() != null) {
+                long price = LandClaim.landPriceService().price(getChunkPos(), s.landPriceBase);
+                return t().get("TC_CHUNKINFO_LAND_PRICE", player).replace("PH_PRICE", String.valueOf(price))
+                        .replace("PH_CURRENCY", defaultCurrency());
+            }
+            if (ClaimModePolicy.current() == ClaimMode.CITY && cityPrivateClaim) {
+                de.omegazirkel.risingworld.landclaim.db.CityRecord city = LandClaim.cityService()
+                        .containingCity(getChunkPos()).orElse(null);
+                long price = city == null || city.privateClaimPriceOverride() == null ? s.cityPrivateClaimPrice
+                        : city.privateClaimPriceOverride();
+                return t().get("TC_CHUNKINFO_CITY_PRICE", player).replace("PH_PRICE", String.valueOf(price))
+                        .replace("PH_CURRENCY", defaultCurrency());
+            }
+            return t().get("TC_CHUNKINFO_CLAIM_POSSIBLE", player);
         }
         // calculate time left to claim and show time or claimable message
 
@@ -162,10 +197,21 @@ public class ChunkInfoController {
 
     private ClaimSaleListing activeSaleListing() {
         Area currentArea = player.getCurrentArea();
-        if (!s.allowClaimSale || currentArea == null || LandClaim.claimSaleListingService() == null) {
+        if (!ClaimModePolicy.salesAvailable(s.allowClaimSale, walletAvailable()) || currentArea == null
+                || LandClaim.claimSaleListingService() == null) {
             return null;
         }
         return LandClaim.claimSaleListingService().activeListing(currentArea.getID()).orElse(null);
+    }
+
+    private boolean walletAvailable() {
+        return LandClaim.economyIntegration() != null && LandClaim.economyIntegration().isWalletAvailable()
+                && LandClaim.economyIntegration().hasSystemAccountApi();
+    }
+
+    private String defaultCurrency() {
+        return LandClaim.economyIntegration() == null ? ""
+                : LandClaim.economyIntegration().defaultCurrencyIdentifier();
     }
 
     private String handleSpecialArea() {
@@ -205,6 +251,23 @@ public class ChunkInfoController {
         if (defaultPermission.equals(s.specialRenewAreaPermission)) {
             return t().get("TC_CHUNKINFO_SPECIAL_RENEW_AREA", player)
                     .replace("PH_AREA_NAME", areaName);
+        }
+        if (defaultPermission.equals(s.specialCityCorePermission)) {
+            return t().get("TC_CHUNKINFO_CITY_CORE", player).replace("PH_AREA_NAME", areaName);
+        }
+        if (defaultPermission.equals(s.specialCityLeaseholdPermission)) {
+            LeaseholdRecord leasehold = LandClaim.cityService() == null ? null
+                    : LandClaim.cityService().findLeasehold(currentArea.getID()).orElse(null);
+            if (leasehold == null || !leasehold.occupied()) {
+                return t().get("TC_CHUNKINFO_CITY_LEASEHOLD_FREE", player).replace("PH_AREA_NAME", areaName);
+            }
+            if (leasehold.ownerDbId() == player.getDbID()) {
+                return t().get("TC_CHUNKINFO_CITY_LEASEHOLD_OWNED", player).replace("PH_AREA_NAME", areaName);
+            }
+            String ownerName = Server.getLastKnownPlayerName(leasehold.ownerDbId());
+            return t().get("TC_CHUNKINFO_CITY_LEASEHOLD_OCCUPIED", player)
+                    .replace("PH_AREA_NAME", areaName)
+                    .replace("PH_PLAYER_NAME", ownerName == null ? String.valueOf(leasehold.ownerDbId()) : ownerName);
         }
         return null;
     }

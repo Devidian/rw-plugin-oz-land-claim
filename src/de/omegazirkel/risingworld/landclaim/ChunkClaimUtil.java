@@ -2,15 +2,21 @@ package de.omegazirkel.risingworld.landclaim;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.UUID;
 
 import de.omegazirkel.risingworld.LandClaim;
 import de.omegazirkel.risingworld.landclaim.db.ExtraClaimCapacityService;
 import de.omegazirkel.risingworld.landclaim.db.LandClaimChunkService;
 import de.omegazirkel.risingworld.landclaim.db.entities.LandClaimChunkInfo;
+import de.omegazirkel.risingworld.landclaim.db.CityRecord;
+import de.omegazirkel.risingworld.landclaim.db.LeaseholdRecord;
 import de.omegazirkel.risingworld.tools.AreaUtils;
 import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.OZLogger;
+import de.omegazirkel.risingworld.tools.PlayerDatabaseHelper;
+import de.omegazirkel.risingworld.tools.PlayerDatabaseHelper.PlayerRecord;
 import net.risingworld.api.Server;
 import net.risingworld.api.callbacks.Callback;
 import net.risingworld.api.objects.Area;
@@ -32,6 +38,16 @@ public class ChunkClaimUtil {
 
     public static OZLogger logger() {
         return LandClaim.logger();
+    }
+
+    public static void sendPaymentFailure(Player player, String reason) {
+        String message = reason == null ? "" : reason.toLowerCase(java.util.Locale.ROOT);
+        if (message.contains("insufficient") || message.contains("not enough")
+                || message.contains("nicht ausreichend") || message.contains("unzureichend")) {
+            player.sendTextMessage(t().get("TC_CLAIM_ERROR_INSUFFICIENT_FUNDS", player));
+            return;
+        }
+        player.sendTextMessage(t().get("TC_CLAIM_ERROR_PAYMENT", player).replace("PH_REASON", reason == null ? "" : reason));
     }
 
     public ChunkClaimUtil(LandClaimChunkService lccService) {
@@ -137,7 +153,10 @@ public class ChunkClaimUtil {
      * Returns weighted sum of player's claims (1 weight per chunk).
      */
     public int getPlayerClaimCount(Player p) {
-        return service.getTotalClaimWeight(p);
+        int normalClaims = service.getTotalClaimWeight(p);
+        int leaseholdClaims = LandClaim.cityService() == null ? 0
+                : LandClaim.cityService().leaseholdClaimWeight(p.getUID());
+        return normalClaims > Integer.MAX_VALUE - leaseholdClaims ? Integer.MAX_VALUE : normalClaims + leaseholdClaims;
     }
 
     public long playerTimeInChunkInMs(Player p, Vector3i chunk) {
@@ -162,6 +181,15 @@ public class ChunkClaimUtil {
      */
     public boolean canPlayerClaimArea(Player p, Area area, Callback<String> callback) {
 
+        boolean cityPrivateClaim = ClaimModePolicy.current() == ClaimMode.CITY && cityPrivateClaimAllowed(area);
+        if (!ClaimModePolicy.mayCreatePlayerClaim(p.isAdmin(), walletAvailable()) && !cityPrivateClaim) {
+            if (callback != null)
+                callback.onCall(t().get(ClaimModePolicy.requiresWallet()
+                        ? "TC_CLAIM_ERROR_WALLET_REQUIRED"
+                        : "TC_CLAIM_ERROR_MODE", p));
+            return false;
+        }
+
         // 1. Check if player reached max claims
         long current = getPlayerClaimCount(p);
         long maxAllowed = getPlayerMaxClaims(p);
@@ -181,18 +209,20 @@ public class ChunkClaimUtil {
         }
 
         // shortage for admins with all ignores
-        if (p.isAdmin() && s.adminIgnoreLimit && s.adminIgnoreTime) {
+        if (p.isAdmin() && (ClaimModePolicy.adminBypassesClaimLimit(p.isAdmin())
+                || (s.adminIgnoreLimit && (s.adminIgnoreTime || !ClaimModePolicy.usesClaimTime())))) {
             return true;
         }
 
         // 3. Check max claims reached
-        if (current >= maxAllowed && !(p.isAdmin() && s.adminIgnoreLimit)) {
+        if (current >= maxAllowed && !(p.isAdmin()
+                && (s.adminIgnoreLimit || ClaimModePolicy.adminBypassesClaimLimit(true)))) {
             if (callback != null)
                 callback.onCall(t().get("TC_CLAIM_ERROR_MAX_REACHED", p));
             return false;
         }
 
-        if (area != null) {
+        if (area != null && ClaimModePolicy.usesClaimTime()) {
             // 4. Check minimum time spent in chunk
             long time = service.getTotalChunkTime(p, area.getStartChunkPosition()) / 1000;
 
@@ -204,6 +234,25 @@ public class ChunkClaimUtil {
         }
 
         return true;
+    }
+
+    private boolean walletAvailable() {
+        return LandClaim.economyIntegration() != null && LandClaim.economyIntegration().isWalletAvailable()
+                && LandClaim.economyIntegration().hasSystemAccountApi();
+    }
+
+    private boolean cityPrivateClaimAllowed(Area area) {
+        return walletAvailable() && isCityPrivateClaimLocationAllowed(area);
+    }
+
+    public boolean isCityPrivateClaimLocationAllowed(Area area) {
+        if (LandClaim.cityService() == null || area == null) return false;
+        CityRecord city = LandClaim.cityService().containingCity(area.getStartChunkPosition()).orElse(null);
+        if (city == null || !de.omegazirkel.risingworld.landclaim.db.CityService.contains(city,
+                area.getEndChunkPosition())) return false;
+        return city.allowPrivateClaimsOverride() == null
+                ? Boolean.TRUE.equals(s.cityAllowPrivateClaims)
+                : city.allowPrivateClaimsOverride();
     }
 
     // ---------------------------------------------------------
@@ -403,6 +452,62 @@ public class ChunkClaimUtil {
         if (!canPlayerClaimArea(p, area, (t) -> p.sendTextMessage(t))) {
             return null;
         }
+        String paymentCorrelation = null;
+        long landPrice = 0L;
+        if (ClaimModePolicy.current() == ClaimMode.LAND_PRICING
+                && defaultPermission.equals(s.defaultAreaPermission)) {
+            if (LandClaim.landPriceService() == null) {
+                p.sendTextMessage(t().get("TC_CLAIM_ERROR_PRICE_UNAVAILABLE", p));
+                return null;
+            }
+            landPrice = LandClaim.landPriceService().price(area.getStartChunkPosition(), s.landPriceBase);
+            paymentCorrelation = landPrice == 0 ? null : "land-claim:" + UUID.randomUUID();
+            if (paymentCorrelation != null) LandClaim.cityService().beginEconomyOperation(paymentCorrelation,
+                    "LAND_CLAIM", 0, p.getDbID(), landPrice);
+            EconomyIntegration.WalletOperationResult payment = landPrice == 0
+                    ? new EconomyIntegration.WalletOperationResult(true, "")
+                    : LandClaim.economyIntegration().transferPlayerToWorld(p.getDbID(), landPrice,
+                            t().get("TC_WALLET_LAND_PURCHASE", p)
+                                    .replace("PH_CHUNK_POS", area.getStartChunkPosition().toString()),
+                            paymentCorrelation);
+            if (!payment.success()) {
+                if (paymentCorrelation != null) LandClaim.cityService().updateEconomyOperation(paymentCorrelation,
+                        "FAILED", 0, payment.message());
+                sendPaymentFailure(p, payment.message());
+                return null;
+            }
+            if (paymentCorrelation != null) LandClaim.cityService().updateEconomyOperation(paymentCorrelation,
+                    "PAID", 0, "");
+        }
+        if (ClaimModePolicy.current() == ClaimMode.CITY
+                && defaultPermission.equals(s.defaultAreaPermission)) {
+            CityRecord city = LandClaim.cityService() == null ? null
+                    : LandClaim.cityService().containingCity(area.getStartChunkPosition()).orElse(null);
+            if (city == null || !cityPrivateClaimAllowed(area)) {
+                p.sendTextMessage(t().get("TC_CLAIM_ERROR_CITY_PRIVATE", p));
+                return null;
+            }
+            landPrice = city.privateClaimPriceOverride() == null ? Math.max(0L, s.cityPrivateClaimPrice)
+                    : Math.max(0L, city.privateClaimPriceOverride());
+            paymentCorrelation = landPrice == 0 ? null : "city-private-claim:" + UUID.randomUUID();
+            if (paymentCorrelation != null) LandClaim.cityService().beginEconomyOperation(paymentCorrelation,
+                    "CITY_PRIVATE_CLAIM", city.areaId(), p.getDbID(), landPrice);
+            EconomyIntegration.WalletOperationResult payment = landPrice == 0
+                    ? new EconomyIntegration.WalletOperationResult(true, "")
+                    : LandClaim.economyIntegration().transferPlayerToCity(p.getDbID(), city.areaId(), landPrice,
+                            t().get("TC_WALLET_CITY_PRIVATE_PURCHASE", p)
+                                    .replace("PH_CHUNK_POS", area.getStartChunkPosition().toString())
+                                    .replace("PH_CITY_NAME", city.name()), paymentCorrelation);
+            if (!payment.success()) {
+                if (paymentCorrelation != null) LandClaim.cityService().updateEconomyOperation(paymentCorrelation,
+                        "FAILED", city.areaId(), payment.message());
+                sendPaymentFailure(p, payment.message());
+                return null;
+            }
+            if (paymentCorrelation != null) LandClaim.cityService().updateEconomyOperation(paymentCorrelation,
+                    "PAID", city.areaId(), "");
+        }
+        try {
         long now = System.currentTimeMillis();
         area.setNameVisible(true);
         area.setDefaultPermission(defaultPermission);
@@ -426,7 +531,23 @@ public class ChunkClaimUtil {
             area.setAttribute("ownerDBID", ownerDBId);
             area.setPlayerPermission(ownerDBId, s.ownerAreaPermission);
         }
+        if (LandClaim.landPriceService() != null) LandClaim.landPriceService().refresh();
+        if (paymentCorrelation != null) LandClaim.cityService().updateEconomyOperation(paymentCorrelation,
+                "COMPLETED", area.getID(), "");
         return area;
+        } catch (RuntimeException ex) {
+            if (paymentCorrelation != null) {
+                EconomyIntegration.WalletOperationResult reversal = LandClaim.economyIntegration().reverseTransfer(
+                        paymentCorrelation, paymentCorrelation + ":reversal",
+                        t().get("TC_WALLET_LAND_PURCHASE_ROLLBACK", p));
+                LandClaim.cityService().updateEconomyOperation(paymentCorrelation,
+                        reversal.success() ? "REVERSED" : "RECONCILIATION_REQUIRED", area == null ? 0 : area.getID(),
+                        reversal.message());
+                if (!reversal.success()) logger().error("Land purchase reversal failed: " + reversal.message());
+            }
+            logger().error("Could not create paid land claim: " + ex.getMessage());
+            return null;
+        }
     }
 
     public boolean transferAreaOwnership(Area area, Player newOwner) {
@@ -459,24 +580,24 @@ public class ChunkClaimUtil {
     // Expansion
     // ---------------------------------------------------------
 
-    private boolean helperCheckForClaim(Vector3i chunk, Player p) {
+    private boolean helperCheckForClaim(Vector3i chunk, String claimOwnerUid, Player feedbackPlayer) {
         List<LandClaimChunkInfo> infoList = service.getChunkInfoListByChunk(chunk);
         Area intersectingArea = isAreaIntersecting(getVirtualAreaFromChunkVector(chunk));
         if (intersectingArea != null && !intersectingArea.getDefaultPermission().equals(s.defaultAreaPermission)) {
             // Area is special area or other non-default area, prevent claiming
-            p.sendTextMessage(t().get("TC_CLAIM_ERROR_SPECIAL_AREA", p)
+            feedbackPlayer.sendTextMessage(t().get("TC_CLAIM_ERROR_SPECIAL_AREA", feedbackPlayer)
                     .replace("PH_CHUNK_POS", chunk.toString() + ""));
             return false;
         }
         // check if chunk is claimed by another user
         for (LandClaimChunkInfo info : infoList) {
-            if (info.isOwnedBy(p.getUID())) {
+            if (info.isOwnedBy(claimOwnerUid)) {
                 continue;
             } else if (info.isClaimed()) {
                 // TODO later: check area offline protection
                 // checkPlayerOfflineProtection(info.playerDBID)
                 // area is claimed by someone else
-                p.sendTextMessage(t().get("TC_CLAIM_ERROR_CLAIMED", p)
+                feedbackPlayer.sendTextMessage(t().get("TC_CLAIM_ERROR_CLAIMED", feedbackPlayer)
                         .replace("PH_CHUNK_POS", info.chunkPos + "")
                         .replace("PH_PLAYER_NAME", Server.getLastKnownPlayerName(info.playerDBID)));
                 return false;
@@ -491,12 +612,33 @@ public class ChunkClaimUtil {
     public Area expandClaim(Area area, Direction dir, Player p) {
         if (area == null)
             return null;
+        if (!ClaimModePolicy.mayPlayerResizeOrRelease(p.isAdmin())) {
+            p.sendTextMessage(t().get("TC_CLAIM_ERROR_MODE_RESIZE", p));
+            return null;
+        }
         Vector3i startChunk = area.getStartChunkPosition();
         Vector3i endChunk = area.getEndChunkPosition();
         List<Vector3i> chunks = areaToChunks(area);
         List<Area> areasToRemove = new java.util.ArrayList<>();
         List<Vector3i> chunkInExtendedArea = new java.util.ArrayList<>();
         String defaultPermission = area.getDefaultPermission();
+        String claimOwnerUid = p.getUID();
+        int claimOwnerDbId = p.getDbID();
+        long ownerMaxClaims = getPlayerMaxClaims(p);
+        int ownerClaimCount = getPlayerClaimCount(p);
+        boolean administrativeClaimExpansion = p.isAdmin() && ClaimModePolicy.current() == ClaimMode.ADMINISTRATIVE
+                && s.defaultAreaPermission.equals(defaultPermission);
+        if (administrativeClaimExpansion) {
+            ClaimOwner owner = claimOwner(area);
+            if (owner == null) {
+                p.sendTextMessage(t().get("TC_CLAIM_ERROR_OWNER_OFFLINE", p));
+                return null;
+            }
+            claimOwnerUid = owner.uid();
+            claimOwnerDbId = owner.dbId();
+            ownerClaimCount = claimCount(owner.uid());
+            ownerMaxClaims = maxClaims(owner);
+        }
 
         // ISSUE: Sector 0 -1 cant expand North/south correctly
         // example chunk: 94 1 -24, worldPart: 5 -2
@@ -512,7 +654,7 @@ public class ChunkClaimUtil {
                         continue;
                     }
                     Vector3i c = new Vector3i(chunk.x, chunk.y, chunk.z + 1);
-                    if (!helperCheckForClaim(c, p)) {
+                    if (!helperCheckForClaim(c, claimOwnerUid, p)) {
                         return null;
                     }
                     chunkInExtendedArea.add(c);
@@ -525,7 +667,7 @@ public class ChunkClaimUtil {
                         continue;
                     }
                     Vector3i c = new Vector3i(chunk.x, chunk.y, chunk.z - 1);
-                    if (!helperCheckForClaim(c, p)) {
+                    if (!helperCheckForClaim(c, claimOwnerUid, p)) {
                         return null;
                     }
                     chunkInExtendedArea.add(c);
@@ -538,7 +680,7 @@ public class ChunkClaimUtil {
                         continue;
                     }
                     Vector3i c = new Vector3i(chunk.x - 1, chunk.y, chunk.z);
-                    if (!helperCheckForClaim(c, p)) {
+                    if (!helperCheckForClaim(c, claimOwnerUid, p)) {
                         return null;
                     }
                     chunkInExtendedArea.add(c);
@@ -551,7 +693,7 @@ public class ChunkClaimUtil {
                         continue;
                     }
                     Vector3i c = new Vector3i(chunk.x + 1, chunk.y, chunk.z);
-                    if (!helperCheckForClaim(c, p)) {
+                    if (!helperCheckForClaim(c, claimOwnerUid, p)) {
                         return null;
                     }
                     chunkInExtendedArea.add(c);
@@ -564,7 +706,7 @@ public class ChunkClaimUtil {
                         continue;
                     }
                     Vector3i c = new Vector3i(chunk.x, chunk.y + 1, chunk.z);
-                    if (!helperCheckForClaim(c, p)) {
+                    if (!helperCheckForClaim(c, claimOwnerUid, p)) {
                         return null;
                     }
                     chunkInExtendedArea.add(c);
@@ -577,7 +719,7 @@ public class ChunkClaimUtil {
                         continue;
                     }
                     Vector3i c = new Vector3i(chunk.x, chunk.y - 1, chunk.z);
-                    if (!helperCheckForClaim(c, p)) {
+                    if (!helperCheckForClaim(c, claimOwnerUid, p)) {
                         return null;
                     }
                     chunkInExtendedArea.add(c);
@@ -586,14 +728,51 @@ public class ChunkClaimUtil {
         }
 
         // determine if added chunks exceed claim limit
-        Integer currentClaimCount = getPlayerClaimCount(p);
+        Integer currentClaimCount = ownerClaimCount;
         Integer extendedAreaSize = chunkInExtendedArea.size();
         Integer areaSize = chunks.size();
         Integer extendedChunksCount = extendedAreaSize - areaSize;
 
-        if (currentClaimCount + extendedChunksCount > getPlayerMaxClaims(p)
-                && !(p.isAdmin() && s.adminIgnoreLimit)) {
-            p.sendTextMessage(t().get("TC_CLAIM_ERROR_LIMIT", p).replace("PH_MAX_CLAIMS", getPlayerMaxClaims(p) + ""));
+        CityRecord cityForExpansion = null;
+        if (ClaimModePolicy.current() == ClaimMode.CITY && defaultPermission.equals(s.defaultAreaPermission)) {
+            cityForExpansion = LandClaim.cityService() == null ? null
+                    : LandClaim.cityService().containingCity(area.getStartChunkPosition()).orElse(null);
+            boolean privateAllowed = cityForExpansion != null
+                    && (cityForExpansion.allowPrivateClaimsOverride() == null
+                            ? Boolean.TRUE.equals(s.cityAllowPrivateClaims)
+                            : cityForExpansion.allowPrivateClaimsOverride());
+            CityRecord validatedCity = cityForExpansion;
+            if (!privateAllowed || chunkInExtendedArea.stream().anyMatch(
+                    chunk -> !de.omegazirkel.risingworld.landclaim.db.CityService.contains(validatedCity, chunk))) {
+                p.sendTextMessage(t().get("TC_CLAIM_ERROR_CITY_EXPANSION", p));
+                return null;
+            }
+        }
+        if (ClaimModePolicy.current() == ClaimMode.CITY
+                && defaultPermission.equals(s.specialCityLeaseholdPermission)) {
+            LeaseholdRecord lease = LandClaim.cityService() == null ? null
+                    : LandClaim.cityService().findLeasehold(area.getID()).orElse(null);
+            CityRecord leaseCity = lease == null ? null
+                    : LandClaim.cityService().findCity(lease.cityAreaId()).orElse(null);
+            if (lease == null || leaseCity == null || chunkInExtendedArea.stream()
+                    .anyMatch(chunk -> !de.omegazirkel.risingworld.landclaim.db.CityService.contains(leaseCity, chunk))) {
+                p.sendTextMessage(t().get("TC_CITY_LEASE_EXPAND_OUTSIDE", p));
+                return null;
+            }
+            if (lease.occupied()) {
+                Player owner = Server.getPlayerByDbID(lease.ownerDbId());
+                if (owner == null || getPlayerClaimCount(owner) + extendedChunksCount > getPlayerMaxClaims(owner)) {
+                    p.sendTextMessage(t().get("TC_CITY_LEASE_EXPAND_LIMIT", p));
+                    return null;
+                }
+            }
+        }
+
+        if (currentClaimCount + extendedChunksCount > ownerMaxClaims
+                && !(p.isAdmin() && !administrativeClaimExpansion
+                        && (s.adminIgnoreLimit || ClaimModePolicy.adminBypassesClaimLimit(true)))) {
+            p.sendTextMessage(t().get("TC_CLAIM_ERROR_LIMIT", p)
+                    .replace("PH_MAX_CLAIMS", ownerMaxClaims + ""));
             return null;
         }
 
@@ -628,12 +807,67 @@ public class ChunkClaimUtil {
             sumTimeInChunks += playerTimeInChunkInSeconds(p, chunk);
         }
 
-        if (sumTimeInChunks < timeToClaimNeeded && !(p.isAdmin() && s.adminIgnoreTime)) {
+        if (ClaimModePolicy.usesClaimTime() && sumTimeInChunks < timeToClaimNeeded
+                && !(p.isAdmin() && s.adminIgnoreTime)) {
             // time needed not reached
             p.sendTextMessage(t().get("TC_CLAIM_ERROR_TIME", p)
                     .replace("PH_TIME_NEEDED", timeToClaimNeeded + "s")
                     .replace("PH_TIME_LEFT", (timeToClaimNeeded - sumTimeInChunks) + "s"));
             return null;
+        }
+
+        String topologyCorrelation = null;
+        if (ClaimModePolicy.current() == ClaimMode.LAND_PRICING
+                && defaultPermission.equals(s.defaultAreaPermission)) {
+            if (!walletAvailable() || LandClaim.landPriceService() == null) {
+                p.sendTextMessage(t().get("TC_CLAIM_ERROR_WALLET_REQUIRED", p));
+                return null;
+            }
+            long expansionPrice = landExpansionPrice(area, dir);
+            String correlation = "land-expand:" + UUID.randomUUID();
+            topologyCorrelation = correlation;
+            LandClaim.cityService().beginEconomyOperation(correlation, "LAND_EXPANSION", area.getID(), p.getDbID(),
+                    expansionPrice);
+            EconomyIntegration.WalletOperationResult payment = expansionPrice == 0
+                    ? new EconomyIntegration.WalletOperationResult(true, "")
+                    : LandClaim.economyIntegration().transferPlayerToWorld(p.getDbID(), expansionPrice,
+                            t().get("TC_WALLET_LAND_EXPANSION", p)
+                                    .replace("PH_AREA_NAME", area.getName() == null ? "" : area.getName()),
+                            correlation);
+            if (!payment.success()) {
+                LandClaim.cityService().updateEconomyOperation(correlation, "FAILED", area.getID(), payment.message());
+                sendPaymentFailure(p, payment.message());
+                return null;
+            }
+            LandClaim.cityService().updateEconomyOperation(correlation, "PAID", area.getID(), "");
+        }
+        if (ClaimModePolicy.current() == ClaimMode.CITY && defaultPermission.equals(s.defaultAreaPermission)) {
+            long pricePerChunk = cityForExpansion.privateClaimPriceOverride() == null
+                    ? Math.max(0L, s.cityPrivateClaimPrice)
+                    : Math.max(0L, cityForExpansion.privateClaimPriceOverride());
+            long expansionPrice;
+            try {
+                expansionPrice = Math.multiplyExact(pricePerChunk, (long) extendedChunksCount);
+            } catch (ArithmeticException ex) {
+                expansionPrice = de.omegazirkel.risingworld.landclaim.db.LandPriceService.MAX_SAFE_INTEGER;
+            }
+            if (expansionPrice > de.omegazirkel.risingworld.landclaim.db.LandPriceService.MAX_SAFE_INTEGER)
+                expansionPrice = de.omegazirkel.risingworld.landclaim.db.LandPriceService.MAX_SAFE_INTEGER;
+            String correlation = "city-private-expand:" + UUID.randomUUID();
+            topologyCorrelation = correlation;
+            LandClaim.cityService().beginEconomyOperation(correlation, "CITY_PRIVATE_EXPANSION", area.getID(),
+                    p.getDbID(), expansionPrice);
+            EconomyIntegration.WalletOperationResult payment = expansionPrice == 0
+                    ? new EconomyIntegration.WalletOperationResult(true, "")
+                    : LandClaim.economyIntegration().transferPlayerToCity(p.getDbID(), cityForExpansion.areaId(),
+                            expansionPrice, t().get("TC_WALLET_CITY_PRIVATE_EXPANSION", p)
+                                    .replace("PH_CITY_NAME", cityForExpansion.name()), correlation);
+            if (!payment.success()) {
+                LandClaim.cityService().updateEconomyOperation(correlation, "FAILED", area.getID(), payment.message());
+                sendPaymentFailure(p, payment.message());
+                return null;
+            }
+            LandClaim.cityService().updateEconomyOperation(correlation, "PAID", area.getID(), "");
         }
 
         Area extendedArea = chunksToArea(chunkInExtendedArea);
@@ -684,7 +918,7 @@ public class ChunkClaimUtil {
         // last step: set claim status in database for all chunks
         if (defaultPermission.equals(s.defaultAreaPermission)) {
             for (Vector3i chunk : chunkInExtendedArea) {
-                service.saveChunkClaim(p, chunk, System.currentTimeMillis(), area.getID());
+                service.saveChunkClaim(claimOwnerUid, claimOwnerDbId, chunk, System.currentTimeMillis(), area.getID());
             }
         }
         // remove claim status if it is a special area
@@ -694,15 +928,114 @@ public class ChunkClaimUtil {
             }
         }
 
+        if (LandClaim.landPriceService() != null) LandClaim.landPriceService().refresh();
+        if (topologyCorrelation != null) LandClaim.cityService().updateEconomyOperation(topologyCorrelation,
+                "COMPLETED", area.getID(), "");
+
         // area.destroy();
         return area;
     }
+
+    public long landExpansionPrice(Area area, Direction direction) {
+        if (area == null || direction == null || LandClaim.landPriceService() == null) return 0L;
+        Vector3i start = area.getStartChunkPosition();
+        Vector3i end = area.getEndChunkPosition();
+        long total = 0L;
+        for (Vector3i chunk : areaToChunks(area)) {
+            Vector3i added = switch (direction) {
+                case NORTH -> chunk.z == end.z ? new Vector3i(chunk.x, chunk.y, chunk.z + 1) : null;
+                case SOUTH -> chunk.z == start.z ? new Vector3i(chunk.x, chunk.y, chunk.z - 1) : null;
+                case EAST -> chunk.x == end.x ? new Vector3i(chunk.x + 1, chunk.y, chunk.z) : null;
+                case WEST -> chunk.x == start.x ? new Vector3i(chunk.x - 1, chunk.y, chunk.z) : null;
+                case UP -> chunk.y == end.y ? new Vector3i(chunk.x, chunk.y + 1, chunk.z) : null;
+                case DOWN -> chunk.y == start.y ? new Vector3i(chunk.x, chunk.y - 1, chunk.z) : null;
+            };
+            if (added == null) continue;
+            long price = LandClaim.landPriceService().price(added, s.landPriceBase);
+            if (total >= de.omegazirkel.risingworld.landclaim.db.LandPriceService.MAX_SAFE_INTEGER - price)
+                return de.omegazirkel.risingworld.landclaim.db.LandPriceService.MAX_SAFE_INTEGER;
+            total += price;
+        }
+        return total;
+    }
+
+    /** Price for the one-cell perimeter added to a city private claim. */
+    public long cityPrivateExpansionPrice(Area area, Direction direction) {
+        if (area == null || direction == null || LandClaim.cityService() == null) return 0L;
+        CityRecord city = LandClaim.cityService().containingCity(area.getStartChunkPosition()).orElse(null);
+        if (city == null) return 0L;
+        long pricePerChunk = city.privateClaimPriceOverride() == null
+                ? Math.max(0L, s.cityPrivateClaimPrice) : Math.max(0L, city.privateClaimPriceOverride());
+        Vector3i start = area.getStartChunkPosition();
+        Vector3i end = area.getEndChunkPosition();
+        long added = switch (direction) {
+            case NORTH, SOUTH -> (long) (end.x - start.x + 1) * (end.y - start.y + 1);
+            case EAST, WEST -> (long) (end.y - start.y + 1) * (end.z - start.z + 1);
+            case UP, DOWN -> (long) (end.x - start.x + 1) * (end.z - start.z + 1);
+        };
+        try {
+            return Math.min(de.omegazirkel.risingworld.landclaim.db.LandPriceService.MAX_SAFE_INTEGER,
+                    Math.multiplyExact(pricePerChunk, Math.max(0L, added)));
+        } catch (ArithmeticException ex) {
+            return de.omegazirkel.risingworld.landclaim.db.LandPriceService.MAX_SAFE_INTEGER;
+        }
+    }
+
+    private ClaimOwner claimOwner(Area area) {
+        if (area == null) return null;
+        List<LandClaimChunkInfo> claims = service.getChunkInfoListByArea(area.getID());
+        for (LandClaimChunkInfo claim : claims) {
+            if (claim.playerUID != null && !claim.playerUID.isBlank() && claim.playerDBID > 0) {
+                return new ClaimOwner(claim.playerUID, claim.playerDBID, Server.getPlayerByDbID(claim.playerDBID));
+            }
+        }
+        Object uidAttribute = area.getAttribute("ownerUID");
+        Object dbIdAttribute = area.getAttribute("ownerDBID");
+        String uid = uidAttribute == null ? "" : String.valueOf(uidAttribute);
+        int dbId = dbIdAttribute instanceof Number number ? number.intValue() : 0;
+        if (dbId <= 0) {
+            Map<Integer, String> permissions = area.getAllPlayerPermissions();
+            if (permissions != null) {
+                dbId = permissions.entrySet().stream()
+                        .filter(entry -> s.ownerAreaPermission.equals(entry.getValue()))
+                        .map(Map.Entry::getKey).findFirst().orElse(0);
+            }
+        }
+        Player online = dbId <= 0 ? null : Server.getPlayerByDbID(dbId);
+        if (uid.isBlank() && online != null) uid = online.getUID();
+        return uid.isBlank() || dbId <= 0 ? null : new ClaimOwner(uid, dbId, online);
+    }
+
+    private int claimCount(String ownerUid) {
+        int normalClaims = service.getTotalClaimWeight(ownerUid);
+        int leaseholdClaims = LandClaim.cityService() == null ? 0
+                : LandClaim.cityService().leaseholdClaimWeight(ownerUid);
+        return normalClaims > Integer.MAX_VALUE - leaseholdClaims ? Integer.MAX_VALUE
+                : normalClaims + leaseholdClaims;
+    }
+
+    private long maxClaims(ClaimOwner owner) {
+        if (owner.online() != null) return getPlayerMaxClaims(owner.online());
+        PlayerRecord record = PlayerDatabaseHelper.findPlayersByDbIds(LandClaim.getInstance(), Set.of(owner.dbId()))
+                .get(owner.dbId());
+        long playtimeSeconds = record == null ? 0L : Math.max(0L, record.totalPlayTimeSeconds);
+        int purchasedCapacity = LandClaim.extraClaimCapacityService() == null ? 0
+                : LandClaim.extraClaimCapacityService().getPurchasedCapacity(owner.uid());
+        return s.basicClaimLimit + (long) ((playtimeSeconds / 3_600L) * s.playTimeHoursExtraClaimFactor)
+                + purchasedCapacity;
+    }
+
+    private record ClaimOwner(String uid, int dbId, Player online) { }
 
     public enum Direction {
         NORTH, SOUTH, EAST, WEST, UP, DOWN
     }
 
     public void releaseArea(Player p, Area area) {
+        if (!ClaimModePolicy.mayPlayerResizeOrRelease(p.isAdmin())) {
+            p.sendTextMessage(t().get("TC_CLAIM_ERROR_MODE_RESIZE", p));
+            return;
+        }
         String playerPermission = area.getPlayerPermission(p);
         Boolean isOwner = playerPermission != null && playerPermission.equals(s.ownerAreaPermission);
         if (isOwner || p.isAdmin()) {
@@ -715,6 +1048,7 @@ public class ChunkClaimUtil {
             // 2. remove area from server
             String areaName = area.getName() == null ? "Unnamed Area" : area.getName();
             Server.removeArea(area);
+            if (LandClaim.landPriceService() != null) LandClaim.landPriceService().refresh();
 
             p.sendTextMessage(t().get("TC_AREA_RELEASE_AREA", p).replace("PH_AREA_NAME", areaName));
             // remove area and claim information from database
@@ -757,6 +1091,16 @@ public class ChunkClaimUtil {
      * @return
      */
     public boolean splitClaim(Area existingArea, Player p) {
+        if (!ClaimModePolicy.mayPlayerResizeOrRelease(p.isAdmin())) {
+            p.sendTextMessage(t().get("TC_CLAIM_ERROR_MODE_RESIZE", p));
+            return false;
+        }
+        LeaseholdRecord lease = LandClaim.cityService() == null || existingArea == null ? null
+                : LandClaim.cityService().findLeasehold(existingArea.getID()).orElse(null);
+        if (lease != null && lease.occupied()) {
+            p.sendTextMessage(t().get("TC_CITY_LEASE_SPLIT_OCCUPIED", p));
+            return false;
+        }
         String playerPermission = existingArea.getPlayerPermission(p);
         Boolean isOwner = playerPermission != null && playerPermission.equals(s.ownerAreaPermission);
         if (!isOwner && !p.isAdmin())

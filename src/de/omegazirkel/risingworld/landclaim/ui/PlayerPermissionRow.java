@@ -141,9 +141,9 @@ public class PlayerPermissionRow {
         selectPaneTitle.setTextAlign(TextAnchor.MiddleCenter);
         selectPane.addChild(selectPaneTitle);
 
-        String buttonLabel = permissionLabelMap.get(currentPermission) == null
-                ? areaPermissionLabelMap.get(currentPermission)
-                : permissionLabelMap.get(currentPermission);
+        String defaultLabel = permissionLabel(areaPermissionLabelMap, defaultPermission, forPlayer);
+        String buttonLabel = currentPermission.isBlank() ? defaultLabel
+                : permissionLabel(permissionLabelMap, currentPermission, forPlayer);
 
         AdvancedButton permissionButton = AdvancedButtonFactory.defaultButton(buttonLabel, event -> {
             if (selectPanes.containsKey(forPlayer.getDbID())) {
@@ -174,7 +174,6 @@ public class PlayerPermissionRow {
             cb.style.top.set(OPTION_TOP_OFFSET + (row++ * (OPTION_HEIGHT + OPTION_GAP)), Unit.Pixel);
             selectPane.addChild(cb);
         }
-        String defaultLabel = areaPermissionLabelMap.get(defaultPermission);
         AdvancedButton cb = AdvancedButtonFactory.defaultButton(defaultLabel, event -> {
             selectPane.setVisible(false);
             callback.onCall(defaultPermission);
@@ -190,5 +189,11 @@ public class PlayerPermissionRow {
         TableCell workaroundCell = new TableCell(permissionButton, 20);
 
         return new TableRow(Arrays.asList(cellName, cellUID, cellStatus, workaroundCell));
+    }
+
+    private static String permissionLabel(Map<String, String> labels, String permission, Player player) {
+        if (permission == null || permission.isBlank()) return t().get("TC_UI_PERMISSION_GUEST", player);
+        String label = labels.get(permission);
+        return label == null || label.isBlank() ? t().get("TC_UI_PERMISSION_GUEST", player) : label;
     }
 }

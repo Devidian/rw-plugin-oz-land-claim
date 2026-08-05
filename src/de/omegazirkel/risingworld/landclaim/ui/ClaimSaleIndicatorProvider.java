@@ -2,6 +2,7 @@ package de.omegazirkel.risingworld.landclaim.ui;
 
 import de.omegazirkel.risingworld.LandClaim;
 import de.omegazirkel.risingworld.landclaim.PluginSettings;
+import de.omegazirkel.risingworld.landclaim.ClaimModePolicy;
 import de.omegazirkel.risingworld.tools.ui.SharedIndicatorProvider;
 import net.risingworld.api.objects.Area;
 import net.risingworld.api.objects.Player;
@@ -11,7 +12,10 @@ public class ClaimSaleIndicatorProvider implements SharedIndicatorProvider {
 
     @Override
     public boolean showIndicator(Player player) {
-        if (player == null || !settings.allowClaimSale || LandClaim.claimSaleListingService() == null) {
+        boolean walletAvailable = LandClaim.economyIntegration() != null
+                && LandClaim.economyIntegration().hasSystemAccountApi();
+        if (player == null || !ClaimModePolicy.salesAvailable(settings.allowClaimSale, walletAvailable)
+                || LandClaim.claimSaleListingService() == null) {
             return false;
         }
         Area currentArea = player.getCurrentArea();
