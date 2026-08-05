@@ -2,7 +2,7 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
-## [0.14.2] - 2026-08-05 | Claim modes and cities
+## [0.15.0] - 2026-08-05 | Claim modes and cities
 
 - feat: add global time-based, administrative, land-pricing, and city claim modes
 - feat: add persisted 26-neighbor geometric land prices with Wallet world-account settlement
@@ -14,6 +14,8 @@
 - fix: localize and regroup mode-specific admin settings with a claim-mode dropdown
 - fix: show paid claim and expansion wording, prices, currencies, and a distinct sale-withdraw action
 - fix: let admins split and expand player claims in administrative mode while enforcing the owner's persisted claim limit
+
+> Corrects the semantic version of the already published `0.14.2` build; its feature set is superseded by this minor release.
 
 ## [0.14.1] - 2026-07-26 | Stable claim-information overlay
 
