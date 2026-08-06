@@ -467,8 +467,9 @@ public class ChunkClaimUtil {
             EconomyIntegration.WalletOperationResult payment = landPrice == 0
                     ? new EconomyIntegration.WalletOperationResult(true, "")
                     : LandClaim.economyIntegration().transferPlayerToWorld(p.getDbID(), landPrice,
-                            t().get("TC_WALLET_LAND_PURCHASE", p)
-                                    .replace("PH_CHUNK_POS", area.getStartChunkPosition().toString()),
+                            t().get("TC_WALLET_LAND_PURCHASE", LandClaim.economyIntegration().walletAuditLanguage())
+                                    .replace("PH_CHUNK_POS", area.getStartChunkPosition().toString())
+                                    .replace("PH_PLAYER_NAME", p.getName()),
                             paymentCorrelation);
             if (!payment.success()) {
                 if (paymentCorrelation != null) LandClaim.cityService().updateEconomyOperation(paymentCorrelation,
@@ -495,7 +496,7 @@ public class ChunkClaimUtil {
             EconomyIntegration.WalletOperationResult payment = landPrice == 0
                     ? new EconomyIntegration.WalletOperationResult(true, "")
                     : LandClaim.economyIntegration().transferPlayerToCity(p.getDbID(), city.areaId(), landPrice,
-                            t().get("TC_WALLET_CITY_PRIVATE_PURCHASE", p)
+                            t().get("TC_WALLET_CITY_PRIVATE_PURCHASE", LandClaim.economyIntegration().walletAuditLanguage())
                                     .replace("PH_CHUNK_POS", area.getStartChunkPosition().toString())
                                     .replace("PH_CITY_NAME", city.name()), paymentCorrelation);
             if (!payment.success()) {
@@ -539,7 +540,7 @@ public class ChunkClaimUtil {
             if (paymentCorrelation != null) {
                 EconomyIntegration.WalletOperationResult reversal = LandClaim.economyIntegration().reverseTransfer(
                         paymentCorrelation, paymentCorrelation + ":reversal",
-                        t().get("TC_WALLET_LAND_PURCHASE_ROLLBACK", p));
+                        t().get("TC_WALLET_LAND_PURCHASE_ROLLBACK", LandClaim.economyIntegration().walletAuditLanguage()));
                 LandClaim.cityService().updateEconomyOperation(paymentCorrelation,
                         reversal.success() ? "REVERSED" : "RECONCILIATION_REQUIRED", area == null ? 0 : area.getID(),
                         reversal.message());
@@ -818,7 +819,7 @@ public class ChunkClaimUtil {
 
         String topologyCorrelation = null;
         if (ClaimModePolicy.current() == ClaimMode.LAND_PRICING
-                && defaultPermission.equals(s.defaultAreaPermission)) {
+                && defaultPermission.equals(s.defaultAreaPermission) && !p.isAdmin()) {
             if (!walletAvailable() || LandClaim.landPriceService() == null) {
                 p.sendTextMessage(t().get("TC_CLAIM_ERROR_WALLET_REQUIRED", p));
                 return null;
@@ -831,7 +832,7 @@ public class ChunkClaimUtil {
             EconomyIntegration.WalletOperationResult payment = expansionPrice == 0
                     ? new EconomyIntegration.WalletOperationResult(true, "")
                     : LandClaim.economyIntegration().transferPlayerToWorld(p.getDbID(), expansionPrice,
-                            t().get("TC_WALLET_LAND_EXPANSION", p)
+                            t().get("TC_WALLET_LAND_EXPANSION", LandClaim.economyIntegration().walletAuditLanguage())
                                     .replace("PH_AREA_NAME", area.getName() == null ? "" : area.getName()),
                             correlation);
             if (!payment.success()) {
@@ -860,7 +861,7 @@ public class ChunkClaimUtil {
             EconomyIntegration.WalletOperationResult payment = expansionPrice == 0
                     ? new EconomyIntegration.WalletOperationResult(true, "")
                     : LandClaim.economyIntegration().transferPlayerToCity(p.getDbID(), cityForExpansion.areaId(),
-                            expansionPrice, t().get("TC_WALLET_CITY_PRIVATE_EXPANSION", p)
+                            expansionPrice, t().get("TC_WALLET_CITY_PRIVATE_EXPANSION", LandClaim.economyIntegration().walletAuditLanguage())
                                     .replace("PH_CITY_NAME", cityForExpansion.name()), correlation);
             if (!payment.success()) {
                 LandClaim.cityService().updateEconomyOperation(correlation, "FAILED", area.getID(), payment.message());

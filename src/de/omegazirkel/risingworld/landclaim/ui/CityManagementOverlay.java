@@ -176,7 +176,8 @@ public final class CityManagementOverlay extends BasePluginOverlayWithTabs {
         EconomyIntegration.WalletOperationResult payment = price == 0
                 ? new EconomyIntegration.WalletOperationResult(true, "")
                 : economy.transferCityToWorld(city.areaId(), price,
-                        t().get("TC_WALLET_CITY_EXPANSION", player).replace("PH_CITY_NAME", city.name()), correlation);
+                        t().get("TC_WALLET_CITY_EXPANSION", economy.walletAuditLanguage())
+                                .replace("PH_CITY_NAME", city.name()), correlation);
         if (!payment.success()) {
             if (price > 0) cities.updateEconomyOperation(correlation, "FAILED", city.areaId(), payment.message());
             player.sendTextMessage(t().get("TC_CITY_EXPAND_PAYMENT_FAILED", player)
@@ -185,7 +186,7 @@ public final class CityManagementOverlay extends BasePluginOverlayWithTabs {
             if (price > 0) {
                 cities.updateEconomyOperation(correlation, "PAID", city.areaId(), "");
                 EconomyIntegration.WalletOperationResult reversal = economy.reverseTransfer(correlation,
-                        correlation + ":reversal", t().get("TC_WALLET_CITY_EXPANSION_ROLLBACK", player));
+                        correlation + ":reversal", t().get("TC_WALLET_CITY_EXPANSION_ROLLBACK", economy.walletAuditLanguage()));
                 cities.updateEconomyOperation(correlation,
                         reversal.success() ? "REVERSED" : "RECONCILIATION_REQUIRED", city.areaId(), reversal.message());
             }

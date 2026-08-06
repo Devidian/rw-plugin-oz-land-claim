@@ -34,7 +34,8 @@ public final class CityRentService {
             if (area == null) continue;
             String areaName = area.getName() == null ? String.valueOf(area.getID()) : area.getName();
             Player owner = Server.getPlayerByDbID(lease.ownerDbId());
-            String reason = I18n.getInstance(LandClaim.name).get("TC_WALLET_CITY_LEASE_RENT", owner)
+            String reason = I18n.getInstance(LandClaim.name).get("TC_WALLET_CITY_LEASE_RENT",
+                    economy.walletAuditLanguage())
                     .replace("PH_AREA_NAME", areaName).replace("PH_AREA_ID", String.valueOf(area.getID()));
             String correlation = "city-rent:" + area.getID() + ":" + billingDate;
             if (lease.dailyRent() > 0) cities.beginEconomyOperation(correlation, "DAILY_RENT", area.getID(),

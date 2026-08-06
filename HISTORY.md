@@ -2,6 +2,13 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.15.1] - 2026-08-06 | Claim dialogs and audit entries
+
+- fix: wrap city and leasehold deletion dialogs, highlight leasehold names, and show deletion errors natively
+- fix: make special-zone admin expansions free in land-pricing mode and shorten the paid expansion label
+- fix: localize extra-claim purchase confirmation and include the buyer in land-purchase audit entries
+- fix: use Wallet's configured audit language for city and world-account transaction reasons
+
 ## [0.15.0] - 2026-08-05 | Claim modes and cities
 
 - feat: add global time-based, administrative, land-pricing, and city claim modes

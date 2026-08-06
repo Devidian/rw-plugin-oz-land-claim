@@ -93,6 +93,11 @@ public class EconomyIntegration {
         return walletBridge.defaultCurrencyIdentifier();
     }
 
+    /** Wallet-owned language for durable system-account audit entries. */
+    public String walletAuditLanguage() {
+        return walletBridge.walletAuditLanguage();
+    }
+
     public String cityAccountId(long areaId) {
         return "city::area-" + areaId;
     }
@@ -230,7 +235,9 @@ public class EconomyIntegration {
                 return shopResult(false, "Extra claim purchase has no player or persistence service.", offer);
             }
             int total = LandClaim.extraClaimCapacityService().addPurchasedCapacity(player, 1);
-            return shopResult(true, "Extra claim capacity purchased. Total purchased capacity: " + total + ".", offer);
+            String message = I18n.getInstance(owner).get("LANDCLAIM_SHOP_EXTRA_CLAIM_SUCCESS", player)
+                    .replace("PH_TOTAL", String.valueOf(total));
+            return shopResult(true, message, offer);
         };
     }
 

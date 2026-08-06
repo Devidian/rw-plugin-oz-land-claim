@@ -738,7 +738,8 @@ public class LandClaimGUI {
         EconomyIntegration.WalletOperationResult payment = amount == 0
                 ? new EconomyIntegration.WalletOperationResult(true, "")
                 : LandClaim.economyIntegration().transferPlayerToCity(player.getDbID(), lease.cityAreaId(), amount,
-                        t.get(purchase ? "TC_WALLET_CITY_LEASE_PURCHASE" : "TC_WALLET_CITY_LEASE_RENT", player)
+                        t.get(purchase ? "TC_WALLET_CITY_LEASE_PURCHASE" : "TC_WALLET_CITY_LEASE_RENT",
+                                LandClaim.economyIntegration().walletAuditLanguage())
                                 .replace("PH_AREA_NAME", areaName(area))
                                 .replace("PH_AREA_ID", String.valueOf(area.getID())), correlation);
         if (!payment.success()) {
@@ -753,7 +754,8 @@ public class LandClaimGUI {
         if (!persisted) {
             if (amount > 0) {
                 EconomyIntegration.WalletOperationResult reversal = LandClaim.economyIntegration().reverseTransfer(
-                        correlation, correlation + ":reversal", t.get("TC_WALLET_CITY_LEASE_ROLLBACK", player));
+                        correlation, correlation + ":reversal", t.get("TC_WALLET_CITY_LEASE_ROLLBACK",
+                                LandClaim.economyIntegration().walletAuditLanguage()));
                 LandClaim.cityService().updateEconomyOperation(correlation,
                         reversal.success() ? "REVERSED" : "RECONCILIATION_REQUIRED", area.getID(), reversal.message());
             }
@@ -833,16 +835,16 @@ public class LandClaimGUI {
     private void deleteCity(Player player, Area core, CityRecord city) {
         List<LeaseholdRecord> leases = LandClaim.cityService().leaseholdsForCity(city.areaId());
         if (leases.stream().anyMatch(LeaseholdRecord::occupied)) {
-            player.sendTextMessage(t.get("TC_CITY_DELETE_OCCUPIED", player));
+            player.showErrorMessageBox(t.get("TC_MENU_CITY_DELETE", player), t.get("TC_CITY_DELETE_OCCUPIED", player));
             return;
         }
         String correlation = "city-delete:" + city.areaId();
         EconomyIntegration.WalletOperationResult closed = LandClaim.economyIntegration().closeCityAccount(
-                city.areaId(), t.get("TC_WALLET_CITY_DISSOLUTION", player)
+                city.areaId(), t.get("TC_WALLET_CITY_DISSOLUTION", LandClaim.economyIntegration().walletAuditLanguage())
                         .replace("PH_CITY_NAME", city.name()).replace("PH_AREA_ID", String.valueOf(city.areaId())),
                 correlation);
         if (!closed.success()) {
-            player.sendTextMessage(t.get("TC_CITY_DELETE_ACCOUNT_FAILED", player)
+            player.showErrorMessageBox(t.get("TC_MENU_CITY_DELETE", player), t.get("TC_CITY_DELETE_ACCOUNT_FAILED", player)
                     .replace("PH_REASON", closed.message()));
             return;
         }
@@ -894,10 +896,12 @@ public class LandClaimGUI {
         EconomyIntegration.WalletOperationResult payment = price == 0
                 ? new EconomyIntegration.WalletOperationResult(true, "")
                 : LandClaim.economyIntegration().transferCityToWorld(city.areaId(), price,
-                        t.get("TC_WALLET_CITY_EXPANSION", player).replace("PH_CITY_NAME", city.name()), correlation);
+                        t.get("TC_WALLET_CITY_EXPANSION", LandClaim.economyIntegration().walletAuditLanguage())
+                                .replace("PH_CITY_NAME", city.name()), correlation);
         if (!payment.success() || !LandClaim.cityService().expandCity(city.areaId())) {
             if (payment.success() && price > 0) LandClaim.economyIntegration().reverseTransfer(
-                    correlation, correlation + ":reversal", t.get("TC_WALLET_CITY_EXPANSION_ROLLBACK", player));
+                    correlation, correlation + ":reversal", t.get("TC_WALLET_CITY_EXPANSION_ROLLBACK",
+                            LandClaim.economyIntegration().walletAuditLanguage()));
             player.sendTextMessage(t.get("TC_CITY_EXPAND_FAILED", player));
             return;
         }

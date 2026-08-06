@@ -107,6 +107,7 @@ public class UIDialogFactory {
         UIElement body = addBody(window, CONFIRM_BODY_Y, CONFIRM_BODY_WIDTH, CONFIRM_BODY_HEIGHT);
         UILabel lbl = new UILabel(t.get(i18nId, player));
         lbl.setRichTextEnabled(true);
+        lbl.setTextWrap(true);
         lbl.setFontSize(16);
         lbl.setTextAlign(TextAnchor.UpperLeft);
         lbl.setPivot(Pivot.UpperLeft);
@@ -156,6 +157,7 @@ public class UIDialogFactory {
         UIElement body = addBody(window, CONFIRM_BODY_Y, CONFIRM_BODY_WIDTH, CONFIRM_BODY_HEIGHT);
         UILabel lbl = new UILabel(t.get(i18nId, player));
         lbl.setRichTextEnabled(true);
+        lbl.setTextWrap(true);
         lbl.setFontSize(16);
         lbl.setTextAlign(TextAnchor.UpperLeft);
         lbl.setPivot(Pivot.UpperLeft);
@@ -194,6 +196,7 @@ public class UIDialogFactory {
         UIElement body = addBody(window, CONFIRM_BODY_Y, CONFIRM_BODY_WIDTH, CONFIRM_BODY_HEIGHT);
         UILabel label = new UILabel(message);
         label.setRichTextEnabled(true);
+        label.setTextWrap(true);
         label.setFontSize(16);
         label.setTextAlign(TextAnchor.UpperLeft);
         label.setPivot(Pivot.UpperLeft);
