@@ -42,6 +42,7 @@ public class PluginSettings {
         public Integer claimBaseCost = 100;
         public long landPriceBase = 1000;
         public double landPriceClusterIncrement = 0.05d;
+        public Boolean landPriceIncludeBaseClaimsFree = false;
         public Integer cityBaseRadius = 2;
         public Boolean cityAllowPrivateClaims = false;
         public long cityPrivateClaimPrice = 10000;
@@ -250,6 +251,8 @@ public class PluginSettings {
                         landPriceBase = Long.parseLong(settings.getProperty("landPriceBase", "1000"));
                         landPriceClusterIncrement = Double
                                         .parseDouble(settings.getProperty("landPriceClusterIncrement", "0.05"));
+                        landPriceIncludeBaseClaimsFree = Boolean.parseBoolean(
+                                        settings.getProperty("landPriceIncludeBaseClaimsFree", "false"));
                         cityBaseRadius = Integer.parseInt(settings.getProperty("cityBaseRadius", "2"));
                         cityAllowPrivateClaims = Boolean.parseBoolean(settings.getProperty("cityAllowPrivateClaims", "false"));
                         cityPrivateClaimPrice = Long.parseLong(settings.getProperty("cityPrivateClaimPrice", "10000"));
@@ -499,6 +502,9 @@ public class PluginSettings {
                                 entry("landPriceClusterIncrement", "Cluster increment",
                                                 "Additive price increment per occupied chunk in an adjacent cluster.",
                                                 landPriceClusterIncrement, "0.05", AdminSettingsType.DECIMAL),
+                                entry("landPriceIncludeBaseClaimsFree", "Included base claims free",
+                                                "Waives the base land price within the base claim limit; cluster surcharges remain payable.",
+                                                landPriceIncludeBaseClaimsFree, "false", AdminSettingsType.BOOLEAN),
                                 AdminSettingsEntry.group("cityModeRules", "City-mode rules",
                                                 "Rules used by the CITY acquisition mode."),
                                 entry("cityBaseRadius", "City base radius",
@@ -602,4 +608,5 @@ public class PluginSettings {
         private Path settingsPath() {
                 return Paths.get((plugin.getPath() != null ? plugin.getPath() : ".") + "/settings.properties");
         }
+
 }

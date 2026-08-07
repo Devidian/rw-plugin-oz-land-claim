@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.16.0] - 2026-08-08 | Included land-price claims
+
+- feat: optionally waive the base land price for claims inside a player's included normal-claim limit while retaining cluster surcharges.
+
 ## [0.15.2] - 2026-08-07 | Expansion pricing
 
 - fix: charge the persisted claim owner for land-price expansions and exclude already-owned perimeter chunks

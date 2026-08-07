@@ -460,7 +460,7 @@ public class ChunkClaimUtil {
                 p.sendTextMessage(t().get("TC_CLAIM_ERROR_PRICE_UNAVAILABLE", p));
                 return null;
             }
-            landPrice = LandClaim.landPriceService().price(area.getStartChunkPosition(), s.landPriceBase);
+            landPrice = landPriceForClaim(area.getStartChunkPosition(), service.getTotalClaimWeight(p));
             paymentCorrelation = landPrice == 0 ? null : "land-claim:" + UUID.randomUUID();
             if (paymentCorrelation != null) LandClaim.cityService().beginEconomyOperation(paymentCorrelation,
                     "LAND_CLAIM", 0, p.getDbID(), landPrice);
@@ -937,6 +937,7 @@ public class ChunkClaimUtil {
         Vector3i start = area.getStartChunkPosition();
         Vector3i end = area.getEndChunkPosition();
         long total = 0L;
+        int additionalClaimIndex = 0;
         for (Vector3i chunk : areaToChunks(area)) {
             Vector3i added = switch (direction) {
                 case NORTH -> chunk.z == end.z ? new Vector3i(chunk.x, chunk.y, chunk.z + 1) : null;
@@ -948,12 +949,21 @@ public class ChunkClaimUtil {
             };
             if (added == null) continue;
             if (isAlreadyOwnedBy(added, ownerUid)) continue;
-            long price = LandClaim.landPriceService().price(added, s.landPriceBase);
+            long price = landPriceForClaim(added, service.getTotalClaimWeight(ownerUid) + additionalClaimIndex++);
             if (total >= de.omegazirkel.risingworld.landclaim.db.LandPriceService.MAX_SAFE_INTEGER - price)
                 return de.omegazirkel.risingworld.landclaim.db.LandPriceService.MAX_SAFE_INTEGER;
             total += price;
         }
         return total;
+    }
+
+    /** Included normal claims waive only the base component; cluster surcharge remains payable. */
+    private long landPriceForClaim(Vector3i chunk, int ownedNormalClaims) {
+        if (LandClaim.landPriceService() == null) return 0L;
+        long fullPrice = LandClaim.landPriceService().price(chunk, s.landPriceBase);
+        if (!Boolean.TRUE.equals(s.landPriceIncludeBaseClaimsFree)
+                || ownedNormalClaims >= Math.max(0, s.basicClaimLimit)) return fullPrice;
+        return Math.max(0L, fullPrice - Math.max(0L, s.landPriceBase));
     }
 
     /** Price for the one-cell perimeter added to a city private claim. */
