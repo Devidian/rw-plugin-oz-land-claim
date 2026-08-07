@@ -74,10 +74,19 @@ public class UIDialogFactory {
     }
 
     private static void styleFooterButton(UIElement button) {
+        styleFooterButton(button, FOOTER_BUTTON_WIDTH);
+    }
+
+    private static void styleFooterButton(UIElement button, int width) {
         // AdvancedButton has no intrinsic dimensions. Preserve the legacy dialog
         // button size so its container receives a real clickable surface.
-        button.setSize(FOOTER_BUTTON_WIDTH, FOOTER_BUTTON_HEIGHT, false);
+        button.setSize(width, FOOTER_BUTTON_HEIGHT, false);
         button.setBorderEdgeRadius(4, false);
+    }
+
+    private static int confirmButtonWidth(String label) {
+        int characters = label == null ? 0 : label.length();
+        return Math.max(FOOTER_BUTTON_WIDTH, Math.min(260, 28 + characters * 9));
     }
 
     public static UIElement getConfirmDangerDialog(
@@ -123,7 +132,7 @@ public class UIDialogFactory {
 
         btnOk.setPivot(Pivot.LowerRight);
         btnOk.setPosition(CONFIRM_DIALOG_WIDTH - BUTTON_OFFSET_X, CONFIRM_FOOTER_Y, false);
-        styleFooterButton(btnOk);
+        styleFooterButton(btnOk, confirmButtonWidth(confirmLabel));
         window.addChild(btnOk);
 
         AdvancedButton btnCancel = AdvancedButtonFactory.ok(t.get("TC_UI_BTN_NO", player), event -> {

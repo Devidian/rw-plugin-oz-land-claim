@@ -593,11 +593,13 @@ public class LandClaimGUI {
         return new MenuItem(iconKey,
                 t.get(labelKey, player),
                 (p) -> {
-                    boolean paidExpansion = ClaimModePolicy.current() == ClaimMode.LAND_PRICING
-                            || isCityPrivateClaim(area);
-                    long expansionPrice = ClaimModePolicy.current() == ClaimMode.LAND_PRICING
-                            ? chunkClaimUtil.landExpansionPrice(area, direction)
-                            : paidExpansion ? chunkClaimUtil.cityPrivateExpansionPrice(area, direction) : 0L;
+                    boolean playerClaim = s.defaultAreaPermission.equals(area.getDefaultPermission());
+                    boolean paidExpansion = playerClaim && (ClaimModePolicy.current() == ClaimMode.LAND_PRICING
+                            || isCityPrivateClaim(area));
+                    long expansionPrice = !paidExpansion ? 0L
+                            : ClaimModePolicy.current() == ClaimMode.LAND_PRICING
+                                    ? chunkClaimUtil.landExpansionPrice(area, direction)
+                                    : chunkClaimUtil.cityPrivateExpansionPrice(area, direction);
                     String confirmText = t.get(paidExpansion ? "TC_DIALOG_AREA_EXPAND_PAID_CONFIRM"
                             : "TC_DIALOG_AREA_EXPAND_CONFIRM", p)
                                     .replace("PH_AREA_NAME", area.getName() == null ? "Unnamed Area" : area.getName())

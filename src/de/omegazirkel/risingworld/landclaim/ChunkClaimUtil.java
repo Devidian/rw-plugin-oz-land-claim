@@ -819,19 +819,19 @@ public class ChunkClaimUtil {
 
         String topologyCorrelation = null;
         if (ClaimModePolicy.current() == ClaimMode.LAND_PRICING
-                && defaultPermission.equals(s.defaultAreaPermission) && !p.isAdmin()) {
+                && defaultPermission.equals(s.defaultAreaPermission)) {
             if (!walletAvailable() || LandClaim.landPriceService() == null) {
                 p.sendTextMessage(t().get("TC_CLAIM_ERROR_WALLET_REQUIRED", p));
                 return null;
             }
-            long expansionPrice = landExpansionPrice(area, dir);
+            long expansionPrice = landExpansionPrice(area, dir, claimOwnerUid);
             String correlation = "land-expand:" + UUID.randomUUID();
             topologyCorrelation = correlation;
             LandClaim.cityService().beginEconomyOperation(correlation, "LAND_EXPANSION", area.getID(), p.getDbID(),
                     expansionPrice);
             EconomyIntegration.WalletOperationResult payment = expansionPrice == 0
                     ? new EconomyIntegration.WalletOperationResult(true, "")
-                    : LandClaim.economyIntegration().transferPlayerToWorld(p.getDbID(), expansionPrice,
+                    : LandClaim.economyIntegration().transferPlayerToWorld(claimOwnerDbId, expansionPrice,
                             t().get("TC_WALLET_LAND_EXPANSION", LandClaim.economyIntegration().walletAuditLanguage())
                                     .replace("PH_AREA_NAME", area.getName() == null ? "" : area.getName()),
                             correlation);
@@ -843,17 +843,7 @@ public class ChunkClaimUtil {
             LandClaim.cityService().updateEconomyOperation(correlation, "PAID", area.getID(), "");
         }
         if (ClaimModePolicy.current() == ClaimMode.CITY && defaultPermission.equals(s.defaultAreaPermission)) {
-            long pricePerChunk = cityForExpansion.privateClaimPriceOverride() == null
-                    ? Math.max(0L, s.cityPrivateClaimPrice)
-                    : Math.max(0L, cityForExpansion.privateClaimPriceOverride());
-            long expansionPrice;
-            try {
-                expansionPrice = Math.multiplyExact(pricePerChunk, (long) extendedChunksCount);
-            } catch (ArithmeticException ex) {
-                expansionPrice = de.omegazirkel.risingworld.landclaim.db.LandPriceService.MAX_SAFE_INTEGER;
-            }
-            if (expansionPrice > de.omegazirkel.risingworld.landclaim.db.LandPriceService.MAX_SAFE_INTEGER)
-                expansionPrice = de.omegazirkel.risingworld.landclaim.db.LandPriceService.MAX_SAFE_INTEGER;
+            long expansionPrice = cityPrivateExpansionPrice(area, dir, claimOwnerUid);
             String correlation = "city-private-expand:" + UUID.randomUUID();
             topologyCorrelation = correlation;
             LandClaim.cityService().beginEconomyOperation(correlation, "CITY_PRIVATE_EXPANSION", area.getID(),
@@ -938,6 +928,11 @@ public class ChunkClaimUtil {
     }
 
     public long landExpansionPrice(Area area, Direction direction) {
+        ClaimOwner owner = claimOwner(area);
+        return landExpansionPrice(area, direction, owner == null ? "" : owner.uid());
+    }
+
+    private long landExpansionPrice(Area area, Direction direction, String ownerUid) {
         if (area == null || direction == null || LandClaim.landPriceService() == null) return 0L;
         Vector3i start = area.getStartChunkPosition();
         Vector3i end = area.getEndChunkPosition();
@@ -952,6 +947,7 @@ public class ChunkClaimUtil {
                 case DOWN -> chunk.y == start.y ? new Vector3i(chunk.x, chunk.y - 1, chunk.z) : null;
             };
             if (added == null) continue;
+            if (isAlreadyOwnedBy(added, ownerUid)) continue;
             long price = LandClaim.landPriceService().price(added, s.landPriceBase);
             if (total >= de.omegazirkel.risingworld.landclaim.db.LandPriceService.MAX_SAFE_INTEGER - price)
                 return de.omegazirkel.risingworld.landclaim.db.LandPriceService.MAX_SAFE_INTEGER;
@@ -962,6 +958,11 @@ public class ChunkClaimUtil {
 
     /** Price for the one-cell perimeter added to a city private claim. */
     public long cityPrivateExpansionPrice(Area area, Direction direction) {
+        ClaimOwner owner = claimOwner(area);
+        return cityPrivateExpansionPrice(area, direction, owner == null ? "" : owner.uid());
+    }
+
+    private long cityPrivateExpansionPrice(Area area, Direction direction, String ownerUid) {
         if (area == null || direction == null || LandClaim.cityService() == null) return 0L;
         CityRecord city = LandClaim.cityService().containingCity(area.getStartChunkPosition()).orElse(null);
         if (city == null) return 0L;
@@ -969,11 +970,18 @@ public class ChunkClaimUtil {
                 ? Math.max(0L, s.cityPrivateClaimPrice) : Math.max(0L, city.privateClaimPriceOverride());
         Vector3i start = area.getStartChunkPosition();
         Vector3i end = area.getEndChunkPosition();
-        long added = switch (direction) {
-            case NORTH, SOUTH -> (long) (end.x - start.x + 1) * (end.y - start.y + 1);
-            case EAST, WEST -> (long) (end.y - start.y + 1) * (end.z - start.z + 1);
-            case UP, DOWN -> (long) (end.x - start.x + 1) * (end.z - start.z + 1);
-        };
+        long added = 0L;
+        for (Vector3i chunk : areaToChunks(area)) {
+            Vector3i expanded = switch (direction) {
+                case NORTH -> chunk.z == end.z ? new Vector3i(chunk.x, chunk.y, chunk.z + 1) : null;
+                case SOUTH -> chunk.z == start.z ? new Vector3i(chunk.x, chunk.y, chunk.z - 1) : null;
+                case EAST -> chunk.x == end.x ? new Vector3i(chunk.x + 1, chunk.y, chunk.z) : null;
+                case WEST -> chunk.x == start.x ? new Vector3i(chunk.x - 1, chunk.y, chunk.z) : null;
+                case UP -> chunk.y == end.y ? new Vector3i(chunk.x, chunk.y + 1, chunk.z) : null;
+                case DOWN -> chunk.y == start.y ? new Vector3i(chunk.x, chunk.y - 1, chunk.z) : null;
+            };
+            if (expanded != null && !isAlreadyOwnedBy(expanded, ownerUid)) added++;
+        }
         try {
             return Math.min(de.omegazirkel.risingworld.landclaim.db.LandPriceService.MAX_SAFE_INTEGER,
                     Math.multiplyExact(pricePerChunk, Math.max(0L, added)));
@@ -1005,6 +1013,11 @@ public class ChunkClaimUtil {
         Player online = dbId <= 0 ? null : Server.getPlayerByDbID(dbId);
         if (uid.isBlank() && online != null) uid = online.getUID();
         return uid.isBlank() || dbId <= 0 ? null : new ClaimOwner(uid, dbId, online);
+    }
+
+    private boolean isAlreadyOwnedBy(Vector3i chunk, String ownerUid) {
+        return ownerUid != null && !ownerUid.isBlank() && service.getChunkInfoListByChunk(chunk).stream()
+                .anyMatch(info -> info.isClaimed() && info.isOwnedBy(ownerUid));
     }
 
     private int claimCount(String ownerUid) {

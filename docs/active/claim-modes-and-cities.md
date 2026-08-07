@@ -45,3 +45,11 @@ without changing claim-mode persistence or Wallet settlement contracts.
       treasury.
 - [x] Validate tests and package build; confirm a funded in-game expansion and
       its resulting World-treasury audit row manually after deployment.
+
+## 2026-08-07 Expansion payment follow-up
+
+- [x] Charge land-price expansion to the claim owner even when an administrator
+      performs it, while retaining no-charge special-zone expansion.
+- [x] Exclude perimeter chunks already owned by that player from the displayed
+      and charged expansion price; size paid-confirmation labels to their text.
+- [x] Keep special-zone expansion confirmations free even in land-price mode.

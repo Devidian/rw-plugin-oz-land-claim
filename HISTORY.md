@@ -2,6 +2,11 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.15.2] - 2026-08-07 | Expansion pricing
+
+- fix: charge the persisted claim owner for land-price expansions and exclude already-owned perimeter chunks
+- fix: keep special-zone expansion confirmations free in land-price mode
+
 ## [0.15.1] - 2026-08-06 | Claim dialogs and audit entries
 
 - fix: wrap city and leasehold deletion dialogs, highlight leasehold names, and show deletion errors natively
@@ -234,3 +239,8 @@ BREAKING: due to refactoring it is mandatory to install OZTools `>= 0.16.0`
 - fix: possible null pointer exceptions [0.1.7]
 
 ## [0.1.0] - 2025-12-18 | Initial release
+## Unreleased
+
+- fix: charge the private-claim owner for land-price expansion even when an administrator performs it
+- fix: size long confirmation labels, including paid expansion, to their text
+- fix: keep special-zone expansion confirmations free in land-price mode
