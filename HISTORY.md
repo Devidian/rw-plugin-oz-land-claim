@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.16.1] - 2026-08-10 | Expansion with owned chunks
+
+- fix: count and charge only newly acquired perimeter chunks when merging an expansion with adjacent chunks already owned by the player.
+
 ## [0.16.0] - 2026-08-08 | Included land-price claims
 
 - feat: optionally waive the base land price for claims inside a player's included normal-claim limit while retaining cluster surcharges.

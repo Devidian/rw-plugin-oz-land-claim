@@ -728,11 +728,16 @@ public class ChunkClaimUtil {
                 break;
         }
 
-        // determine if added chunks exceed claim limit
+        // Only chunks that are not already owned consume capacity or require claim time.
+        // The complete perimeter remains necessary below to merge adjacent owned areas.
+        String expansionOwnerUid = claimOwnerUid;
+        List<Vector3i> newlyClaimedChunks = chunkInExtendedArea.stream()
+                .filter(chunk -> !isAlreadyOwnedBy(chunk, expansionOwnerUid))
+                .toList();
+
+        // determine if newly acquired chunks exceed claim limit
         Integer currentClaimCount = ownerClaimCount;
-        Integer extendedAreaSize = chunkInExtendedArea.size();
-        Integer areaSize = chunks.size();
-        Integer extendedChunksCount = extendedAreaSize - areaSize;
+        Integer extendedChunksCount = newlyClaimedChunks.size();
 
         CityRecord cityForExpansion = null;
         if (ClaimModePolicy.current() == ClaimMode.CITY && defaultPermission.equals(s.defaultAreaPermission)) {
@@ -804,7 +809,7 @@ public class ChunkClaimUtil {
         // determine if in-chunk-time fits
         long timeToClaimNeeded = getPlayerNextClaimTime(p, extendedChunksCount);
         long sumTimeInChunks = 0;
-        for (Vector3i chunk : chunkInExtendedArea) {
+        for (Vector3i chunk : newlyClaimedChunks) {
             sumTimeInChunks += playerTimeInChunkInSeconds(p, chunk);
         }
 
