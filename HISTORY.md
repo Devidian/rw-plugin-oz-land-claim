@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.16.2] - 2026-08-12 | Claim time feedback
+
+- fix: render the remaining claim time in every insufficient-time claim response.
+
 ## [0.16.1] - 2026-08-10 | Expansion with owned chunks
 
 - fix: count and charge only newly acquired perimeter chunks when merging an expansion with adjacent chunks already owned by the player.

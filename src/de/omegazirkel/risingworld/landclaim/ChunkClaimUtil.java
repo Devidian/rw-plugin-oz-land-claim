@@ -228,7 +228,8 @@ public class ChunkClaimUtil {
 
             if (time < getPlayerNextClaimTime(p) && !(p.isAdmin() && s.adminIgnoreTime)) {
                 if (callback != null)
-                    callback.onCall(t().get("TC_CLAIM_ERROR_TIME", p));
+                    callback.onCall(t().get("TC_CLAIM_ERROR_TIME", p)
+                            .replace("PH_TIME_LEFT", (getPlayerNextClaimTime(p) - time) + "s"));
                 return false;
             }
         }
