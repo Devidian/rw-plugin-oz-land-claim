@@ -23,7 +23,6 @@ import de.omegazirkel.risingworld.landclaim.ui.CityManagementOverlay;
 import de.omegazirkel.risingworld.landclaim.ui.LeaseholdManagementOverlay;
 import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.ui.AssetManager;
-import de.omegazirkel.risingworld.tools.ui.CursorManager;
 import de.omegazirkel.risingworld.tools.ui.MenuItem;
 import de.omegazirkel.risingworld.tools.ui.PluginInfoStatusProviders;
 import de.omegazirkel.risingworld.tools.ui.PluginMenuManager;
@@ -151,11 +150,11 @@ public class LandClaimGUI {
 
     private MenuItem menuItemSplitArea(Player uiPlayer, Area area, Callback<Player> onCancel) {
         return new MenuItem("zone-claim-split",
-                t.get("TC_MENU_AREA_SPLIT", uiPlayer),
+                t.get("tc.menu.area.split", uiPlayer),
                 (p) -> {
                     UIElement confirmDialog = UIDialogFactory.getConfirmDangerDialog(p,
-                            t.get("TC_DIALOG_AREA_SPLIT_TITLE", p),
-                            t.get("TC_DIALOG_AREA_SPLIT_CONFIRM", p)
+                            t.get("tc.dialog.area.split.title", p),
+                            t.get("tc.dialog.area.split.confirm", p)
                                     .replace("PH_AREA_NAME",
                                             area.getName() == null ? "Unnamed Area"
                                                     : area.getName()),
@@ -171,8 +170,7 @@ public class LandClaimGUI {
                                 }
                             }, onCancel);
 
-                    p.addUIElement(confirmDialog, UITarget.HUD);
-                    CursorManager.show(p);
+                    p.addUIElement(confirmDialog, UITarget.Modal);
                     p.hideRadialMenu(false);
                 });
     }
@@ -180,10 +178,10 @@ public class LandClaimGUI {
     private MenuItem menuItemRenameArea(Player player, Area area, Callback<Player> onCancel) {
         final String currentName = area.getName();
         return new MenuItem("zone-claim-rename",
-                t.get("TC_MENU_AREA_RENAME", player),
+                t.get("tc.menu.area.rename", player),
                 (p) -> {
                     UIElement renameWindow = UIDialogFactory.getTextInput(p,
-                            t.get("TC_DIALOG_AREA_RENAME_TITLE", p),
+                            t.get("tc.dialog.area.rename.title", p),
                             area.getName(), (String v) -> {
                                 if (v.isEmpty())
                                     onCancel.onCall(p);
@@ -203,15 +201,14 @@ public class LandClaimGUI {
                                     // "UPDATE areas SET name ='" + v.replace("'", "''") + "' WHERE id="
                                     // + area.getID());
                                     // }
-                                    p.sendTextMessage(t.get("TC_AREA_RENNAMED", p)
+                                    p.sendTextMessage(t.get("tc.area.rennamed", p)
                                             .replace("PH_AREA_NAME", v)
                                             .replace("PH_OLD_NAME",
                                                     currentName != null ? currentName : "Unnamed Area"));
                                 }
                             }, onCancel);
 
-                    p.addUIElement(renameWindow, UITarget.HUD);
-                    CursorManager.show(p);
+                    p.addUIElement(renameWindow, UITarget.Modal);
                     p.hideRadialMenu(false);
 
                 });
@@ -219,22 +216,21 @@ public class LandClaimGUI {
 
     private MenuItem menuItemRemoveArea(Player player, Area area, Callback<Player> onCancel) {
         return new MenuItem("zone-claim-delete",
-                t.get("TC_MENU_AREA_RELEASE", player),
+                t.get("tc.menu.area.release", player),
                 (p) -> {
                     UIElement confirmDialog = UIDialogFactory.getConfirmDangerDialog(p,
-                            t.get("TC_DIALOG_AREA_RELEASE_TITLE", p),
-                            t.get("TC_DIALOG_AREA_RELEASE_CONFIRM", p).replace("PH_AREA_NAME",
+                            t.get("tc.dialog.area.release.title", p),
+                            t.get("tc.dialog.area.release.confirm", p).replace("PH_AREA_NAME",
                                     area.getName() == null ? "Unnamed Area" : area.getName()),
                             (Boolean v) -> {
                                 if (v) {
                                     chunkClaimUtil.releaseArea(p, area);
                                     Area3DUtils.updateAreaFramesForAllPlayers();
-                                    p.sendTextMessage(t.get("TC_DIALOG_AREA_RELEASE_SUCCESS", p));
+                                    p.sendTextMessage(t.get("tc.dialog.area.release.success", p));
                                 }
                             }, onCancel);
 
-                    p.addUIElement(confirmDialog, UITarget.HUD);
-                    CursorManager.show(p);
+                    p.addUIElement(confirmDialog, UITarget.Modal);
                     p.hideRadialMenu(false);
 
                 });
@@ -242,10 +238,10 @@ public class LandClaimGUI {
 
     private MenuItem menuItemListAreaForSale(Player player, Area area, Callback<Player> onCancel) {
         return new MenuItem("zone-sale",
-                t.get("TC_MENU_AREA_SALE_LIST", player),
+                t.get("tc.menu.area.sale.list", player),
                 (p) -> {
                     UIElement priceWindow = UIDialogFactory.getTextInput(p,
-                            t.get("TC_DIALOG_AREA_SALE_LIST_TITLE", p),
+                            t.get("tc.dialog.area.sale.list.title", p),
                             ClaimModePolicy.allowsFreeAdministrativeTakeover(walletAvailable()) ? "0"
                                     : ClaimModePolicy.current() == ClaimMode.LAND_PRICING
                                             && LandClaim.landPriceService() != null
@@ -263,16 +259,16 @@ public class LandClaimGUI {
                                 if (price < 0 || (price == 0
                                         && !ClaimModePolicy.allowsFreeAdministrativeTakeover(walletAvailable()))
                                         || LandClaim.claimSaleListingService() == null) {
-                                    p.sendTextMessage(t.get("TC_AREA_SALE_INVALID_PRICE", p));
+                                    p.sendTextMessage(t.get("tc.area.sale.invalid.price", p));
                                     onCancel.onCall(p);
                                     return;
                                 }
                                 ClaimSaleListing listing = LandClaim.claimSaleListingService()
                                         .listForSale(p, area.getID(), price);
                                 if (listing == null) {
-                                    p.sendTextMessage(t.get("TC_AREA_SALE_LIST_FAILED", p));
+                                    p.sendTextMessage(t.get("tc.area.sale.list.failed", p));
                                 } else {
-                                    p.sendTextMessage(t.get("TC_AREA_SALE_LISTED", p)
+                                    p.sendTextMessage(t.get("tc.area.sale.listed", p)
                                             .replace("PH_AREA_NAME", areaName(area))
                                             .replace("PH_PRICE", String.valueOf(listing.price()))
                                             .replace("PH_CURRENCY", defaultCurrency()));
@@ -282,8 +278,7 @@ public class LandClaimGUI {
                             },
                             onCancel);
 
-                    p.addUIElement(priceWindow, UITarget.HUD);
-                    CursorManager.show(p);
+                    p.addUIElement(priceWindow, UITarget.Modal);
                     p.hideRadialMenu(false);
                 });
     }
@@ -291,18 +286,18 @@ public class LandClaimGUI {
     private MenuItem menuItemWithdrawAreaSale(Player player, Area area, ClaimSaleListing listing,
             Callback<Player> onCancel) {
         return new MenuItem("zone-claim-delete",
-                t.get("TC_MENU_AREA_SALE_WITHDRAW", player),
+                t.get("tc.menu.area.sale.withdraw", player),
                 (p) -> {
                     UIElement confirmDialog = UIDialogFactory.getConfirmDialog(p,
-                            t.get("TC_DIALOG_AREA_SALE_WITHDRAW_TITLE", p),
-                            t.get("TC_DIALOG_AREA_SALE_WITHDRAW_CONFIRM", p)
+                            t.get("tc.dialog.area.sale.withdraw.title", p),
+                            t.get("tc.dialog.area.sale.withdraw.confirm", p)
                                     .replace("PH_AREA_NAME", areaName(area))
                                     .replace("PH_PRICE", String.valueOf(listing.price()))
                                     .replace("PH_CURRENCY", defaultCurrency()),
                             (Boolean v) -> {
                                 if (v && LandClaim.claimSaleListingService() != null
                                         && LandClaim.claimSaleListingService().withdrawActiveListing(area.getID())) {
-                                    p.sendTextMessage(t.get("TC_AREA_SALE_WITHDRAWN", p)
+                                    p.sendTextMessage(t.get("tc.area.sale.withdrawn", p)
                                             .replace("PH_AREA_NAME", areaName(area)));
                                     Area3DUtils.updateAreaFramesForAllPlayers();
                                 }
@@ -310,19 +305,18 @@ public class LandClaimGUI {
                             },
                             onCancel);
 
-                    p.addUIElement(confirmDialog, UITarget.HUD);
-                    CursorManager.show(p);
+                    p.addUIElement(confirmDialog, UITarget.Modal);
                     p.hideRadialMenu(false);
                 });
     }
 
     private MenuItem menuItemBuyArea(Player player, Area area, ClaimSaleListing listing, Callback<Player> onCancel) {
         return new MenuItem("zone-sale",
-                t.get("TC_MENU_AREA_SALE_BUY", player),
+                t.get("tc.menu.area.sale.buy", player),
                 (p) -> {
                     UIElement confirmDialog = UIDialogFactory.getConfirmDialog(p,
-                            t.get("TC_DIALOG_AREA_SALE_BUY_TITLE", p),
-                            t.get("TC_DIALOG_AREA_SALE_BUY_CONFIRM", p)
+                            t.get("tc.dialog.area.sale.buy.title", p),
+                            t.get("tc.dialog.area.sale.buy.confirm", p)
                                     .replace("PH_AREA_NAME", areaName(area))
                                     .replace("PH_PRICE", String.valueOf(listing.price()))
                                     .replace("PH_CURRENCY", defaultCurrency()),
@@ -334,32 +328,31 @@ public class LandClaimGUI {
                             },
                             onCancel);
 
-                    p.addUIElement(confirmDialog, UITarget.HUD);
-                    CursorManager.show(p);
+                    p.addUIElement(confirmDialog, UITarget.Modal);
                     p.hideRadialMenu(false);
                 });
     }
 
     private void purchaseArea(Player buyer, Area area, ClaimSaleListing listing) {
         if (LandClaim.claimSaleListingService() == null) {
-            buyer.sendTextMessage(t.get("TC_AREA_SALE_PURCHASE_STALE", buyer));
+            buyer.sendTextMessage(t.get("tc.area.sale.purchase.stale", buyer));
             return;
         }
         if (listing.price() > 0 && !walletAvailable()) {
-            buyer.sendTextMessage(t.get("TC_AREA_SALE_PURCHASE_WALLET_MISSING", buyer));
+            buyer.sendTextMessage(t.get("tc.area.sale.purchase.wallet.missing", buyer));
             return;
         }
         ClaimSaleListing currentListing = activeSaleListing(area);
         if (currentListing == null || currentListing.id() != listing.id()) {
-            buyer.sendTextMessage(t.get("TC_AREA_SALE_PURCHASE_STALE", buyer));
+            buyer.sendTextMessage(t.get("tc.area.sale.purchase.stale", buyer));
             return;
         }
         if (currentListing.ownerDbId() == buyer.getDbID()) {
-            buyer.sendTextMessage(t.get("TC_AREA_SALE_PURCHASE_SELF", buyer));
+            buyer.sendTextMessage(t.get("tc.area.sale.purchase.self", buyer));
             return;
         }
         if (!canBuyAreaWithinLimit(buyer, area)) {
-            buyer.sendTextMessage(t.get("TC_AREA_SALE_PURCHASE_LIMIT", buyer)
+            buyer.sendTextMessage(t.get("tc.area.sale.purchase.limit", buyer)
                     .replace("PH_MAX_CLAIMS", String.valueOf(chunkClaimUtil.getPlayerMaxClaims(buyer))));
             return;
         }
@@ -377,7 +370,7 @@ public class LandClaimGUI {
 
         if (!chunkClaimUtil.transferAreaOwnership(area, buyer)) {
             refundBuyer(buyer, currentListing.price(), reason);
-            buyer.sendTextMessage(t.get("TC_AREA_SALE_PURCHASE_TRANSFER_FAILED", buyer));
+            buyer.sendTextMessage(t.get("tc.area.sale.purchase.transfer.failed", buyer));
             return;
         }
 
@@ -388,7 +381,7 @@ public class LandClaimGUI {
         if (!sellerCredit.success()) {
             rollbackAreaTransfer(area, currentListing, originalPermissions);
             refundBuyer(buyer, currentListing.price(), reason);
-            buyer.sendTextMessage(t.get("TC_AREA_SALE_PURCHASE_SELLER_CREDIT_FAILED", buyer)
+            buyer.sendTextMessage(t.get("tc.area.sale.purchase.seller.credit.failed", buyer)
                     .replace("PH_REASON", walletMessage(sellerCredit)));
             Area3DUtils.updateAreaFramesForAllPlayers();
             return;
@@ -406,18 +399,18 @@ public class LandClaimGUI {
                 LandClaim.logger().error("Could not reverse seller credit for failed claim purchase on area "
                         + area.getID() + ": " + walletMessage(sellerDebit));
             }
-            buyer.sendTextMessage(t.get("TC_AREA_SALE_PURCHASE_LISTING_UPDATE_FAILED", buyer));
+            buyer.sendTextMessage(t.get("tc.area.sale.purchase.listing.update.failed", buyer));
             Area3DUtils.updateAreaFramesForAllPlayers();
             return;
         }
 
-        buyer.sendTextMessage(t.get("TC_AREA_SALE_PURCHASED", buyer)
+        buyer.sendTextMessage(t.get("tc.area.sale.purchased", buyer)
                 .replace("PH_AREA_NAME", displayAreaName)
                 .replace("PH_PRICE", String.valueOf(currentListing.price()))
                 .replace("PH_CURRENCY", defaultCurrency()));
         Player seller = Server.getPlayerByDbID(currentListing.ownerDbId());
         if (seller != null) {
-            seller.sendTextMessage(t.get("TC_AREA_SALE_SOLD", seller)
+            seller.sendTextMessage(t.get("tc.area.sale.sold", seller)
                     .replace("PH_AREA_NAME", displayAreaName)
                     .replace("PH_PRICE", String.valueOf(currentListing.price()))
                     .replace("PH_CURRENCY", defaultCurrency())
@@ -477,7 +470,7 @@ public class LandClaimGUI {
     private void announceAreaPurchase(Area area, Player buyer, ClaimSaleListing listing) {
         String sellerName = Server.getLastKnownPlayerName(listing.ownerDbId());
         String resolvedSellerName = sellerName == null || sellerName.isBlank() ? "Unknown" : sellerName;
-        String message = t.get("TC_DISCORD_AREA_SOLD", DiscordConnect.botLang())
+        String message = t.get("tc.discord.area.sold", DiscordConnect.botLang())
                 .replace("PH_AREA_NAME", areaName(area))
                 .replace("PH_PRICE", String.valueOf(listing.price()))
                 .replace("PH_BUYER_NAME", buyer.getName())
@@ -488,7 +481,7 @@ public class LandClaimGUI {
         }
         for (Player onlinePlayer : Server.getAllPlayers()) {
             if (!onlinePlayer.equals(buyer)) {
-                onlinePlayer.sendTextMessage(t.get("TC_ANNOUNCEMENT_AREA_SOLD", onlinePlayer)
+                onlinePlayer.sendTextMessage(t.get("tc.announcement.area.sold", onlinePlayer)
                         .replace("PH_AREA_NAME", areaName(area))
                         .replace("PH_PRICE", String.valueOf(listing.price()))
                         .replace("PH_BUYER_NAME", buyer.getName())
@@ -575,7 +568,7 @@ public class LandClaimGUI {
                                             .orElse(null);
                             if (city == null || LandClaim.cityService().createLeasehold(createdArea, city) == null) {
                                 Server.removeArea(createdArea);
-                                p.sendTextMessage(t.get("TC_CITY_LEASEHOLD_CREATE_FAILED", p));
+                                p.sendTextMessage(t.get("tc.city.leasehold.create.failed", p));
                                 openSpecialAreaMenu(uiPlayer, onBack);
                                 return;
                             }
@@ -600,16 +593,16 @@ public class LandClaimGUI {
                             : ClaimModePolicy.current() == ClaimMode.LAND_PRICING
                                     ? chunkClaimUtil.landExpansionPrice(area, direction)
                                     : chunkClaimUtil.cityPrivateExpansionPrice(area, direction);
-                    String confirmText = t.get(paidExpansion ? "TC_DIALOG_AREA_EXPAND_PAID_CONFIRM"
-                            : "TC_DIALOG_AREA_EXPAND_CONFIRM", p)
+                    String confirmText = t.get(paidExpansion ? "tc.dialog.area.expand.paid.confirm"
+                            : "tc.dialog.area.expand.confirm", p)
                                     .replace("PH_AREA_NAME", area.getName() == null ? "Unnamed Area" : area.getName())
                                     .replace("PH_DIRECTION", t.get("TC_DIRECTION_" + direction.name().toUpperCase(), p))
                                     .replace("PH_PRICE", String.valueOf(expansionPrice))
                                     .replace("PH_CURRENCY", defaultCurrency());
                     UIElement confirmDialog = UIDialogFactory.getConfirmDangerDialog(p,
-                            t.get("TC_DIALOG_AREA_EXPAND_TITLE", p),
+                            t.get("tc.dialog.area.expand.title", p),
                             confirmText,
-                            t.get(paidExpansion ? "TC_UI_BTN_EXPAND_PAID" : "TC_UI_BTN_YES", p),
+                            t.get(paidExpansion ? "tc.ui.btn.expand.paid" : "tc.ui.btn.yes", p),
                             (Boolean v) -> {
                                 if (v) {
                                     Area expandedArea = chunkClaimUtil.expandClaim(area, direction, p);
@@ -618,13 +611,12 @@ public class LandClaimGUI {
                                         Area3DUtils.updateAreaFramesForAllPlayers();
                                         openExpandAreaMenu(p, onBack, expandedArea);
                                     } else {
-                                        // p.sendTextMessage(t.get("TC_DIALOG_AREA_EXPAND_FAILED", p));
+                                        // p.sendTextMessage(t.get("tc.dialog.area.expand.failed", p));
                                     }
                                 }
                             }, onCancel);
 
-                    p.addUIElement(confirmDialog, UITarget.HUD);
-                    CursorManager.show(p);
+                    p.addUIElement(confirmDialog, UITarget.Modal);
                     p.hideRadialMenu(false);
 
                 });
@@ -632,16 +624,14 @@ public class LandClaimGUI {
 
     private MenuItem menuItemPermissionManager(Player player, Area area, Callback<Player> onResponse) {
         return new MenuItem("menu-zone-permissions",
-                t.get("TC_MENU_AREA_PERMISSIONS", player),
+                t.get("tc.menu.area.permissions", player),
                 (p) -> {
                     UIElement overlay = (UIElement) p.getAttribute(PermissionOverlay.ATTRIBUTE_KEY);
                     if (overlay != null) {
                         p.removeUIElement(overlay);
-                        CursorManager.hide(p);
                     }
                     PermissionOverlay permissionOverlay = new PermissionOverlay(area, p, onResponse);
-                    p.addUIElement(permissionOverlay, UITarget.HUD);
-                    CursorManager.show(p);
+                    p.addUIElement(permissionOverlay, UITarget.Modal);
                     p.setAttribute(PermissionOverlay.ATTRIBUTE_KEY, permissionOverlay);
 
                     p.hideRadialMenu(false);
@@ -651,85 +641,80 @@ public class LandClaimGUI {
 
     private MenuItem menuItemAdminCleanup(Player uiPlayer, Callback<Player> onResponse) {
         return new MenuItem("menu-zone-management",
-                t.get("TC_MENU_ADMIN_CLEANUP", uiPlayer),
+                t.get("tc.menu.admin.cleanup", uiPlayer),
                 (p) -> {
                     UIElement overlay = (UIElement) p.getAttribute(AdminCleanupOverlay.ATTRIBUTE_KEY);
                     if (overlay != null) {
                         p.removeUIElement(overlay);
-                        CursorManager.hide(p);
                     }
                     AdminCleanupOverlay cleanupOverlay = new AdminCleanupOverlay(p, cleanupService, onResponse);
-                    p.addUIElement(cleanupOverlay, UITarget.HUD);
-                    CursorManager.show(p);
+                    p.addUIElement(cleanupOverlay, UITarget.Modal);
                     p.setAttribute(AdminCleanupOverlay.ATTRIBUTE_KEY, cleanupOverlay);
                     p.hideRadialMenu(false);
                 });
     }
 
     private MenuItem menuItemCityManagement(Player player, CityRecord city, Callback<Player> onClose) {
-        return new MenuItem("zone-city-core", t.get("TC_MENU_CITY_MANAGEMENT", player), p -> {
+        return new MenuItem("zone-city-core", t.get("tc.menu.city.management", player), p -> {
             UIElement existing = (UIElement) p.getAttribute(CityManagementOverlay.ATTRIBUTE_KEY);
             if (existing != null) p.removeUIElement(existing);
             CityManagementOverlay overlay = new CityManagementOverlay(p, LandClaim.cityService(),
                     LandClaim.economyIntegration(), city.areaId(), onClose);
-            p.addUIElement(overlay, UITarget.HUD);
+            p.addUIElement(overlay, UITarget.Modal);
             p.setAttribute(CityManagementOverlay.ATTRIBUTE_KEY, overlay);
-            CursorManager.show(p);
             p.hideRadialMenu(false);
         });
     }
 
     private MenuItem menuItemLeaseholdManagement(Player player, Area area, Callback<Player> onClose) {
-        return new MenuItem("zone-city-leasehold", t.get("TC_MENU_CITY_LEASE_ADMIN", player), p -> {
+        return new MenuItem("zone-city-leasehold", t.get("tc.menu.city.lease.admin", player), p -> {
             UIElement existing = (UIElement) p.getAttribute(LeaseholdManagementOverlay.ATTRIBUTE_KEY);
             if (existing != null) p.removeUIElement(existing);
             LeaseholdManagementOverlay overlay = new LeaseholdManagementOverlay(p, area, LandClaim.cityService(),
                     LandClaim.economyIntegration(), onClose);
-            p.addUIElement(overlay, UITarget.HUD);
+            p.addUIElement(overlay, UITarget.Modal);
             p.setAttribute(LeaseholdManagementOverlay.ATTRIBUTE_KEY, overlay);
-            CursorManager.show(p);
             p.hideRadialMenu(false);
         });
     }
 
     private MenuItem menuItemAreaConfig(Player player, Callback<Player> onResponse) {
         return new MenuItem("zone-renew-create",
-                t.get("TC_MENU_AREA_CONFIG", player),
+                t.get("tc.menu.area.config", player),
                 (p) -> openCurrentAreaConfig(p, onResponse));
     }
 
     private MenuItem menuItemLeaseAction(Player player, Area area, LeaseholdRecord lease, boolean purchase,
             Callback<Player> onCancel) {
-        String label = purchase ? t.get("TC_MENU_CITY_LEASE_BUY", player) : t.get("TC_MENU_CITY_LEASE_RENT", player);
+        String label = purchase ? t.get("tc.menu.city.lease.buy", player) : t.get("tc.menu.city.lease.rent", player);
         long amount = purchase ? Math.max(0L, lease.purchasePrice() - lease.paidRentCredit()) : lease.dailyRent();
         return new MenuItem(purchase ? "zone-sale" : "zone-city-leasehold", label + " (" + amount + ")", p -> {
             UIElement confirm = UIDialogFactory.getConfirmDialog(p, label,
-                    t.get("TC_DIALOG_CITY_LEASE_CONFIRM", p)
+                    t.get("tc.dialog.city.lease.confirm", p)
                             .replace("PH_AREA_NAME", areaName(area)).replace("PH_PRICE", String.valueOf(amount)),
                     accepted -> {
                         if (accepted) acquireLeasehold(p, area, lease, purchase);
                         onCancel.onCall(p);
                     }, onCancel);
-            p.addUIElement(confirm, UITarget.HUD);
-            CursorManager.show(p);
+            p.addUIElement(confirm, UITarget.Modal);
             p.hideRadialMenu(false);
         });
     }
 
     private void acquireLeasehold(Player player, Area area, LeaseholdRecord lease, boolean purchase) {
         if (ClaimModePolicy.current() != ClaimMode.CITY || !walletAvailable() || LandClaim.cityService() == null) {
-            player.sendTextMessage(t.get("TC_CLAIM_ERROR_WALLET_REQUIRED", player));
+            player.sendTextMessage(t.get("tc.claim.error.wallet.required", player));
             return;
         }
         boolean sameOwner = lease.ownerDbId() == player.getDbID();
         if (lease.occupied() && !(sameOwner && lease.rented() && purchase)) {
-            player.sendTextMessage(t.get("TC_CITY_LEASE_OCCUPIED", player));
+            player.sendTextMessage(t.get("tc.city.lease.occupied", player));
             return;
         }
         if ((purchase && !lease.purchaseAllowed()) || (!purchase && !lease.rentAllowed())) return;
         int chunks = ChunkClaimUtil.areaToChunks(area).size();
         if (!sameOwner && chunkClaimUtil.getPlayerClaimCount(player) + chunks > chunkClaimUtil.getPlayerMaxClaims(player)) {
-            player.sendTextMessage(t.get("TC_CLAIM_ERROR_LIMIT", player)
+            player.sendTextMessage(t.get("tc.claim.error.limit", player)
                     .replace("PH_MAX_CLAIMS", String.valueOf(chunkClaimUtil.getPlayerMaxClaims(player))));
             return;
         }
@@ -740,7 +725,7 @@ public class LandClaimGUI {
         EconomyIntegration.WalletOperationResult payment = amount == 0
                 ? new EconomyIntegration.WalletOperationResult(true, "")
                 : LandClaim.economyIntegration().transferPlayerToCity(player.getDbID(), lease.cityAreaId(), amount,
-                        t.get(purchase ? "TC_WALLET_CITY_LEASE_PURCHASE" : "TC_WALLET_CITY_LEASE_RENT",
+                        t.get(purchase ? "tc.wallet.city.lease.purchase" : "tc.wallet.city.lease.rent",
                                 LandClaim.economyIntegration().walletAuditLanguage())
                                 .replace("PH_AREA_NAME", areaName(area))
                                 .replace("PH_AREA_ID", String.valueOf(area.getID())), correlation);
@@ -756,33 +741,32 @@ public class LandClaimGUI {
         if (!persisted) {
             if (amount > 0) {
                 EconomyIntegration.WalletOperationResult reversal = LandClaim.economyIntegration().reverseTransfer(
-                        correlation, correlation + ":reversal", t.get("TC_WALLET_CITY_LEASE_ROLLBACK",
+                        correlation, correlation + ":reversal", t.get("tc.wallet.city.lease.rollback",
                                 LandClaim.economyIntegration().walletAuditLanguage()));
                 LandClaim.cityService().updateEconomyOperation(correlation,
                         reversal.success() ? "REVERSED" : "RECONCILIATION_REQUIRED", area.getID(), reversal.message());
             }
-            player.sendTextMessage(t.get("TC_CITY_LEASE_UPDATE_FAILED", player));
+            player.sendTextMessage(t.get("tc.city.lease.update.failed", player));
             return;
         }
         clearAreaPermissions(area);
         area.setPlayerPermission(player.getDbID(), s.ownerAreaPermission);
         if (amount > 0) LandClaim.cityService().updateEconomyOperation(correlation, "COMPLETED", area.getID(), "");
-        player.sendTextMessage(t.get(purchase ? "TC_CITY_LEASE_PURCHASED" : "TC_CITY_LEASE_RENTED", player)
+        player.sendTextMessage(t.get(purchase ? "tc.city.lease.purchased" : "tc.city.lease.rented", player)
                 .replace("PH_AREA_NAME", areaName(area)));
     }
 
     private MenuItem menuItemReturnLeasehold(Player player, Area area, Callback<Player> onCancel) {
-        return new MenuItem("zone-claim-delete", t.get("TC_MENU_CITY_LEASE_RETURN", player), p -> {
-            UIElement confirm = UIDialogFactory.getConfirmDangerDialog(p, t.get("TC_MENU_CITY_LEASE_RETURN", p),
-                    t.get("TC_DIALOG_CITY_LEASE_RETURN", p).replace("PH_AREA_NAME", areaName(area)), accepted -> {
+        return new MenuItem("zone-claim-delete", t.get("tc.menu.city.lease.return", player), p -> {
+            UIElement confirm = UIDialogFactory.getConfirmDangerDialog(p, t.get("tc.menu.city.lease.return", p),
+                    t.get("tc.dialog.city.lease.return", p).replace("PH_AREA_NAME", areaName(area)), accepted -> {
                         if (accepted && LandClaim.cityService() != null && LandClaim.cityService().clearLeasehold(area.getID())) {
                             clearAreaPermissions(area);
-                            p.sendTextMessage(t.get("TC_CITY_LEASE_RETURNED", p).replace("PH_AREA_NAME", areaName(area)));
+                            p.sendTextMessage(t.get("tc.city.lease.returned", p).replace("PH_AREA_NAME", areaName(area)));
                         }
                         onCancel.onCall(p);
                     }, onCancel);
-            p.addUIElement(confirm, UITarget.HUD);
-            CursorManager.show(p);
+            p.addUIElement(confirm, UITarget.Modal);
             p.hideRadialMenu(false);
         });
     }
@@ -798,7 +782,7 @@ public class LandClaimGUI {
         try { price = Math.multiplyExact(chunks, Math.max(0L, s.cityExpansionBasePrice)); }
         catch (ArithmeticException ex) { price = Long.MAX_VALUE; }
         long safePrice = price > LandPriceService.MAX_SAFE_INTEGER ? -1L : price;
-        return new MenuItem("menu-expand-zone", t.get("TC_MENU_CITY_EXPAND", player)
+        return new MenuItem("menu-expand-zone", t.get("tc.menu.city.expand", player)
                 .replace("PH_PRICE", safePrice < 0 ? "N/A" : String.valueOf(safePrice)), p -> {
             de.omegazirkel.risingworld.landclaim.db.CityService.ExpansionEligibility eligibility =
                     LandClaim.cityService().expansionEligibility(city.areaId());
@@ -808,45 +792,44 @@ public class LandClaimGUI {
                 return;
             }
             if (safePrice < 0 || LandClaim.economyIntegration().cityBalance(city.areaId()) < safePrice) {
-                p.sendTextMessage(t.get("TC_CITY_EXPAND_FUNDS", p));
+                p.sendTextMessage(t.get("tc.city.expand.funds", p));
                 onCancel.onCall(p);
                 return;
             }
-            UIElement confirm = UIDialogFactory.getConfirmDangerDialog(p, t.get("TC_DIALOG_CITY_EXPAND_TITLE", p),
-                    t.get("TC_DIALOG_CITY_EXPAND_CONFIRM", p).replace("PH_PRICE", String.valueOf(safePrice)), accepted -> {
+            UIElement confirm = UIDialogFactory.getConfirmDangerDialog(p, t.get("tc.dialog.city.expand.title", p),
+                    t.get("tc.dialog.city.expand.confirm", p).replace("PH_PRICE", String.valueOf(safePrice)), accepted -> {
                         if (accepted) expandCity(p, city, safePrice);
                         onCancel.onCall(p);
                     }, onCancel);
-            p.addUIElement(confirm, UITarget.HUD);
-            CursorManager.show(p);
+            p.addUIElement(confirm, UITarget.Modal);
             p.hideRadialMenu(false);
         });
     }
 
     private MenuItem menuItemDeleteCity(Player player, Area core, CityRecord city, Callback<Player> onCancel) {
-        return new MenuItem("zone-claim-delete", t.get("TC_MENU_CITY_DELETE", player), p -> {
-            UIElement confirm = UIDialogFactory.getConfirmDangerDialog(p, t.get("TC_MENU_CITY_DELETE", p),
-                    t.get("TC_DIALOG_CITY_DELETE", p).replace("PH_CITY_NAME", city.name()), accepted -> {
+        return new MenuItem("zone-claim-delete", t.get("tc.menu.city.delete", player), p -> {
+            UIElement confirm = UIDialogFactory.getConfirmDangerDialog(p, t.get("tc.menu.city.delete", p),
+                    t.get("tc.dialog.city.delete", p).replace("PH_CITY_NAME", city.name()), accepted -> {
                         if (accepted) deleteCity(p, core, city);
                         onCancel.onCall(p);
                     }, onCancel);
-            p.addUIElement(confirm, UITarget.HUD); CursorManager.show(p); p.hideRadialMenu(false);
+            p.addUIElement(confirm, UITarget.Modal); p.hideRadialMenu(false);
         });
     }
 
     private void deleteCity(Player player, Area core, CityRecord city) {
         List<LeaseholdRecord> leases = LandClaim.cityService().leaseholdsForCity(city.areaId());
         if (leases.stream().anyMatch(LeaseholdRecord::occupied)) {
-            player.showErrorMessageBox(t.get("TC_MENU_CITY_DELETE", player), t.get("TC_CITY_DELETE_OCCUPIED", player));
+            player.showErrorMessageBox(t.get("tc.menu.city.delete", player), t.get("tc.city.delete.occupied", player));
             return;
         }
         String correlation = "city-delete:" + city.areaId();
         EconomyIntegration.WalletOperationResult closed = LandClaim.economyIntegration().closeCityAccount(
-                city.areaId(), t.get("TC_WALLET_CITY_DISSOLUTION", LandClaim.economyIntegration().walletAuditLanguage())
+                city.areaId(), t.get("tc.wallet.city.dissolution", LandClaim.economyIntegration().walletAuditLanguage())
                         .replace("PH_CITY_NAME", city.name()).replace("PH_AREA_ID", String.valueOf(city.areaId())),
                 correlation);
         if (!closed.success()) {
-            player.showErrorMessageBox(t.get("TC_MENU_CITY_DELETE", player), t.get("TC_CITY_DELETE_ACCOUNT_FAILED", player)
+            player.showErrorMessageBox(t.get("tc.menu.city.delete", player), t.get("tc.city.delete.account.failed", player)
                     .replace("PH_REASON", closed.message()));
             return;
         }
@@ -857,14 +840,14 @@ public class LandClaimGUI {
         }
         LandClaim.cityService().deleteCityRecord(city.areaId());
         Server.removeArea(core);
-        player.sendTextMessage(t.get("TC_CITY_DELETED", player).replace("PH_CITY_NAME", city.name()));
+        player.sendTextMessage(t.get("tc.city.deleted", player).replace("PH_CITY_NAME", city.name()));
     }
 
     private MenuItem menuItemDeleteLeasehold(Player player, Area area, LeaseholdRecord lease,
             Callback<Player> onCancel) {
-        return new MenuItem("zone-claim-delete", t.get("TC_MENU_CITY_LEASE_DELETE", player), p -> {
-            UIElement confirm = UIDialogFactory.getConfirmDangerDialog(p, t.get("TC_MENU_CITY_LEASE_DELETE", p),
-                    t.get("TC_DIALOG_CITY_LEASE_DELETE", p).replace("PH_AREA_NAME", areaName(area)), accepted -> {
+        return new MenuItem("zone-claim-delete", t.get("tc.menu.city.lease.delete", player), p -> {
+            UIElement confirm = UIDialogFactory.getConfirmDangerDialog(p, t.get("tc.menu.city.lease.delete", p),
+                    t.get("tc.dialog.city.lease.delete", p).replace("PH_AREA_NAME", areaName(area)), accepted -> {
                         if (accepted) {
                             if (lease.occupied()) {
                                 Player owner = Server.getPlayerByDbID(lease.ownerDbId());
@@ -872,24 +855,24 @@ public class LandClaimGUI {
                                 String language = owner == null
                                         ? LandClaim.cityService().playerLanguage(lease.ownerDbId()).orElse("en")
                                         : de.omegazirkel.risingworld.OZTools.getPlayerLanguage(owner);
-                                String notice = t.get("TC_CITY_LEASE_EXPROPRIATED", language)
+                                String notice = t.get("tc.city.lease.expropriated", language)
                                         .replace("PH_AREA_NAME", areaName(area));
                                 long pendingId = LandClaim.cityService().addPendingNotification(lease.ownerDbId(),
-                                        "TC_CITY_LEASE_EXPROPRIATED", areaName(area));
+                                        "tc.city.lease.expropriated", areaName(area));
                                 boolean sent = LandClaim.economyIntegration().sendMail(lease.ownerDbId(),
                                         ownerName == null ? "Player" : ownerName,
-                                        t.get("TC_CITY_MAIL_SUBJECT", language),
+                                        t.get("tc.city.mail.subject", language),
                                         notice, "city-expropriation:" + area.getID() + ":" + UUID.randomUUID());
                                 if (sent && pendingId > 0) LandClaim.cityService().deletePendingNotification(pendingId);
                             }
                             clearAreaPermissions(area);
                             LandClaim.cityService().deleteLeaseholdRecord(area.getID());
                             Server.removeArea(area);
-                            p.sendTextMessage(t.get("TC_CITY_LEASE_DELETED", p));
+                            p.sendTextMessage(t.get("tc.city.lease.deleted", p));
                         }
                         onCancel.onCall(p);
                     }, onCancel);
-            p.addUIElement(confirm, UITarget.HUD); CursorManager.show(p); p.hideRadialMenu(false);
+            p.addUIElement(confirm, UITarget.Modal); p.hideRadialMenu(false);
         });
     }
 
@@ -898,16 +881,16 @@ public class LandClaimGUI {
         EconomyIntegration.WalletOperationResult payment = price == 0
                 ? new EconomyIntegration.WalletOperationResult(true, "")
                 : LandClaim.economyIntegration().transferCityToWorld(city.areaId(), price,
-                        t.get("TC_WALLET_CITY_EXPANSION", LandClaim.economyIntegration().walletAuditLanguage())
+                        t.get("tc.wallet.city.expansion", LandClaim.economyIntegration().walletAuditLanguage())
                                 .replace("PH_CITY_NAME", city.name()), correlation);
         if (!payment.success() || !LandClaim.cityService().expandCity(city.areaId())) {
             if (payment.success() && price > 0) LandClaim.economyIntegration().reverseTransfer(
-                    correlation, correlation + ":reversal", t.get("TC_WALLET_CITY_EXPANSION_ROLLBACK",
+                    correlation, correlation + ":reversal", t.get("tc.wallet.city.expansion.rollback",
                             LandClaim.economyIntegration().walletAuditLanguage()));
-            player.sendTextMessage(t.get("TC_CITY_EXPAND_FAILED", player));
+            player.sendTextMessage(t.get("tc.city.expand.failed", player));
             return;
         }
-        player.sendTextMessage(t.get("TC_CITY_EXPANDED", player).replace("PH_RADIUS", String.valueOf(city.radius() + 1)));
+        player.sendTextMessage(t.get("tc.city.expanded", player).replace("PH_RADIUS", String.valueOf(city.radius() + 1)));
     }
 
     private String cityExpansionBlockerText(Player player,
@@ -918,15 +901,15 @@ public class LandClaimGUI {
     private void showCityCreationError(Player player, String blocker, String detail) {
         String key = "TC_CITY_CREATE_FAILED_" + blocker;
         String message = t.get(key, player);
-        if (message.equals(key)) message = t.get("TC_CITY_CREATE_FAILED", player);
-        player.showErrorMessageBox(t.get("TC_DIALOG_CITY_CREATE_TITLE", player),
+        if (message.equals(key)) message = t.get("tc.city.create.failed", player);
+        player.showErrorMessageBox(t.get("tc.dialog.city.create.title", player),
                 message.replace("PH_REASON", detail == null || detail.isBlank() ? "-" : detail));
     }
 
     public void openCurrentAreaConfig(Player player, Callback<Player> onCancel) {
         Area area = player.getCurrentArea();
         if (!isRenewArea(area)) {
-            player.sendTextMessage(t.get("TC_AREA_CONFIG_UNAVAILABLE", player));
+            player.sendTextMessage(t.get("tc.area.config.unavailable", player));
             onCancel.onCall(player);
             return;
         }
@@ -935,7 +918,7 @@ public class LandClaimGUI {
 
     private void openRenewZoneConfig(Player player, Area area, Callback<Player> onCancel) {
         if (LandClaim.renewZoneConfigService() == null) {
-            player.sendTextMessage(t.get("TC_AREA_CONFIG_UNAVAILABLE", player));
+            player.sendTextMessage(t.get("tc.area.config.unavailable", player));
             onCancel.onCall(player);
             return;
         }
@@ -943,12 +926,12 @@ public class LandClaimGUI {
                 .find(area.getID())
                 .orElse(new RenewZoneConfig(area.getID(), s.renewZoneDefaultIntervalHours, 0L));
         UIElement intervalWindow = UIDialogFactory.getTextInput(player,
-                t.get("TC_DIALOG_RENEW_ZONE_CONFIG_TITLE", player),
+                t.get("tc.dialog.renew.zone.config.title", player),
                 String.valueOf(config.intervalHours()),
                 (String value) -> {
                     int intervalHours = parsePositiveInt(value);
                     if (intervalHours <= 0) {
-                        player.sendTextMessage(t.get("TC_RENEW_ZONE_CONFIG_INVALID_INTERVAL", player));
+                        player.sendTextMessage(t.get("tc.renew.zone.config.invalid.interval", player));
                         onCancel.onCall(player);
                         return;
                     }
@@ -957,17 +940,16 @@ public class LandClaimGUI {
                             intervalHours,
                             config.lastResetAt());
                     if (saved == null) {
-                        player.sendTextMessage(t.get("TC_RENEW_ZONE_CONFIG_SAVE_FAILED", player));
+                        player.sendTextMessage(t.get("tc.renew.zone.config.save.failed", player));
                     } else {
-                        player.sendTextMessage(t.get("TC_RENEW_ZONE_CONFIG_SAVED", player)
+                        player.sendTextMessage(t.get("tc.renew.zone.config.saved", player)
                                 .replace("PH_INTERVAL_HOURS", String.valueOf(saved.intervalHours())));
                     }
                     onCancel.onCall(player);
                 },
                 onCancel);
 
-        player.addUIElement(intervalWindow, UITarget.HUD);
-        CursorManager.show(player);
+        player.addUIElement(intervalWindow, UITarget.Modal);
         player.hideRadialMenu(false);
     }
 
@@ -981,36 +963,36 @@ public class LandClaimGUI {
         if (currentArea == null) {
             Area virtualArea = ChunkClaimUtil.getVirtualAreaFromChunkVector(uiPlayer.getChunkPosition());
             // special areas
-            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "zone-neutral-create", "TC_MENU_SPECIAL_AREA_CREATE",
+            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "zone-neutral-create", "tc.menu.special.area.create",
                     virtualArea,
                     s.specialAreaPermission, onBack));
-            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "zone-static-create", "TC_MENU_SPECIAL_AREA_STATIC",
+            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "zone-static-create", "tc.menu.special.area.static",
                     virtualArea, s.specialStaticAreaPermission, onBack));
-            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "zone-combat-create", "TC_MENU_SPECIAL_AREA_PVP",
+            menuItems.add(menuItemCreateSpecialArea(uiPlayer, "zone-combat-create", "tc.menu.special.area.pvp",
                     virtualArea, s.specialPvPAreaPermission, onBack));
             menuItems.add(
-                    menuItemCreateSpecialArea(uiPlayer, "zone-rest-create", "TC_MENU_SPECIAL_AREA_REST", virtualArea,
+                    menuItemCreateSpecialArea(uiPlayer, "zone-rest-create", "tc.menu.special.area.rest", virtualArea,
                             s.specialRestAreaPermission, onBack));
             menuItems
-                    .add(menuItemCreateSpecialArea(uiPlayer, "zone-trap-create", "TC_MENU_SPECIAL_AREA_TRAP",
+                    .add(menuItemCreateSpecialArea(uiPlayer, "zone-trap-create", "tc.menu.special.area.trap",
                             virtualArea,
                             s.specialTrapAreaPermission, onBack));
             menuItems
-                    .add(menuItemCreateSpecialArea(uiPlayer, "zone-renew-create", "TC_MENU_SPECIAL_AREA_RENEW",
+                    .add(menuItemCreateSpecialArea(uiPlayer, "zone-renew-create", "tc.menu.special.area.renew",
                             virtualArea,
                             s.specialRenewAreaPermission, onBack));
             if (ClaimModePolicy.current() == ClaimMode.CITY && walletAvailable()) {
-                menuItems.add(menuItemCreateSpecialArea(uiPlayer, "zone-city-core", "TC_MENU_CITY_CORE_CREATE",
+                menuItems.add(menuItemCreateSpecialArea(uiPlayer, "zone-city-core", "tc.menu.city.core.create",
                         virtualArea, s.specialCityCorePermission, onBack));
                 menuItems.add(menuItemCreateSpecialArea(uiPlayer, "zone-city-leasehold",
-                        "TC_MENU_CITY_LEASEHOLD_CREATE", virtualArea, s.specialCityLeaseholdPermission, onBack));
+                        "tc.menu.city.leasehold.create", virtualArea, s.specialCityLeaseholdPermission, onBack));
             }
         }
         // show extend menu if area exist
         if (currentArea != null && (LandClaim.cityService() == null
                 || LandClaim.cityService().findCity(currentArea.getID()).isEmpty())) {
             menuItems.add(new MenuItem("menu-expand-zone",
-                    t.get("TC_MENU_AREA_EXPAND_OPTION", uiPlayer),
+                    t.get("tc.menu.area.expand.option", uiPlayer),
                     (p) -> {
                         openExpandAreaMenu(p, onBackReopen);
                     }));
@@ -1036,7 +1018,7 @@ public class LandClaimGUI {
         if (developerMode) {
 
             menuItems.add(new MenuItem("menu-debug",
-                    t.get("TC_MENU_ADMIN_DEBUG", uiPlayer),
+                    t.get("tc.menu.admin.debug", uiPlayer),
                     (p) -> {
                         Area3DUtils.refreshAreaFramesForPlayer(p);
                         chunkClaimUtil.idleChunk(p);
@@ -1052,13 +1034,13 @@ public class LandClaimGUI {
                             p.sendTextMessage("no areas found Server.getAllAreas() == null");
                     }));
             menuItems.add(new MenuItem("tools",
-                    t.get("TC_MENU_ADMIN_SYNC_REPAIR", uiPlayer),
+                    t.get("tc.menu.admin.sync.repair", uiPlayer),
                     (p) -> {
                         if (p.isAdmin()) {
                             chunkClaimUtil.syncAndRepairAreas();
-                            p.sendTextMessage(t.get("TC_CMD_REPAIR_SUCCESS"));
+                            p.sendTextMessage(t.get("tc.cmd.repair.success"));
                         } else
-                            p.sendTextMessage(t.get("TC_CMD_REPAIR_ERR_PERMISSION"));
+                            p.sendTextMessage(t.get("tc.cmd.repair.err.permission"));
                         // if we do not reopen the menu it seems to be frozen and unclickable
                         openAdminMenu(p, onBack);
                     }));
@@ -1074,7 +1056,7 @@ public class LandClaimGUI {
                 menuItems.add(menuItemDeleteCity(uiPlayer, currentArea, city, onBackReopen));
             }
             if (ClaimModePolicy.current() == ClaimMode.ADMINISTRATIVE && Boolean.TRUE.equals(isDefaultArea)) {
-                menuItems.add(new MenuItem("menu-expand-zone", t.get("TC_MENU_AREA_EXPAND_OPTION", uiPlayer),
+                menuItems.add(new MenuItem("menu-expand-zone", t.get("tc.menu.area.expand.option", uiPlayer),
                         p -> openExpandAreaMenu(p, onBackReopen)));
             }
             if (ClaimModePolicy.current() == ClaimMode.CITY && lease != null) {
@@ -1090,7 +1072,7 @@ public class LandClaimGUI {
         }
         if (!isDefaultArea)
             menuItems.add(new MenuItem("menu-zone-special",
-                    t.get("TC_MENU_SPECIAL_AREA", uiPlayer),
+                    t.get("tc.menu.special.area", uiPlayer),
                     (p) -> openSpecialAreaMenu(p, onBackReopen)));
         LeaseholdRecord currentLease = LandClaim.cityService() == null || currentArea == null ? null
                 : LandClaim.cityService().findLeasehold(currentArea.getID()).orElse(null);
@@ -1135,7 +1117,7 @@ public class LandClaimGUI {
         if (isOwner) {
             if (ClaimModePolicy.mayPlayerResizeOrRelease(uiPlayer.isAdmin())) {
                 menuItems.add(new MenuItem("menu-expand-zone",
-                        t.get("TC_MENU_AREA_EXPAND_OPTION", uiPlayer),
+                        t.get("tc.menu.area.expand.option", uiPlayer),
                         (p) -> openExpandAreaMenu(p, onBackReopen)));
                 if (chunkCount > 1)
                     menuItems.add(menuItemSplitArea(uiPlayer, currentArea, onBackReopen));
@@ -1166,36 +1148,36 @@ public class LandClaimGUI {
                 : LandClaim.cityService().findLeasehold(area.getID()).orElse(null);
         if (lease == null) { onBack.onCall(player); return; }
         List<MenuItem> items = new ArrayList<>();
-        items.add(new MenuItem("zone-sale", t.get("TC_MENU_CITY_LEASE_PURCHASE_PRICE", player)
+        items.add(new MenuItem("zone-sale", t.get("tc.menu.city.lease.purchase.price", player)
                 .replace("PH_PRICE", String.valueOf(lease.purchasePrice())), p -> {
-            UIElement input = UIDialogFactory.getTextInput(p, t.get("TC_MENU_CITY_LEASE_PURCHASE_PRICE", p),
+            UIElement input = UIDialogFactory.getTextInput(p, t.get("tc.menu.city.lease.purchase.price", p),
                     String.valueOf(lease.purchasePrice()), value -> {
                         long price = parseNonNegativeLong(value);
                         if (price >= 0) LandClaim.cityService().configureLeasehold(area.getID(), price,
                                 lease.dailyRent(), lease.purchaseAllowed(), lease.rentAllowed());
                         openLeaseholdAdminMenu(p, area, onBack);
                     }, onBack);
-            p.addUIElement(input, UITarget.HUD); CursorManager.show(p); p.hideRadialMenu(false);
+            p.addUIElement(input, UITarget.Modal); p.hideRadialMenu(false);
         }));
-        items.add(new MenuItem("zone-city-leasehold", t.get("TC_MENU_CITY_LEASE_DAILY_RENT", player)
+        items.add(new MenuItem("zone-city-leasehold", t.get("tc.menu.city.lease.daily.rent", player)
                 .replace("PH_PRICE", String.valueOf(lease.dailyRent())), p -> {
-            UIElement input = UIDialogFactory.getTextInput(p, t.get("TC_MENU_CITY_LEASE_DAILY_RENT", p),
+            UIElement input = UIDialogFactory.getTextInput(p, t.get("tc.menu.city.lease.daily.rent", p),
                     String.valueOf(lease.dailyRent()), value -> {
                         long rent = parseNonNegativeLong(value);
                         if (rent >= 0) LandClaim.cityService().configureLeasehold(area.getID(), lease.purchasePrice(),
                                 rent, lease.purchaseAllowed(), lease.rentAllowed());
                         openLeaseholdAdminMenu(p, area, onBack);
                     }, onBack);
-            p.addUIElement(input, UITarget.HUD); CursorManager.show(p); p.hideRadialMenu(false);
+            p.addUIElement(input, UITarget.Modal); p.hideRadialMenu(false);
         }));
         items.add(new MenuItem("zone-sale", t.get(lease.purchaseAllowed()
-                ? "TC_MENU_CITY_LEASE_DISABLE_BUY" : "TC_MENU_CITY_LEASE_ENABLE_BUY", player), p -> {
+                ? "tc.menu.city.lease.disable.buy" : "tc.menu.city.lease.enable.buy", player), p -> {
             LandClaim.cityService().configureLeasehold(area.getID(), lease.purchasePrice(), lease.dailyRent(),
                     !lease.purchaseAllowed(), lease.rentAllowed());
             openLeaseholdAdminMenu(p, area, onBack);
         }));
         items.add(new MenuItem("zone-city-leasehold", t.get(lease.rentAllowed()
-                ? "TC_MENU_CITY_LEASE_DISABLE_RENT" : "TC_MENU_CITY_LEASE_ENABLE_RENT", player), p -> {
+                ? "tc.menu.city.lease.disable.rent" : "tc.menu.city.lease.enable.rent", player), p -> {
             LandClaim.cityService().configureLeasehold(area.getID(), lease.purchasePrice(), lease.dailyRent(),
                     lease.purchaseAllowed(), !lease.rentAllowed());
             openLeaseholdAdminMenu(p, area, onBack);
@@ -1219,18 +1201,18 @@ public class LandClaimGUI {
 
         if (currentArea != null) {
             menuItems.add(menuItemExpandArea(uiPlayer, currentArea, Direction.NORTH, "zone-expand-north",
-                    "TC_MENU_AREA_EXPAND_NORTH", onBackReopen, onBackReopen));
+                    "tc.menu.area.expand.north", onBackReopen, onBackReopen));
             menuItems.add(menuItemExpandArea(uiPlayer, currentArea, Direction.EAST, "zone-expand-east",
-                    "TC_MENU_AREA_EXPAND_EAST", onBackReopen, onBackReopen));
+                    "tc.menu.area.expand.east", onBackReopen, onBackReopen));
             menuItems.add(menuItemExpandArea(uiPlayer, currentArea, Direction.SOUTH, "zone-expand-south",
-                    "TC_MENU_AREA_EXPAND_SOUTH", onBackReopen, onBackReopen));
+                    "tc.menu.area.expand.south", onBackReopen, onBackReopen));
             menuItems.add(menuItemExpandArea(uiPlayer, currentArea, Direction.WEST, "zone-expand-west",
-                    "TC_MENU_AREA_EXPAND_WEST", onBackReopen, onBackReopen));
+                    "tc.menu.area.expand.west", onBackReopen, onBackReopen));
             menuItems.add(menuItemExpandArea(uiPlayer, currentArea, Direction.UP, "zone-expand-up",
-                    "TC_MENU_AREA_EXPAND_UP",
+                    "tc.menu.area.expand.up",
                     onBackReopen, onBackReopen));
             menuItems.add(menuItemExpandArea(uiPlayer, currentArea, Direction.DOWN, "zone-expand-down",
-                    "TC_MENU_AREA_EXPAND_DOWN", onBackReopen, onBackReopen));
+                    "tc.menu.area.expand.down", onBackReopen, onBackReopen));
         }
         menuItems.add(MenuItem.closeMenu(uiPlayer));
         menuItems.add(MenuItem.backMenu(uiPlayer, onBack));
@@ -1239,8 +1221,8 @@ public class LandClaimGUI {
     }
 
     private void expandClaimAnnouncement(Area area, Player player) {
-        player.sendTextMessage(t.get("TC_CLAIM_EXPANDED", player).replace("PH_AREA_NAME", area.getName()));
-        String message = t.get("TC_DISCORD_AREA_EXPANDED", DiscordConnect.botLang())
+        player.sendTextMessage(t.get("tc.claim.expanded", player).replace("PH_AREA_NAME", area.getName()));
+        String message = t.get("tc.discord.area.expanded", DiscordConnect.botLang())
                 .replace("PH_AREA_NAME", area.getName())
                 .replace("PH_CHUNK_POS", area.getStartChunkPosition() + "")
                 .replace("PH_PLAYER_NAME", Server.getLastKnownPlayerName(player.getDbID()));
@@ -1249,7 +1231,7 @@ public class LandClaimGUI {
         for (Player onlinePlayer : Server.getAllPlayers()) {
             if (!onlinePlayer.equals(player))
                 onlinePlayer.sendTextMessage(
-                        t.get("TC_ANNOUNCEMENT_AREA_EXPANDED", onlinePlayer)
+                        t.get("tc.announcement.area.expanded", onlinePlayer)
                                 .replace("PH_AREA_NAME", area.getName())
                                 .replace("PH_CHUNK_POS", area.getStartChunkPosition().toString())
                                 .replace("PH_PLAYER_NAME", Server.getLastKnownPlayerName(player.getDbID())));
@@ -1257,9 +1239,9 @@ public class LandClaimGUI {
     }
 
     private void createSpecialAreaAnnouncement(Area area, Player player) {
-        player.sendYellMessage(t.get("TC_AREA_SPECIAL_CREATED", player), 5, false);
+        player.sendYellMessage(t.get("tc.area.special.created", player), 5, false);
         // Discord announcement
-        String message = t.get("TC_DISCORD_AREA_SPECIAL_CREATED", DiscordConnect.botLang())
+        String message = t.get("tc.discord.area.special.created", DiscordConnect.botLang())
                 .replace("PH_AREA_NAME", area.getName())
                 .replace("PH_CHUNK_POS", area.getStartChunkPosition().toString())
                 .replace("PH_PLAYER_NAME", Server.getLastKnownPlayerName(player.getDbID()));
@@ -1268,7 +1250,7 @@ public class LandClaimGUI {
         for (Player onlinePlayer : Server.getAllPlayers()) {
             if (!onlinePlayer.equals(player))
                 onlinePlayer.sendTextMessage(
-                        t.get("TC_ANNOUNCEMENT_AREA_SPECIAL_CREATED", onlinePlayer)
+                        t.get("tc.announcement.area.special.created", onlinePlayer)
                                 .replace("PH_AREA_NAME", area.getName())
                                 .replace("PH_CHUNK_POS", area.getStartChunkPosition().toString())
                                 .replace("PH_PLAYER_NAME", Server.getLastKnownPlayerName(player.getDbID())));
@@ -1287,7 +1269,7 @@ public class LandClaimGUI {
         List<MenuItem> menuItems = new ArrayList<>();
 
         menuItems.add(new MenuItem(showCurrentChunkFrame ? "zone-visibility-current-on" : "zone-visibility-current-off",
-                t.get(showCurrentChunkFrame ? "TC_MENU_VISIBILITY_CURRENT_HIDE" : "TC_MENU_VISIBILITY_CURRENT_SHOW",
+                t.get(showCurrentChunkFrame ? "tc.menu.visibility.current.hide" : "tc.menu.visibility.current.show",
                         uiPlayer),
                 (p) -> {
                     Vector3i chunkPos = p.getChunkPosition();
@@ -1300,7 +1282,7 @@ public class LandClaimGUI {
                 }));
 
         menuItems.add(new MenuItem(showOwnedAreaFrames ? "zone-visibility-owned-on" : "zone-visibility-owned-off",
-                t.get(showOwnedAreaFrames ? "TC_MENU_VISIBILITY_OWNED_HIDE" : "TC_MENU_VISIBILITY_OWNED_SHOW",
+                t.get(showOwnedAreaFrames ? "tc.menu.visibility.owned.hide" : "tc.menu.visibility.owned.show",
                         uiPlayer),
                 (p) -> {
                     LandClaimPlayerPluginSettings.setBooleanValue(p,
@@ -1311,7 +1293,7 @@ public class LandClaimGUI {
                 }));
 
         menuItems.add(new MenuItem(showOtherAreaFrames ? "zone-visibility-others-on" : "zone-visibility-others-off",
-                t.get(showOtherAreaFrames ? "TC_MENU_VISIBILITY_OTHER_HIDE" : "TC_MENU_VISIBILITY_OTHER_SHOW",
+                t.get(showOtherAreaFrames ? "tc.menu.visibility.other.hide" : "tc.menu.visibility.other.show",
                         uiPlayer),
                 (p) -> {
                     LandClaimPlayerPluginSettings.setBooleanValue(p,
@@ -1336,14 +1318,14 @@ public class LandClaimGUI {
         List<MenuItem> menuItems = new ArrayList<>();
 
         menuItems.add(new MenuItem("menu-zone-visibility",
-                t.get("TC_MENU_VISIBILITY", uiPlayer),
+                t.get("tc.menu.visibility", uiPlayer),
                 (p) -> {
                     openVisibilitySettingsMenu(p);
                 }));
 
         if (uiPlayer.isAdmin())
             menuItems.add(new MenuItem("menu-zone-admin",
-                    t.get("TC_MENU_ADMIN", uiPlayer),
+                    t.get("tc.menu.admin", uiPlayer),
                     (p) -> {
                         openAdminMenu(p, (Player player) -> openMainMenu(player));
                     }));
@@ -1355,15 +1337,15 @@ public class LandClaimGUI {
                         if (isCityPrivateClaim(ChunkClaimUtil.getVirtualAreaFromChunkVector(p.getChunkPosition()))) {
                             long price = cityPrivateClaimPrice(p);
                             UIElement confirm = UIDialogFactory.getConfirmDangerDialog(p,
-                                    t.get("TC_MENU_LAND_BUY", p).replace("PH_PRICE", String.valueOf(price))
+                                    t.get("tc.menu.land.buy", p).replace("PH_PRICE", String.valueOf(price))
                                             .replace("PH_CURRENCY", defaultCurrency()),
-                                    t.get("TC_DIALOG_AREA_CLAIM_PAID_CONFIRM", p)
+                                    t.get("tc.dialog.area.claim.paid.confirm", p)
                                             .replace("PH_PRICE", String.valueOf(price))
                                             .replace("PH_CURRENCY", defaultCurrency()),
-                                    t.get("TC_MENU_LAND_BUY", p).replace("PH_PRICE", String.valueOf(price))
+                                    t.get("tc.menu.land.buy", p).replace("PH_PRICE", String.valueOf(price))
                                             .replace("PH_CURRENCY", defaultCurrency()),
                                     accepted -> { if (accepted) claimCurrentChunk(p); }, player -> openMainMenu(player));
-                            p.addUIElement(confirm, UITarget.HUD); CursorManager.show(p); p.hideRadialMenu(false);
+                            p.addUIElement(confirm, UITarget.Modal); p.hideRadialMenu(false);
                             return;
                         }
                         claimCurrentChunk(p);
@@ -1374,13 +1356,13 @@ public class LandClaimGUI {
         }
         if (currentArea != null) {
             menuItems.add(new MenuItem("zone-claim-create",
-                    t.get("TC_MENU_AREA_OPTION", uiPlayer),
+                    t.get("tc.menu.area.option", uiPlayer),
                     (p) -> {
                         openClaimOptionsMenu(p, (Player player) -> openMainMenu(player));
                     }));
         }
 
-        menuItems.add(PluginInfoStatusProviders.menuItem(t.get("TC_MENU_INFO_STATUS", uiPlayer), LandClaim.name));
+        menuItems.add(PluginInfoStatusProviders.menuItem(t.get("tc.menu.info.status", uiPlayer), LandClaim.name));
         menuItems.add(MenuItem.closeMenu(uiPlayer));
 
         PluginMenuManager.showMenu(uiPlayer, menuItems);
@@ -1390,9 +1372,9 @@ public class LandClaimGUI {
         Area createdArea = chunkClaimUtil.claimArea(p,
                 ChunkClaimUtil.getVirtualAreaFromChunkVector(p.getChunkPosition()));
         if (createdArea != null) {
-                            p.sendYellMessage(t.get("TC_CLAIM_CONGRATULATION", p), 5, true);
+                            p.sendYellMessage(t.get("tc.claim.congratulation", p), 5, true);
                             // Discord announcement
-                            String message = t.get("TC_DISCORD_AREA_CLAIMED", DiscordConnect.botLang())
+                            String message = t.get("tc.discord.area.claimed", DiscordConnect.botLang())
                                     .replace("PH_AREA_NAME", createdArea.getName())
                                     .replace("PH_CHUNK_POS", createdArea.getStartChunkPosition().toString())
                                     .replace("PH_PLAYER_NAME", Server.getLastKnownPlayerName(p.getDbID()));
@@ -1401,7 +1383,7 @@ public class LandClaimGUI {
                             for (Player onlinePlayer : Server.getAllPlayers()) {
                                 if (!onlinePlayer.equals(p))
                                     onlinePlayer.sendTextMessage(
-                                            t.get("TC_ANNOUNCEMENT_AREA_CLAIMED", onlinePlayer)
+                                            t.get("tc.announcement.area.claimed", onlinePlayer)
                                                     .replace("PH_AREA_NAME", createdArea.getName())
                                                     .replace("PH_CHUNK_POS",
                                                             createdArea.getStartChunkPosition().toString())
@@ -1425,14 +1407,14 @@ public class LandClaimGUI {
         if (ClaimModePolicy.current() == ClaimMode.CITY) {
             Area virtualArea = ChunkClaimUtil.getVirtualAreaFromChunkVector(player.getChunkPosition());
             if (isCityPrivateClaim(virtualArea)) {
-                return t.get("TC_MENU_LAND_BUY", player).replace("PH_PRICE", String.valueOf(cityPrivateClaimPrice(player)))
+                return t.get("tc.menu.land.buy", player).replace("PH_PRICE", String.valueOf(cityPrivateClaimPrice(player)))
                         .replace("PH_CURRENCY", defaultCurrency());
             }
         }
         if (ClaimModePolicy.current() != ClaimMode.LAND_PRICING || LandClaim.landPriceService() == null)
-            return t.get("TC_MENU_CLAIM", player);
+            return t.get("tc.menu.claim", player);
         long price = LandClaim.landPriceService().price(player.getChunkPosition(), s.landPriceBase);
-        return t.get("TC_MENU_LAND_BUY", player).replace("PH_PRICE", String.valueOf(price))
+        return t.get("tc.menu.land.buy", player).replace("PH_PRICE", String.valueOf(price))
                 .replace("PH_CURRENCY", defaultCurrency());
     }
 

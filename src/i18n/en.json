@@ -1,0 +1,1039 @@
+{
+  "landclaim": {
+    "shop": {
+      "extra": {
+        "claim": {
+          "desc": "Adds one extra LandClaim claim capacity.",
+          "success": "Extra claim capacity purchased. Total purchased capacity: PH_TOTAL.",
+          "title": "Extra claim capacity"
+        }
+      }
+    }
+  },
+  "tc": {
+    "admin": {
+      "cleanup": {
+        "blocked": "Cleanup blocked because another owner has an active claim in chunk column PH_CHUNK_POS.",
+        "special": {
+          "area": {
+            "success": "Cleaned special area PH_TARGET and reset PH_RESET_COUNT chunks."
+          }
+        },
+        "success": "Cleaned PH_TARGET: deleted PH_CLAIM_COUNT claim records and reset PH_RESET_COUNT chunks.",
+        "teleport": {
+          "failed": "Could not teleport to PH_AREA_NAME.",
+          "success": "Teleported to PH_AREA_NAME."
+        }
+      },
+      "delete": {
+        "special": {
+          "area": {
+            "success": "Deleted special area PH_TARGET."
+          }
+        },
+        "success": "Deleted PH_CLAIM_COUNT claim records for PH_TARGET."
+      }
+    },
+    "announcement": {
+      "area": {
+        "claimed": "The area \u003ccolor\u003dyellow\u003ePH_AREA_NAME\u003c/color\u003e at \u003ccolor\u003dyellow\u003ePH_CHUNK_POS\u003c/color\u003e has been claimed by \u003ccolor\u003dyellow\u003ePH_PLAYER_NAME\u003c/color\u003e.",
+        "expanded": "The area \u003ccolor\u003dyellow\u003ePH_AREA_NAME\u003c/color\u003e at \u003ccolor\u003dyellow\u003ePH_CHUNK_POS\u003c/color\u003e has been expanded by \u003ccolor\u003dyellow\u003ePH_PLAYER_NAME\u003c/color\u003e.",
+        "released": "The area \u003ccolor\u003dyellow\u003ePH_AREA_NAME\u003c/color\u003e at \u003ccolor\u003dyellow\u003ePH_CHUNK_POS\u003c/color\u003e has been released by \u003ccolor\u003dyellow\u003ePH_PLAYER_NAME\u003c/color\u003e.",
+        "sold": "The claim \u003ccolor\u003dyellow\u003ePH_AREA_NAME\u003c/color\u003e was sold by \u003ccolor\u003dyellow\u003ePH_SELLER_NAME\u003c/color\u003e to \u003ccolor\u003dyellow\u003ePH_BUYER_NAME\u003c/color\u003e for \u003ccolor\u003dyellow\u003ePH_PRICE\u003c/color\u003e.",
+        "special": {
+          "created": "Player \u003ccolor\u003dyellow\u003ePH_PLAYER_NAME\u003c/color\u003e has created the special area \u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e at \u003ccolor\u003dyellow\u003ePH_CHUNK_POS\u003c/color\u003e."
+        }
+      },
+      "renew": {
+        "zone": {
+          "reset": "Renew zone \u003ccolor\u003dyellow\u003ePH_AREA_NAME\u003c/color\u003e was renewed. Reset chunk columns: \u003ccolor\u003dyellow\u003ePH_RESET_COUNT\u003c/color\u003e."
+        }
+      }
+    },
+    "area": {
+      "config": {
+        "unavailable": "This area has no configuration interface."
+      },
+      "release": {
+        "area": "Area PH_AREA_NAME has been released.",
+        "chunk": "Chunk \u003ccolor\u003dblue\u003ePH_CHUNK_POS\u003c/color\u003e of area \u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e previously owned by \u003ccolor\u003dyellow\u003ePH_PLAYER_NAME\u003c/color\u003e has been released."
+      },
+      "rennamed": "Area \u003ccolor\u003dred\u003ePH_OLD_NAME\u003c/color\u003e renamed to \u003ccolor\u003dgreen\u003ePH_AREA_NAME\u003c/color\u003e.",
+      "sale": {
+        "invalid": {
+          "price": "Please enter a positive whole-number price."
+        },
+        "listed": "Area PH_AREA_NAME is now listed for PH_PRICE PH_CURRENCY.",
+        "list": {
+          "failed": "Could not list this area for sale."
+        },
+        "purchased": "You bought PH_AREA_NAME for PH_PRICE PH_CURRENCY.",
+        "purchase": {
+          "limit": "Buying this claim would exceed your claim limit of PH_MAX_CLAIMS.",
+          "listing": {
+            "update": {
+              "failed": "Claim purchase could not be completed. Payment was refunded."
+            }
+          },
+          "self": "You cannot buy your own claim.",
+          "seller": {
+            "credit": {
+              "failed": "Seller payment failed: PH_REASON. Payment was refunded."
+            }
+          },
+          "stale": "This claim sale listing is no longer available.",
+          "transfer": {
+            "failed": "Claim transfer failed. Payment was refunded."
+          },
+          "wallet": {
+            "missing": "Wallet is required to buy listed claims."
+          },
+          "withdraw": {
+            "failed": "Payment failed: PH_REASON"
+          }
+        },
+        "sold": "Your claim PH_AREA_NAME was sold to PH_PLAYER_NAME for PH_PRICE PH_CURRENCY.",
+        "withdrawn": "Sale listing for PH_AREA_NAME was withdrawn."
+      },
+      "special": {
+        "created": "Special area successfully created."
+      },
+      "split": "Area \u003ccolor\u003dyellow\u003ePH_AREA_NAME\u003c/color\u003e has been split into \u003ccolor\u003dgreen\u003ePH_CHUNK_COUNT\u003c/color\u003e chunks."
+    },
+    "chunkinfo": {
+      "city": {
+        "core": "City core: \u003ccolor\u003d#7B61FF\u003ePH_AREA_NAME\u003c/color\u003e",
+        "leasehold": {
+          "free": "Available leasehold: \u003ccolor\u003d#00BFA5\u003ePH_AREA_NAME\u003c/color\u003e",
+          "occupied": "Leasehold of PH_PLAYER_NAME: \u003ccolor\u003d#FF9800\u003ePH_AREA_NAME\u003c/color\u003e",
+          "owned": "Your leasehold: \u003ccolor\u003d#FF9800\u003ePH_AREA_NAME\u003c/color\u003e"
+        },
+        "only": "Land can only be claimed inside cities.",
+        "price": "This city property can be purchased for PH_PRICE PH_CURRENCY."
+      },
+      "claim": {
+        "blocked": "This area cannot be claimed in the current mode.",
+        "limit": "\u003ccolor\u003dred\u003eYou have reached your claim limit \u003cPH_MAX_CLAIMS\u003e.\u003c/color\u003e",
+        "possible": "Area can be claimed.",
+        "wait": "Area can be claimed in PH_TIME."
+      },
+      "for": {
+        "sale": "For sale: PH_AREA_NAME by PH_PLAYER_NAME for PH_PRICE PH_CURRENCY"
+      },
+      "land": {
+        "price": "This land can be purchased for PH_PRICE PH_CURRENCY."
+      },
+      "owned": {
+        "$value": "Your area: PH_AREA_NAME",
+        "by": "PH_PLAYER_NAME\u0027s area: PH_AREA_NAME"
+      },
+      "special": {
+        "area": "Special area: \u003ccolor\u003d#66CCFF\u003ePH_AREA_NAME\u003c/color\u003e",
+        "pvp": {
+          "area": "PvP area: \u003ccolor\u003d#FF7777\u003ePH_AREA_NAME\u003c/color\u003e"
+        },
+        "renew": {
+          "area": "Renew zone: \u003ccolor\u003d#00C2A8\u003ePH_AREA_NAME\u003c/color\u003e"
+        },
+        "rest": {
+          "area": "Rest area: \u003ccolor\u003d#7FE08A\u003ePH_AREA_NAME\u003c/color\u003e"
+        },
+        "static": {
+          "area": "Static area: \u003ccolor\u003d#B8A1FF\u003ePH_AREA_NAME\u003c/color\u003e"
+        },
+        "trap": {
+          "area": "Trap area: \u003ccolor\u003d#FFD166\u003ePH_AREA_NAME\u003c/color\u003e"
+        }
+      },
+      "wallet": {
+        "required": "\u003ccolor\u003dred\u003eThis claim mode is unavailable because Wallet is not available.\u003c/color\u003e"
+      }
+    },
+    "city": {
+      "create": {
+        "failed": {
+          "$value": "The city could not be created.",
+          "city": {
+            "overlap": "The city radius would overlap an existing city."
+          },
+          "core": {
+            "not": {
+              "single": {
+                "chunk": "The city core must consist of exactly one chunk."
+              }
+            }
+          },
+          "invalid": {
+            "core": "The city core is invalid."
+          },
+          "sector": {
+            "boundary": "The city radius would cross a sector boundary."
+          },
+          "service": {
+            "unavailable": "City administration is unavailable."
+          },
+          "wallet": "The city account could not be created: PH_REASON"
+        }
+      },
+      "deleted": "City PH_CITY_NAME was deleted.",
+      "delete": {
+        "account": {
+          "failed": "The city account could not be closed: PH_REASON"
+        },
+        "occupied": "The city cannot be deleted while a leasehold is occupied."
+      },
+      "expanded": "The city radius is now PH_RADIUS.",
+      "expand": {
+        "failed": "The city expansion failed; payment was reversed where necessary.",
+        "funds": "The city cannot be expanded: insufficient treasury funds or invalid bounds.",
+        "payment": {
+          "failed": "The city-expansion payment to the world treasury failed: PH_REASON"
+        }
+      },
+      "leasehold": {
+        "create": {
+          "failed": "The leasehold must be completely inside exactly one city."
+        }
+      },
+      "lease": {
+        "deleted": "The leasehold was deleted.",
+        "expand": {
+          "limit": "The occupied leasehold cannot be expanded because its owner is offline or lacks claim capacity.",
+          "outside": "The leasehold expansion must remain completely inside its assigned city."
+        },
+        "expropriated": "Your property PH_AREA_NAME was expropriated and dissolved by an administrator.",
+        "occupied": "This property is already occupied.",
+        "purchased": "You purchased PH_AREA_NAME.",
+        "rented": "You rented PH_AREA_NAME.",
+        "returned": "PH_AREA_NAME was returned to the city.",
+        "split": {
+          "occupied": "Occupied leaseholds cannot be split."
+        },
+        "update": {
+          "failed": "The payment was reversed because ownership could not be saved."
+        }
+      },
+      "mail": {
+        "subject": "City property notice"
+      },
+      "notice": {
+        "title": "Important city notice"
+      },
+      "rent": {
+        "evicted": "PH_AREA_NAME was returned to the city because the daily rent could not be paid.",
+        "increased": "The daily rent for PH_AREA_NAME was increased to PH_RENT. The new amount applies at the next billing.",
+        "warning": "Your balance covers fewer than seven further rent payments for PH_AREA_NAME."
+      }
+    },
+    "claim": {
+      "congratulation": "Congratulations to your new claim",
+      "error": {
+        "city": {
+          "expansion": "Private land can only expand inside its city while private claims are enabled.",
+          "private": "Private claims are disabled here or the chunk is outside a city."
+        },
+        "claimed": "The chunk at \u003ccolor\u003dred\u003ePH_CHUNK_POS\u003c/color\u003e belongs to PH_PLAYER_NAME and cannot be claimed!",
+        "insufficient": {
+          "funds": "Your funds are insufficient for this purchase."
+        },
+        "limit": "Claiming more areas exceeds your claim limit of PH_MAX_CLAIMS!",
+        "max": {
+          "reached": "Current claim limit reached!"
+        },
+        "mode": {
+          "$value": "Only administrators can create claims in the current mode.",
+          "resize": "This area cannot be resized or released by players in the current mode."
+        },
+        "occupied": "The area is already claimed!",
+        "owner": {
+          "offline": "The stored owner data for this property could not be resolved completely."
+        },
+        "payment": "The land purchase failed: PH_REASON",
+        "price": {
+          "unavailable": "The land price is currently unavailable; no payment was made."
+        },
+        "size": "The area is too big! (Only 1 chunk allowed)",
+        "special": {
+          "area": "The chunk at \u003ccolor\u003dred\u003ePH_CHUNK_POS\u003c/color\u003e belongs to a special area and cannot be claimed!"
+        },
+        "time": "The total time you have spent in the new area is not enought, you need PH_TIME_LEFTs more.",
+        "wallet": {
+          "required": "This claim mode requires Wallet; no ownership changes were made."
+        }
+      },
+      "expanded": "Area PH_AREA_NAME has been successfully expanded."
+    },
+    "cmd": {
+      "help": "Help:\nAvailable chat commands:\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD status\u003c/color\u003e or \u003ccolor\u003dred\u003e/PH_PLUGIN_CMD info\u003c/color\u003e shows plugin infos\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD stats\u003c/color\u003e shows player stats\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD open\u003c/color\u003e opens the plugin menu\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD config\u003c/color\u003e opens the current configurable zone\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD help\u003c/color\u003e shows this help\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD devmode\u003c/color\u003e Developer mode for admins\n\n\u003ccolor\u003dyellow\u003eTip:\u003c/color\u003e Bind the command \u003ccolor\u003dred\u003e/PH_PLUGIN_CMD open\u003c/color\u003e to a mouse button or keyboard key.",
+      "repair": {
+        "err": {
+          "permission": "Insufficient permissions for this command."
+        },
+        "success": "Areas repaired."
+      },
+      "stats": "Your stats:\nClaims: \u003ccolor\u003dyellow\u003ePH_PLAYER_CLAIMS of PH_PLAYER_MAX_CLAIMS\u003c/color\u003e\nTime to claim: \u003ccolor\u003dyellow\u003ePH_PLAYER_CLAIM_TIME\u003c/color\u003e",
+      "status": "🔎 Plugin Status\n➡️ Plugin version: PH_VERSION\n➡️ Installed languages: PH_LANG_AVAILABLE\n➡️ Your language: PH_LANGUAGE\n➡️ Used language: PH_USEDLANG\n➡️ Translated by: Devidian"
+    },
+    "data": {
+      "col": {
+        "description": "Description"
+      }
+    },
+    "dialog": {
+      "admin": {
+        "cleanup": {
+          "area": {
+            "confirm": "Delete \u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e\nand reset affected chunks?",
+            "title": "Cleanup claimed area"
+          },
+          "owner": {
+            "confirm": "Delete all PH_CLAIM_COUNT claims for\n\u003ccolor\u003dred\u003ePH_PLAYER_NAME\u003c/color\u003e\nand reset affected chunks?",
+            "title": "Cleanup owner claims"
+          },
+          "special": {
+            "area": {
+              "confirm": "Delete \u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e\nand reset affected chunks?",
+              "title": "Cleanup special area"
+            }
+          }
+        },
+        "delete": {
+          "area": {
+            "confirm": "Delete claim records and server area for\n\u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e?\nChunks will not be reset.",
+            "title": "Delete claimed area"
+          },
+          "owner": {
+            "confirm": "Delete all PH_CLAIM_COUNT claims for\n\u003ccolor\u003dred\u003ePH_PLAYER_NAME\u003c/color\u003e?\nChunks will not be reset.",
+            "title": "Delete owner claims"
+          },
+          "special": {
+            "area": {
+              "confirm": "Delete server area for\n\u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e?\nChunks will not be reset.",
+              "title": "Delete special area"
+            }
+          }
+        }
+      },
+      "area": {
+        "claim": {
+          "paid": {
+            "confirm": "Buy this property now for PH_PRICE PH_CURRENCY?"
+          }
+        },
+        "expand": {
+          "confirm": "Please confirm to expand the area:\n\u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e\nTo: \u003ccolor\u003dyellow\u003ePH_DIRECTION\u003c/color\u003e",
+          "failed": "Expanding Area PH_AREA_NAME failed.",
+          "paid": {
+            "confirm": "Expand\n\u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e\ntowards \u003ccolor\u003dyellow\u003ePH_DIRECTION\u003c/color\u003e. Cost: \u003ccolor\u003dyellow\u003ePH_PRICE PH_CURRENCY\u003c/color\u003e."
+          },
+          "title": "Expand Area"
+        },
+        "release": {
+          "confirm": "Please confirm to release the area \n\u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e. ",
+          "success": "Area successfully released.",
+          "title": "Release area confirmation"
+        },
+        "rename": {
+          "title": "Rename area"
+        },
+        "sale": {
+          "buy": {
+            "confirm": "Buy\n\u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e\nfor \u003ccolor\u003dyellow\u003ePH_PRICE PH_CURRENCY\u003c/color\u003e?",
+            "title": "Buy listed area"
+          },
+          "list": {
+            "title": "List area for sale"
+          },
+          "withdraw": {
+            "confirm": "Withdraw sale listing for\n\u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e\nPrice: \u003ccolor\u003dyellow\u003ePH_PRICE PH_CURRENCY\u003c/color\u003e?",
+            "title": "Withdraw sale listing"
+          }
+        },
+        "split": {
+          "confirm": "Please confirm to split the area:\n\u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e",
+          "title": "Split area"
+        }
+      },
+      "city": {
+        "create": {
+          "title": "Create city"
+        },
+        "delete": "Delete PH_CITY_NAME, all unoccupied leaseholds, and transfer its treasury to the world account?",
+        "expand": {
+          "confirm": "Pay PH_PRICE from the city treasury and increase the radius by one?",
+          "title": "Expand city"
+        },
+        "lease": {
+          "confirm": "Take over PH_AREA_NAME for PH_PRICE?",
+          "delete": "Delete \u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e? Existing ownership will be revoked without compensation.",
+          "return": "Return PH_AREA_NAME without a refund?"
+        }
+      },
+      "renew": {
+        "zone": {
+          "config": {
+            "title": "Renew zone interval"
+          }
+        }
+      }
+    },
+    "direction": {
+      "down": "Down",
+      "east": "East",
+      "north": "North",
+      "south": "South",
+      "up": "Up",
+      "west": "West"
+    },
+    "discord": {
+      "admin": {
+        "cleanup": {
+          "$value": "Admin `PH_ADMIN_NAME` cleaned `PH_TARGET`: deleted `PH_CLAIM_COUNT` claim records and reset `PH_RESET_COUNT` chunks.",
+          "blocked": "Admin cleanup for `PH_TARGET` was blocked because another owner has a claim at `PH_CHUNK_POS`.",
+          "special": {
+            "area": "Admin `PH_ADMIN_NAME` cleaned special area `PH_TARGET` and reset `PH_RESET_COUNT` chunks."
+          }
+        },
+        "delete": {
+          "$value": "Admin `PH_ADMIN_NAME` deleted `PH_TARGET` claim records: `PH_CLAIM_COUNT`.",
+          "special": {
+            "area": "Admin `PH_ADMIN_NAME` deleted special area `PH_TARGET`."
+          }
+        }
+      },
+      "area": {
+        "claimed": "The area `PH_AREA_NAME` at `PH_CHUNK_POS` has been claimed by `PH_PLAYER_NAME`.",
+        "expanded": "The area `PH_AREA_NAME` at `PH_CHUNK_POS` has been expanded by `PH_PLAYER_NAME`.",
+        "released": "The area `PH_AREA_NAME` at `PH_CHUNK_POS` has been released by `PH_PLAYER_NAME`.",
+        "sold": "The claim `PH_AREA_NAME` was sold by `PH_SELLER_NAME` to `PH_BUYER_NAME` for `PH_PRICE`.",
+        "special": {
+          "created": "Player `PH_PLAYER_NAME` has created the special area `PH_AREA_NAME` at `PH_CHUNK_POS`."
+        }
+      },
+      "auto": {
+        "claim": {
+          "removal": "Auto claim removal checked owners inactive for `PH_DAYS` days: removed `PH_OWNER_COUNT` owners and `PH_CLAIM_COUNT` claims."
+        }
+      },
+      "renew": {
+        "zone": {
+          "reset": "Renew zone `PH_AREA_NAME` (`PH_AREA_ID`) was renewed. Reset chunk columns: `PH_RESET_COUNT`."
+        }
+      }
+    },
+    "err": {
+      "cmd": {
+        "unknown": "Unknown command. Type \u003ccolor\u003dred\u003e/PH_PLUGIN_CMD help\u003c/color\u003e for help."
+      }
+    },
+    "landclaim": {
+      "info": {
+        "panel": {
+          "info": "\u003cb\u003ePH_PLUGIN_NAME\u003c/b\u003e\nVersion: PH_VERSION\nCommand: /PH_PLUGIN_CMD\n\nLandClaim owns claim protection, area permissions, special zones, claim sales, and extra claim capacity.",
+          "status": "\u003cb\u003eLandClaim status\u003c/b\u003e\nYour claims: PH_PLAYER_CLAIMS / PH_PLAYER_MAX_CLAIMS\nPurchased extra claims: PH_PURCHASED_EXTRA_CLAIMS\nClaim mode: PH_CLAIM_MODE\nClaim sale: PH_CLAIM_SALE\nExtra claim shop: PH_EXTRA_CLAIM_SHOP\nWallet: PH_WALLET_STATUS\nShop: PH_SHOP_STATUS\nAuto removal: PH_AUTO_REMOVAL\nLanguage: PH_LANGUAGE\nUsed language: PH_USEDLANG\nInstalled languages: PH_LANG_AVAILABLE"
+        }
+      }
+    },
+    "menu": {
+      "admin": {
+        "$value": "Administration",
+        "cleanup": "Property management",
+        "debug": "Execute debug stuff",
+        "sync": {
+          "repair": "Sync and repair areas"
+        }
+      },
+      "area": {
+        "config": "Configure zone",
+        "expand": {
+          "down": "Expand down",
+          "east": "Expand east",
+          "north": "Expand north",
+          "option": "Expanding options",
+          "south": "Expand south",
+          "up": "Expand up",
+          "west": "Expand west"
+        },
+        "option": "Area settings",
+        "permissions": "Permissions",
+        "release": "Release area",
+        "rename": "Rename area",
+        "sale": {
+          "buy": "Buy listed area",
+          "list": "List area for sale",
+          "withdraw": "Withdraw sale listing"
+        },
+        "split": "Split area"
+      },
+      "city": {
+        "core": {
+          "create": "Create city core"
+        },
+        "delete": "Delete city",
+        "expand": "Expand city (PH_PRICE)",
+        "leasehold": {
+          "create": "Create leasehold"
+        },
+        "lease": {
+          "admin": "Leasehold management",
+          "buy": "Buy property",
+          "daily": {
+            "rent": "Daily rent: PH_PRICE"
+          },
+          "delete": "Delete leasehold",
+          "disable": {
+            "buy": "Disable purchase",
+            "rent": "Disable renting"
+          },
+          "enable": {
+            "buy": "Enable purchase",
+            "rent": "Enable renting"
+          },
+          "purchase": {
+            "price": "Purchase price: PH_PRICE"
+          },
+          "rent": "Rent property",
+          "return": "Return property"
+        },
+        "management": "City management"
+      },
+      "claim": "Claim chunk",
+      "info": {
+        "status": "Info / Status"
+      },
+      "land": {
+        "buy": "Buy property (PH_PRICE PH_CURRENCY)"
+      },
+      "special": {
+        "area": {
+          "$value": "Special areas",
+          "create": "Create special area",
+          "pvp": "Create PvP area",
+          "renew": "Create Renew zone",
+          "rest": "Create Rest area",
+          "static": "Create static area",
+          "trap": "Create Trap area"
+        }
+      },
+      "visibility": {
+        "$value": "Visibility settings",
+        "current": {
+          "hide": "Hide current chunk",
+          "show": "Show current chunk"
+        },
+        "other": {
+          "hide": "Hide other areas",
+          "show": "Show other areas"
+        },
+        "owned": {
+          "hide": "Hide owned areas",
+          "show": "Show owned areas"
+        }
+      }
+    },
+    "msg": {
+      "plugin": {
+        "welcome": "➡️ \u003ccolor\u003d#F00000\u003ePH_PLUGIN_NAME\u003c/color\u003e | \u003ccolor\u003d#F0F000\u003evPH_PLUGIN_VERSION\u003c/color\u003e | \u003ccolor\u003d#C0C0C0\u003e/PH_PLUGIN_CMD\u003c/color\u003e | loaded!"
+      }
+    },
+    "renew": {
+      "zone": {
+        "config": {
+          "invalid": {
+            "interval": "Please enter a positive whole-number interval in hours."
+          },
+          "saved": "Renew zone interval set to PH_INTERVAL_HOURS hours.",
+          "save": {
+            "failed": "Could not save renew zone settings."
+          }
+        }
+      }
+    },
+    "setting": {
+      "adminignorelimit": {
+        "desc": "Lets admins bypass claim limits.",
+        "label": "Admin ignores claim limit"
+      },
+      "adminignoretime": {
+        "desc": "Lets admins bypass claim wait time.",
+        "label": "Admin ignores claim time"
+      },
+      "adminoverrides": {
+        "desc": "Admin bypass behavior for claim limits and claim time.",
+        "label": "Admin overrides"
+      },
+      "allowadminoverride": {
+        "desc": "Lets admins see hidden special-zone frames.",
+        "label": "Allow admin override"
+      },
+      "allowclaimbuyexceedlimit": {
+        "desc": "Allows claim purchases to exceed the buyer\u0027s normal claim limit.",
+        "label": "Buy above limit"
+      },
+      "allowclaimsale": {
+        "desc": "Allows players to list owned claims for Wallet-backed sale.",
+        "label": "Allow claim sale"
+      },
+      "autoclaimremovaldelayseconds": {
+        "desc": "Delay in seconds before the automatic removal check runs after startup.",
+        "label": "Removal delay"
+      },
+      "autoclaimremovalinactivedays": {
+        "desc": "Inactive owner age before auto claim removal.",
+        "label": "Inactive days"
+      },
+      "autoremoval": {
+        "desc": "Inactive-owner automatic claim removal behavior.",
+        "label": "Auto removal"
+      },
+      "basicclaimlimit": {
+        "desc": "Base number of claims a player can own.",
+        "label": "Basic claim limit"
+      },
+      "cityallowprivateclaims": {
+        "desc": "Allows private player claims inside cities by default.",
+        "label": "Private city claims"
+      },
+      "citybaseradius": {
+        "desc": "Initial three-dimensional city radius in chunks.",
+        "label": "City base radius"
+      },
+      "cityexpansionbaseprice": {
+        "desc": "Price per newly covered chunk when a city expands.",
+        "label": "City expansion base price"
+      },
+      "citymoderules": {
+        "desc": "Rules for cities, private properties, and rent.",
+        "label": "City-mode rules"
+      },
+      "cityprivateclaimprice": {
+        "desc": "Default price per private city claim chunk.",
+        "label": "Private city claim price"
+      },
+      "cityrentbillinghour": {
+        "desc": "Server-local hour from 0 to 23 for daily rent billing.",
+        "label": "Rent billing hour"
+      },
+      "claimmode": {
+        "desc": "Global acquisition and ownership rules for all properties.",
+        "label": "Claim mode",
+        "option": {
+          "administrative": "Administrative",
+          "city": "Cities",
+          "land": {
+            "pricing": "Land pricing"
+          },
+          "time": {
+            "based": "Time-based"
+          }
+        }
+      },
+      "claimprotectionbasetimedays": {
+        "desc": "Reserved base protection time in days; currently unused.",
+        "label": "Base protection time"
+      },
+      "claimprotectionextratimescale": {
+        "desc": "Reserved protection time scale; currently unused.",
+        "label": "Protection time scale"
+      },
+      "claimrules": {
+        "desc": "Base claim timing and limit behavior.",
+        "label": "Claim rules"
+      },
+      "claimsalefee": {
+        "desc": "Decimal Wallet fee fraction charged for a claim sale.",
+        "label": "Claim sale fee"
+      },
+      "claimsales": {
+        "desc": "Wallet-backed claim sale and purchase behavior.",
+        "label": "Claim sales"
+      },
+      "claimtimescalefactor": {
+        "desc": "Decimal scale factor for increasing or decreasing claim wait time.",
+        "label": "Claim time scale"
+      },
+      "discordrenewzonelogchannelid": {
+        "desc": "Discord channel ID for renew-zone logs; 0 disables them.",
+        "label": "Discord renew-zone log"
+      },
+      "enableautoclaimremoval": {
+        "desc": "Removes claims from owners inactive longer than the configured days.",
+        "label": "Auto claim removal"
+      },
+      "enableextraclaimshopoffer": {
+        "desc": "Registers the extra-claim capacity offer in OZ Shop when available.",
+        "label": "Extra claim shop offer"
+      },
+      "enablewelcomemessage": {
+        "desc": "Shows a short LandClaim message when a player joins.",
+        "label": "Welcome message"
+      },
+      "exportroutes": {
+        "desc": "Read exposure for manager and bridge integrations.",
+        "label": "Export routes"
+      },
+      "exposeclaimsales": {
+        "desc": "Allows bridge layers to read active claim sales.",
+        "label": "Expose claim sales"
+      },
+      "exposerenewzones": {
+        "desc": "Allows bridge layers to read renew-zone data.",
+        "label": "Expose renew zones"
+      },
+      "extraclaimbaseprice": {
+        "desc": "Price for the first purchased extra claim capacity.",
+        "label": "Extra claim base price"
+      },
+      "extraclaimpriceincreasepercent": {
+        "desc": "Linear percent increase per already purchased extra claim capacity.",
+        "label": "Extra claim price increase"
+      },
+      "extraclaimshopcurrencyidentifier": {
+        "desc": "Currency identifier for extra-claim Shop purchases. Empty uses Wallet default.",
+        "label": "Extra claim currency"
+      },
+      "extraclaims": {
+        "desc": "Shop offer for purchasing additional claim capacity.",
+        "label": "Extra claim shop"
+      },
+      "general": {
+        "desc": "Logging, reload, welcome, and permission list behavior.",
+        "label": "General"
+      },
+      "landpricebase": {
+        "desc": "Base price for one free chunk in land-pricing mode.",
+        "label": "Land base price"
+      },
+      "landpriceclusterincrement": {
+        "desc": "Additive price increment per chunk in an adjacent cluster.",
+        "label": "Cluster price increment"
+      },
+      "landpriceincludebaseclaimsfree": {
+        "desc": "Waives the base land price within the base claim limit; cluster surcharges remain payable.",
+        "label": "Included base claims free"
+      },
+      "landpricingrules": {
+        "desc": "Rules used by the land-pricing mode.",
+        "label": "Land-pricing rules"
+      },
+      "loglevel": {
+        "desc": "Controls LandClaim logging verbosity.",
+        "label": "Log level"
+      },
+      "minutestoclaim": {
+        "desc": "Minimum minutes a player must stay in a chunk before claiming.",
+        "label": "Minutes to claim"
+      },
+      "playtimehoursextraclaimfactor": {
+        "desc": "Decimal factor used to grant additional claims from playtime.",
+        "label": "Playtime extra-claim factor"
+      },
+      "recentlyonlinepermissionlisthours": {
+        "desc": "Hours used for recently seen players in permission workflows.",
+        "label": "Recently online hours"
+      },
+      "reloadonchange": {
+        "desc": "Documents that LandClaim settings reload when settings.properties changes.",
+        "label": "Reload on change"
+      },
+      "renewzonedefaultintervalhours": {
+        "desc": "Default interval for new renew zones in hours.",
+        "label": "Default renew interval"
+      },
+      "renewzoneresetannouncementtarget": {
+        "desc": "Recipients of renew-zone reset announcements.",
+        "label": "Reset announcements"
+      },
+      "renewzoneresetbasedelayseconds": {
+        "desc": "Minimum delay before the next renew-zone reset.",
+        "label": "Base reset delay"
+      },
+      "renewzoneresetdelayperchunkmillis": {
+        "desc": "Additional delay per reset chunk column.",
+        "label": "Reset delay per chunk"
+      },
+      "renewzoneresetmaxdelayseconds": {
+        "desc": "Maximum delay before the next renew-zone reset.",
+        "label": "Maximum reset delay"
+      },
+      "renewzones": {
+        "desc": "Defaults and reset behavior for renew zones.",
+        "label": "Renew zones"
+      },
+      "showpvpareaframes": {
+        "desc": "Shows PvP special-zone frames to players.",
+        "label": "Show PvP areas"
+      },
+      "showrenewareaframes": {
+        "desc": "Shows renew-zone frames to players.",
+        "label": "Show renew zones"
+      },
+      "showrestareaframes": {
+        "desc": "Shows rest special-zone frames to players.",
+        "label": "Show rest areas"
+      },
+      "showspecialareaframes": {
+        "desc": "Shows neutral special-zone frames to players.",
+        "label": "Show special areas"
+      },
+      "showstaticareaframes": {
+        "desc": "Shows static special-zone frames to players.",
+        "label": "Show static areas"
+      },
+      "showtrapareaframes": {
+        "desc": "Shows trap special-zone frames to players.",
+        "label": "Show trap areas"
+      },
+      "specialzonevisibility": {
+        "desc": "Controls which special zones players see when showing other areas.",
+        "label": "Special-zone visibility"
+      },
+      "timemoderules": {
+        "desc": "Rules used by the time-based acquisition mode.",
+        "label": "Time-mode rules"
+      },
+      "unusedrules": {
+        "desc": "Reserved settings without a current gameplay effect.",
+        "label": "Currently unused rules"
+      }
+    },
+    "time": {
+      "measurement": {
+        "chunk": "Chunk",
+        "title": "Time measurement",
+        "zone": "Zone"
+      }
+    },
+    "ui": {
+      "admin": {
+        "cleanup": {
+          "action": {
+            "legend": "\u003ccolor\u003d#C7281F\u003eC\u003c/color\u003e cleans up and resets chunks, \u003ccolor\u003d#F2841F\u003eD\u003c/color\u003e deletes without chunk reset, \u003ccolor\u003d#3366E6\u003eT\u003c/color\u003e teleports."
+          },
+          "days": "PH_DAYS days",
+          "empty": "No active claims found.",
+          "owner": {
+            "system": "System"
+          },
+          "special": {
+            "empty": "No special properties found."
+          },
+          "subtitle": "Review inactive owners and claimed areas before deleting or cleaning them.",
+          "tab": {
+            "areas": "Properties",
+            "owners": "Land owners",
+            "special": {
+              "areas": "Special properties"
+            }
+          },
+          "th": {
+            "actions": "Actions",
+            "area": "Area",
+            "chunks": "Chunks",
+            "claims": "Claims",
+            "inactive": "Inactive",
+            "last": {
+              "seen": "Last seen"
+            },
+            "max": "Max",
+            "name": "Name",
+            "owner": "Owner"
+          },
+          "title": "Property management",
+          "today": "Today",
+          "unknown": "Unknown"
+        }
+      },
+      "area": {
+        "permissions": {
+          "info": "Owner: PH_AREA_OWNER",
+          "subtitle": "Here you can set \"friend\" permissions for other players.",
+          "title": "Permissions for area \u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e"
+        }
+      },
+      "btn": {
+        "cancel": "Cancel",
+        "close": "Close",
+        "expand": {
+          "paid": "Paid expansion"
+        },
+        "no": "No",
+        "ok": "OK",
+        "yes": "Yes"
+      },
+      "city": {
+        "expand": {
+          "$value": "Expand radius",
+          "blocked": {
+            "city": {
+              "not": {
+                "found": "City expansion unavailable: the city no longer exists."
+              },
+              "overlap": "City expansion unavailable: the next radius would overlap another city."
+            },
+            "funds": "City expansion unavailable: PH_PRICE required, treasury contains PH_BALANCE.",
+            "max": {
+              "radius": "City expansion unavailable: the maximum radius has been reached."
+            },
+            "price": "The expansion price is invalid or too high.",
+            "sector": {
+              "boundary": "City expansion unavailable: the next radius would cross the sector boundary."
+            }
+          }
+        },
+        "global": "global default",
+        "legend": "City lists show up to 50 entries per page.",
+        "not": {
+          "found": "The current city could not be found."
+        },
+        "overview": "\u003cb\u003ePH_CITY_NAME\u003c/b\u003e\nRadius: PH_RADIUS\nTreasury: PH_BALANCE\nNext expansion: PH_NEXT_PRICE\nLeaseholds: PH_LEASE_TOTAL (occupied: PH_LEASE_OCCUPIED, unoccupied: PH_LEASE_UNOCCUPIED)\nDaily rental income: PH_DAILY_RENT PH_CURRENCY",
+        "page": "Page PH_PAGE",
+        "private": {
+          "$value": "Private claims: PH_VALUE",
+          "price": {
+            "$value": "Private price: PH_VALUE",
+            "edit": "Private claim price (empty \u003d global)"
+          }
+        },
+        "search": "Search",
+        "subtitle": "Manage the current city and browse other city cores.",
+        "tab": {
+          "current": "City management",
+          "others": "City list"
+        },
+        "teleport": "Teleport",
+        "th": {
+          "action": "Action",
+          "balance": "Treasury",
+          "name": "Name",
+          "position": "Position x,z",
+          "radius": "Radius",
+          "sector": "Sector x,z"
+        },
+        "title": "City management"
+      },
+      "label": {
+        "area": {
+          "frame": {
+            "chunk": {
+              "radius": "Area-frame view radius (chunks)"
+            }
+          }
+        },
+        "developer": {
+          "mode": "Developer Mode"
+        },
+        "enable": {
+          "claim": {
+            "info": {
+              "overlay": "Enable Claim Info Overlay"
+            }
+          },
+          "time": {
+            "measurement": {
+              "overlay": "Show time measurement"
+            }
+          }
+        },
+        "input": "Input:",
+        "landclaim": {
+          "shortcut": "Show Land Claim shortcut in /ozt and inventory"
+        },
+        "show": {
+          "current": {
+            "chunk": {
+              "frame": "Show Current Chunk Frame"
+            }
+          },
+          "other": {
+            "areas": "Show Other Areas"
+          },
+          "owned": {
+            "areas": "Show Owned Areas"
+          }
+        }
+      },
+      "lease": {
+        "admin": {
+          "legend": "Rent increases for occupied property require confirmation and notify the owner.",
+          "subtitle": "Configure prices and acquisition rules for this property.",
+          "tab": "Leasehold management",
+          "title": "Leasehold management"
+        },
+        "edit": {
+          "price": "Edit purchase price",
+          "rent": "Edit daily rent"
+        },
+        "overview": "\u003cb\u003ePH_AREA_NAME\u003c/b\u003e\nOwner: PH_OWNER\nPurchase price: PH_PURCHASE_PRICE\nDaily rent: PH_RENT",
+        "purchase": {
+          "allowed": "Purchase allowed"
+        },
+        "rent": {
+          "allowed": "Rent allowed",
+          "increase": {
+            "confirm": "Increase daily rent from PH_OLD_RENT to PH_NEW_RENT? The owner will be notified.",
+            "title": "Increase occupied rent"
+          }
+        },
+        "unoccupied": "Unoccupied"
+      },
+      "permission": {
+        "exiled": "Exiled",
+        "friend": "Friend",
+        "guest": "Guest",
+        "owner": "Owner",
+        "prisoner": "Prisoner",
+        "pvp": "PvP Area",
+        "renew": "Renew Zone",
+        "resident": "Resident",
+        "rest": "Rest Area",
+        "special": "Special-Area",
+        "static": "Static Area",
+        "trap": "Trap Area"
+      },
+      "player": {
+        "permission": {
+          "set": "Permissions for player \u003ccolor\u003dyellow\u003ePH_PLAYER_NAME\u003c/color\u003e set to \u003ccolor\u003dyellow\u003ePH_PERMISSION\u003c/color\u003e.",
+          "unset": "Permissions for player \u003ccolor\u003dyellow\u003ePH_PLAYER_NAME\u003c/color\u003e removed."
+        }
+      },
+      "status": {
+        "offline": "Offline",
+        "online": "Online"
+      },
+      "th": {
+        "label": {
+          "name": "Name",
+          "permission": "Permission",
+          "status": "Status",
+          "uid": "UID"
+        }
+      }
+    },
+    "wallet": {
+      "city": {
+        "dissolution": "Revenue from dissolution of city PH_CITY_NAME | PH_AREA_ID",
+        "expansion": {
+          "$value": "Expansion of city PH_CITY_NAME",
+          "rollback": "Refund for failed city expansion"
+        },
+        "lease": {
+          "purchase": "Purchase of property PH_AREA_NAME (PH_AREA_ID)",
+          "rent": "Rent for property PH_AREA_NAME (PH_AREA_ID)",
+          "rollback": "Refund for failed property takeover"
+        },
+        "private": {
+          "expansion": "Private land expansion in city PH_CITY_NAME",
+          "purchase": "Private land PH_CHUNK_POS in city PH_CITY_NAME"
+        }
+      },
+      "land": {
+        "expansion": "Expansion of land PH_AREA_NAME",
+        "purchase": {
+          "$value": "Purchase of land at PH_CHUNK_POS by PH_PLAYER_NAME",
+          "rollback": "Refund for failed land purchase"
+        }
+      }
+    }
+  }
+}

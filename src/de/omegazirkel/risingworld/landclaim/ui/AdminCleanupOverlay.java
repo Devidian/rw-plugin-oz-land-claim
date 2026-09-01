@@ -14,7 +14,6 @@ import de.omegazirkel.risingworld.landclaim.DiscordConnect;
 import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.ui.AdvancedButtonFactory;
 import de.omegazirkel.risingworld.tools.ui.BasePluginOverlayWithTabs;
-import de.omegazirkel.risingworld.tools.ui.CursorManager;
 import de.omegazirkel.risingworld.tools.ui.AdvancedButton;
 import de.omegazirkel.risingworld.tools.ui.OZUIElement;
 import de.omegazirkel.risingworld.tools.ui.table.TableCell;
@@ -56,31 +55,31 @@ public class AdminCleanupOverlay extends BasePluginOverlayWithTabs {
 
     @Override
     protected String titleText() {
-        return t().get("TC_UI_ADMIN_CLEANUP_TITLE", player);
+        return t().get("tc.ui.admin.cleanup.title", player);
     }
 
     @Override
     protected String descriptionText() {
-        return t().get("TC_UI_ADMIN_CLEANUP_SUBTITLE", player);
+        return t().get("tc.ui.admin.cleanup.subtitle", player);
     }
 
     @Override
     protected String legendText() {
-        return t().get("TC_UI_ADMIN_CLEANUP_ACTION_LEGEND", player);
+        return t().get("tc.ui.admin.cleanup.action.legend", player);
     }
 
     @Override
     protected void setupTabs() {
         setupTabContainer();
-        addTab(t().get("TC_UI_ADMIN_CLEANUP_TAB_OWNERS", player), 180, activeTab == Tab.OWNERS, true, () -> {
+        addTab(t().get("tc.ui.admin.cleanup.tab.owners", player), 180, activeTab == Tab.OWNERS, true, () -> {
             activeTab = Tab.OWNERS;
             rebuild();
         });
-        addTab(t().get("TC_UI_ADMIN_CLEANUP_TAB_AREAS", player), 180, activeTab == Tab.AREAS, true, () -> {
+        addTab(t().get("tc.ui.admin.cleanup.tab.areas", player), 180, activeTab == Tab.AREAS, true, () -> {
             activeTab = Tab.AREAS;
             rebuild();
         });
-        addTab(t().get("TC_UI_ADMIN_CLEANUP_TAB_SPECIAL_AREAS", player), 220, activeTab == Tab.SPECIAL_AREAS, true, () -> {
+        addTab(t().get("tc.ui.admin.cleanup.tab.special.areas", player), 220, activeTab == Tab.SPECIAL_AREAS, true, () -> {
             activeTab = Tab.SPECIAL_AREAS;
             rebuild();
         });
@@ -96,17 +95,17 @@ public class AdminCleanupOverlay extends BasePluginOverlayWithTabs {
     private void setupOwnerTable() {
         TableScrollView table = new TableScrollView(
                 Arrays.asList(
-                        t().get("TC_UI_ADMIN_CLEANUP_TH_NAME", player),
-                        t().get("TC_UI_ADMIN_CLEANUP_TH_CLAIMS", player),
-                        t().get("TC_UI_ADMIN_CLEANUP_TH_MAX", player),
-                        t().get("TC_UI_ADMIN_CLEANUP_TH_LAST_SEEN", player),
-                        t().get("TC_UI_ADMIN_CLEANUP_TH_ACTIONS", player)),
+                        t().get("tc.ui.admin.cleanup.th.name", player),
+                        t().get("tc.ui.admin.cleanup.th.claims", player),
+                        t().get("tc.ui.admin.cleanup.th.max", player),
+                        t().get("tc.ui.admin.cleanup.th.last.seen", player),
+                        t().get("tc.ui.admin.cleanup.th.actions", player)),
                 Arrays.asList(30f, 12f, 13f, 25f, 20f));
         table.setScrollBodyHeight(TABLE_SCROLL_BODY_HEIGHT);
 
         List<OwnerSummary> owners = cleanupService.getOwnerSummaries();
         if (owners.isEmpty()) {
-            table.addRow(shortenOwnerRow(textOnlyRow(t().get("TC_UI_ADMIN_CLEANUP_EMPTY", player), 100f)));
+            table.addRow(shortenOwnerRow(textOnlyRow(t().get("tc.ui.admin.cleanup.empty", player), 100f)));
         } else {
             for (OwnerSummary owner : owners) {
                 table.addRow(shortenOwnerRow(ownerRow(owner)));
@@ -118,16 +117,16 @@ public class AdminCleanupOverlay extends BasePluginOverlayWithTabs {
     private void setupSpecialAreaTable() {
         TableScrollView table = new TableScrollView(
                 Arrays.asList(
-                        t().get("TC_UI_ADMIN_CLEANUP_TH_AREA", player),
-                        t().get("TC_UI_ADMIN_CLEANUP_TH_CHUNKS", player),
-                        t().get("TC_UI_ADMIN_CLEANUP_TH_OWNER", player),
-                        t().get("TC_UI_ADMIN_CLEANUP_TH_ACTIONS", player)),
+                        t().get("tc.ui.admin.cleanup.th.area", player),
+                        t().get("tc.ui.admin.cleanup.th.chunks", player),
+                        t().get("tc.ui.admin.cleanup.th.owner", player),
+                        t().get("tc.ui.admin.cleanup.th.actions", player)),
                 Arrays.asList(38f, 17f, 25f, 20f));
         table.setScrollBodyHeight(TABLE_SCROLL_BODY_HEIGHT);
 
         List<SpecialAreaSummary> areas = cleanupService.getSpecialAreaSummaries();
         if (areas.isEmpty()) {
-            table.addRow(textOnlyRow(t().get("TC_UI_ADMIN_CLEANUP_SPECIAL_EMPTY", player), 100f));
+            table.addRow(textOnlyRow(t().get("tc.ui.admin.cleanup.special.empty", player), 100f));
         } else {
             for (SpecialAreaSummary area : areas) {
                 table.addRow(specialAreaRow(area));
@@ -139,17 +138,17 @@ public class AdminCleanupOverlay extends BasePluginOverlayWithTabs {
     private void setupAreaTable() {
         TableScrollView table = new TableScrollView(
                 Arrays.asList(
-                        t().get("TC_UI_ADMIN_CLEANUP_TH_AREA", player),
-                        t().get("TC_UI_ADMIN_CLEANUP_TH_CHUNKS", player),
-                        t().get("TC_UI_ADMIN_CLEANUP_TH_OWNER", player),
-                        t().get("TC_UI_ADMIN_CLEANUP_TH_INACTIVE", player),
-                        t().get("TC_UI_ADMIN_CLEANUP_TH_ACTIONS", player)),
+                        t().get("tc.ui.admin.cleanup.th.area", player),
+                        t().get("tc.ui.admin.cleanup.th.chunks", player),
+                        t().get("tc.ui.admin.cleanup.th.owner", player),
+                        t().get("tc.ui.admin.cleanup.th.inactive", player),
+                        t().get("tc.ui.admin.cleanup.th.actions", player)),
                 Arrays.asList(30f, 12f, 25f, 13f, 20f));
         table.setScrollBodyHeight(TABLE_SCROLL_BODY_HEIGHT);
 
         List<AreaSummary> areas = cleanupService.getAreaSummaries();
         if (areas.isEmpty()) {
-            table.addRow(textOnlyRow(t().get("TC_UI_ADMIN_CLEANUP_EMPTY", player), 100f));
+            table.addRow(textOnlyRow(t().get("tc.ui.admin.cleanup.empty", player), 100f));
         } else {
             for (AreaSummary area : areas) {
                 table.addRow(areaRow(area));
@@ -180,7 +179,7 @@ public class AdminCleanupOverlay extends BasePluginOverlayWithTabs {
         return new TableRow(Arrays.asList(
                 labelCell(area.areaName(), 38f),
                 labelCell(String.valueOf(area.chunkCount()), 17f),
-                labelCell(t().get("TC_UI_ADMIN_CLEANUP_OWNER_SYSTEM", player), 25f),
+                labelCell(t().get("tc.ui.admin.cleanup.owner.system", player), 25f),
                 new TableCell(specialAreaActions(area), 20f)));
     }
 
@@ -254,8 +253,8 @@ public class AdminCleanupOverlay extends BasePluginOverlayWithTabs {
 
     private void confirmOwnerDelete(OwnerSummary owner) {
         showConfirm(
-                t().get("TC_DIALOG_ADMIN_DELETE_OWNER_TITLE", player),
-                t().get("TC_DIALOG_ADMIN_DELETE_OWNER_CONFIRM", player)
+                t().get("tc.dialog.admin.delete.owner.title", player),
+                t().get("tc.dialog.admin.delete.owner.confirm", player)
                         .replace("PH_PLAYER_NAME", owner.ownerName())
                         .replace("PH_CLAIM_COUNT", String.valueOf(owner.claimCount())),
                 () -> handleCleanupResult(cleanupService.deleteOwner(owner.ownerUid()), owner.ownerName(), false));
@@ -263,8 +262,8 @@ public class AdminCleanupOverlay extends BasePluginOverlayWithTabs {
 
     private void confirmOwnerCleanup(OwnerSummary owner) {
         showConfirm(
-                t().get("TC_DIALOG_ADMIN_CLEANUP_OWNER_TITLE", player),
-                t().get("TC_DIALOG_ADMIN_CLEANUP_OWNER_CONFIRM", player)
+                t().get("tc.dialog.admin.cleanup.owner.title", player),
+                t().get("tc.dialog.admin.cleanup.owner.confirm", player)
                         .replace("PH_PLAYER_NAME", owner.ownerName())
                         .replace("PH_CLAIM_COUNT", String.valueOf(owner.claimCount())),
                 () -> handleCleanupResult(cleanupService.cleanupOwner(owner.ownerUid()), owner.ownerName(), true));
@@ -272,52 +271,52 @@ public class AdminCleanupOverlay extends BasePluginOverlayWithTabs {
 
     private void confirmAreaDelete(AreaSummary area) {
         showConfirm(
-                t().get("TC_DIALOG_ADMIN_DELETE_AREA_TITLE", player),
-                t().get("TC_DIALOG_ADMIN_DELETE_AREA_CONFIRM", player)
+                t().get("tc.dialog.admin.delete.area.title", player),
+                t().get("tc.dialog.admin.delete.area.confirm", player)
                         .replace("PH_AREA_NAME", area.areaName()),
                 () -> handleCleanupResult(cleanupService.deleteArea(area.areaId()), area.areaName(), false));
     }
 
     private void confirmAreaCleanup(AreaSummary area) {
         showConfirm(
-                t().get("TC_DIALOG_ADMIN_CLEANUP_AREA_TITLE", player),
-                t().get("TC_DIALOG_ADMIN_CLEANUP_AREA_CONFIRM", player)
+                t().get("tc.dialog.admin.cleanup.area.title", player),
+                t().get("tc.dialog.admin.cleanup.area.confirm", player)
                         .replace("PH_AREA_NAME", area.areaName()),
                 () -> handleCleanupResult(cleanupService.cleanupArea(area.areaId()), area.areaName(), true));
     }
 
     private void confirmSpecialAreaDelete(SpecialAreaSummary area) {
         showConfirm(
-                t().get("TC_DIALOG_ADMIN_DELETE_SPECIAL_AREA_TITLE", player),
-                t().get("TC_DIALOG_ADMIN_DELETE_SPECIAL_AREA_CONFIRM", player)
+                t().get("tc.dialog.admin.delete.special.area.title", player),
+                t().get("tc.dialog.admin.delete.special.area.confirm", player)
                         .replace("PH_AREA_NAME", area.areaName()),
                 () -> handleSpecialAreaResult(cleanupService.deleteSpecialArea(area.areaId()), area.areaName(), false));
     }
 
     private void confirmSpecialAreaCleanup(SpecialAreaSummary area) {
         showConfirm(
-                t().get("TC_DIALOG_ADMIN_CLEANUP_SPECIAL_AREA_TITLE", player),
-                t().get("TC_DIALOG_ADMIN_CLEANUP_SPECIAL_AREA_CONFIRM", player)
+                t().get("tc.dialog.admin.cleanup.special.area.title", player),
+                t().get("tc.dialog.admin.cleanup.special.area.confirm", player)
                         .replace("PH_AREA_NAME", area.areaName()),
                 () -> handleSpecialAreaResult(cleanupService.cleanupSpecialArea(area.areaId()), area.areaName(), true));
     }
 
     private void teleport(AreaSummary area) {
         if (cleanupService.teleportToArea(player, area.areaId())) {
-            player.sendTextMessage(t().get("TC_ADMIN_CLEANUP_TELEPORT_SUCCESS", player)
+            player.sendTextMessage(t().get("tc.admin.cleanup.teleport.success", player)
                     .replace("PH_AREA_NAME", area.areaName()));
         } else {
-            player.sendTextMessage(t().get("TC_ADMIN_CLEANUP_TELEPORT_FAILED", player)
+            player.sendTextMessage(t().get("tc.admin.cleanup.teleport.failed", player)
                     .replace("PH_AREA_NAME", area.areaName()));
         }
     }
 
     private void teleport(SpecialAreaSummary area) {
         if (cleanupService.teleportToArea(player, area.areaId())) {
-            player.sendTextMessage(t().get("TC_ADMIN_CLEANUP_TELEPORT_SUCCESS", player)
+            player.sendTextMessage(t().get("tc.admin.cleanup.teleport.success", player)
                     .replace("PH_AREA_NAME", area.areaName()));
         } else {
-            player.sendTextMessage(t().get("TC_ADMIN_CLEANUP_TELEPORT_FAILED", player)
+            player.sendTextMessage(t().get("tc.admin.cleanup.teleport.failed", player)
                     .replace("PH_AREA_NAME", area.areaName()));
         }
     }
@@ -328,62 +327,57 @@ public class AdminCleanupOverlay extends BasePluginOverlayWithTabs {
                 onConfirm.run();
             }
         }, p -> {
-            CursorManager.show(p);
         });
-        player.addUIElement(dialog, UITarget.HUD);
-        CursorManager.show(player);
+        player.addUIElement(dialog, UITarget.Modal);
     }
 
     private void handleCleanupResult(CleanupResult result, String targetName, boolean resetChunks) {
         if (!result.success()) {
-            player.sendTextMessage(t().get("TC_ADMIN_CLEANUP_BLOCKED", player)
+            player.sendTextMessage(t().get("tc.admin.cleanup.blocked", player)
                     .replace("PH_CHUNK_POS", String.valueOf(result.conflictChunk())));
-            DiscordConnect.sendDiscordReleaseAccouncement(t().get("TC_DISCORD_ADMIN_CLEANUP_BLOCKED", DiscordConnect.botLang())
+            DiscordConnect.sendDiscordReleaseAccouncement(t().get("tc.discord.admin.cleanup.blocked", DiscordConnect.botLang())
                     .replace("PH_TARGET", targetName)
                     .replace("PH_CHUNK_POS", String.valueOf(result.conflictChunk()))
                     .replace("PH_ADMIN_NAME", player.getName()));
-            CursorManager.show(player);
             return;
         }
         Area3DUtils.updateAreaFramesForAllPlayers();
-        String messageKey = resetChunks ? "TC_ADMIN_CLEANUP_SUCCESS" : "TC_ADMIN_DELETE_SUCCESS";
+        String messageKey = resetChunks ? "tc.admin.cleanup.success" : "tc.admin.delete.success";
         player.sendTextMessage(t().get(messageKey, player)
                 .replace("PH_TARGET", targetName)
                 .replace("PH_CLAIM_COUNT", String.valueOf(result.claimsAffected()))
                 .replace("PH_RESET_COUNT", String.valueOf(result.chunksReset())));
-        String discordKey = resetChunks ? "TC_DISCORD_ADMIN_CLEANUP" : "TC_DISCORD_ADMIN_DELETE";
+        String discordKey = resetChunks ? "tc.discord.admin.cleanup" : "tc.discord.admin.delete";
         DiscordConnect.sendDiscordReleaseAccouncement(t().get(discordKey, DiscordConnect.botLang())
                 .replace("PH_TARGET", targetName)
                 .replace("PH_CLAIM_COUNT", String.valueOf(result.claimsAffected()))
                 .replace("PH_RESET_COUNT", String.valueOf(result.chunksReset()))
                 .replace("PH_ADMIN_NAME", player.getName()));
-        CursorManager.show(player);
         rebuild();
     }
 
     private void handleSpecialAreaResult(CleanupResult result, String targetName, boolean resetChunks) {
         Area3DUtils.updateAreaFramesForAllPlayers();
-        String messageKey = resetChunks ? "TC_ADMIN_CLEANUP_SPECIAL_AREA_SUCCESS" : "TC_ADMIN_DELETE_SPECIAL_AREA_SUCCESS";
+        String messageKey = resetChunks ? "tc.admin.cleanup.special.area.success" : "tc.admin.delete.special.area.success";
         player.sendTextMessage(t().get(messageKey, player)
                 .replace("PH_TARGET", targetName)
                 .replace("PH_RESET_COUNT", String.valueOf(result.chunksReset())));
-        String discordKey = resetChunks ? "TC_DISCORD_ADMIN_CLEANUP_SPECIAL_AREA" : "TC_DISCORD_ADMIN_DELETE_SPECIAL_AREA";
+        String discordKey = resetChunks ? "tc.discord.admin.cleanup.special.area" : "tc.discord.admin.delete.special.area";
         DiscordConnect.sendDiscordReleaseAccouncement(t().get(discordKey, DiscordConnect.botLang())
                 .replace("PH_TARGET", targetName)
                 .replace("PH_RESET_COUNT", String.valueOf(result.chunksReset()))
                 .replace("PH_ADMIN_NAME", player.getName()));
-        CursorManager.show(player);
         rebuild();
     }
 
     private String formatLastSeen(long lastSeenEpochSeconds, long inactiveDays) {
         if (lastSeenEpochSeconds <= 0) {
-            return t().get("TC_UI_ADMIN_CLEANUP_UNKNOWN", player);
+            return t().get("tc.ui.admin.cleanup.unknown", player);
         }
         if (inactiveDays == 0) {
-            return t().get("TC_UI_ADMIN_CLEANUP_TODAY", player);
+            return t().get("tc.ui.admin.cleanup.today", player);
         }
-        return t().get("TC_UI_ADMIN_CLEANUP_DAYS", player).replace("PH_DAYS", String.valueOf(inactiveDays));
+        return t().get("tc.ui.admin.cleanup.days", player).replace("PH_DAYS", String.valueOf(inactiveDays));
     }
 
     @Override

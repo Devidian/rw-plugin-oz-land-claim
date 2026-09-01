@@ -13,6 +13,7 @@ import de.omegazirkel.risingworld.LandClaim;
 import de.omegazirkel.risingworld.tools.OZLogger;
 import de.omegazirkel.risingworld.tools.settings.AdminSettingsEntry;
 import de.omegazirkel.risingworld.tools.settings.AdminSettingsType;
+import de.omegazirkel.risingworld.tools.settings.JsonSettingsFile;
 import de.omegazirkel.risingworld.tools.settings.SettingsFileEditor;
 import net.risingworld.api.Plugin;
 import net.risingworld.api.utils.ColorRGBA;
@@ -27,8 +28,6 @@ public class PluginSettings {
         }
 
         // Public settings
-        public String logLevel = "ALL";
-        public Boolean reloadOnChange = true;
         public ClaimMode claimMode = ClaimMode.TIME_BASED;
         public Integer minutesToClaim = 10;
         public double claimTimeScaleFactor = 1.01;
@@ -177,31 +176,26 @@ public class PluginSettings {
         }
 
         public void initSettings() {
-                initSettings((plugin.getPath() != null ? plugin.getPath() : ".") + "/settings.properties");
+                initSettings(JsonSettingsFile.worldSettingsFile(plugin.getPath()).toString());
         }
 
         public void initSettings(String filePath) {
                 Path settingsFile = Paths.get(filePath);
-                Path defaultSettingsFile = settingsFile.resolveSibling("settings.default.properties");
+                Path defaultSettingsFile = settingsFile.resolveSibling("settings.default.json");
+                Path legacySettingsFile = settingsFile.resolveSibling("settings.properties");
 
                 try {
-                        if (Files.notExists(settingsFile) && Files.exists(defaultSettingsFile)) {
-                                logger().info("settings.properties not found, copying from settings.default.properties...");
-                                Files.copy(defaultSettingsFile, settingsFile);
-                        }
+                        if (JsonSettingsFile.migrateLegacyProperties(legacySettingsFile, settingsFile))
+                                logger().info("Migrated legacy settings.properties to " + settingsFile.getFileName());
+                        if (Files.notExists(settingsFile) && Files.exists(defaultSettingsFile))
+                                JsonSettingsFile.writeFlatAtomically(settingsFile, JsonSettingsFile.loadFlat(defaultSettingsFile));
 
-                        Properties settings = new Properties();
-                        if (Files.exists(settingsFile)) {
-                                try (FileInputStream in = new FileInputStream(settingsFile.toFile())) {
-                                        settings.load(new InputStreamReader(in, "UTF8"));
-                                }
-                        } else {
+                        Properties settings = loadSettings(settingsFile);
+                        if (settings.isEmpty()) {
                                 logger().warn(
                                                 "⚠️ Neither settings.properties nor settings.default.properties found. Using default values.");
                         }
                         // fill properties
-                        logLevel = settings.getProperty("logLevel", "ALL");
-                        reloadOnChange = settings.getProperty("reloadOnChange", "true").contentEquals("true");
                         claimMode = ClaimMode.parse(settings.getProperty("claimMode", "TIME_BASED"));
                         enableWelcomeMessage = settings.getProperty("enableWelcomeMessage", "false")
                                         .contentEquals("true");
@@ -400,12 +394,7 @@ public class PluginSettings {
         public java.util.List<AdminSettingsEntry> adminSettingsEntries() {
                 return java.util.List.of(
                                 AdminSettingsEntry.group("general", "General",
-                                                "Logging, reload, welcome, and permission list behavior."),
-                                entry("logLevel", "Log level", "Controls LandClaim logging verbosity.", logLevel,
-                                                "ALL", AdminSettingsType.STRING),
-                                entry("reloadOnChange", "Reload on change",
-                                                "Documents that LandClaim settings reload when settings.properties changes.",
-                                                reloadOnChange, "true", AdminSettingsType.BOOLEAN),
+                                                "Welcome and permission list behavior."),
                                 entry("enableWelcomeMessage", "Welcome message",
                                                 "Shows a short LandClaim message when a player joins.",
                                                 enableWelcomeMessage, "false", AdminSettingsType.BOOLEAN),
@@ -606,7 +595,20 @@ public class PluginSettings {
         }
 
         private Path settingsPath() {
-                return Paths.get((plugin.getPath() != null ? plugin.getPath() : ".") + "/settings.properties");
+                return JsonSettingsFile.worldSettingsFile(plugin.getPath() != null ? plugin.getPath() : ".");
+        }
+
+        /** Keeps explicit legacy settings paths usable for tooling and existing tests. */
+        private Properties loadSettings(Path file) throws IOException {
+                if (!file.getFileName().toString().endsWith(".properties"))
+                        return JsonSettingsFile.loadProperties(file);
+                Properties properties = new Properties();
+                if (Files.exists(file)) {
+                        try (FileInputStream input = new FileInputStream(file.toFile())) {
+                                properties.load(new InputStreamReader(input, "UTF8"));
+                        }
+                }
+                return properties;
         }
 
 }

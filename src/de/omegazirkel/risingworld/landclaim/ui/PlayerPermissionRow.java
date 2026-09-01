@@ -63,8 +63,8 @@ public class PlayerPermissionRow {
         UILabel uidLabel = new UILabel(uidLabelText);
         UILabel statusLabel = new UILabel(
                 isOnline
-                        ? "<color=#44dd44>" + t().get("TC_UI_STATUS_ONLINE", forPlayer) + "</color>"
-                        : "<color=#dd4444>" + t().get("TC_UI_STATUS_OFFLINE", forPlayer) + "</color>");
+                        ? "<color=#44dd44>" + t().get("tc.ui.status.online", forPlayer) + "</color>"
+                        : "<color=#dd4444>" + t().get("tc.ui.status.offline", forPlayer) + "</color>");
 
         TableCell cellName = new TableCell(nameLabel, 30);
         TableCell cellUID = new TableCell(uidLabel, 35);
@@ -75,24 +75,24 @@ public class PlayerPermissionRow {
         }
 
         if (currentPermission.equals(s.ownerAreaPermission)) {
-            UILabel ownerLabel = new UILabel(t().get("TC_UI_PERMISSION_OWNER", forPlayer));
+            UILabel ownerLabel = new UILabel(t().get("tc.ui.permission.owner", forPlayer));
             TableCell cellOwner = new TableCell(ownerLabel, 20);
             return new TableRow(Arrays.asList(cellName, cellUID, cellStatus, cellOwner));
         }
 
         // List<DropdownOption> options = List.of(
         // // new DropdownOption(s.ownerAreaPermission,
-        // t().get("TC_UI_PERMISSION_OWNER",
+        // t().get("tc.ui.permission.owner",
         // // forPlayer)),
         // new DropdownOption(s.residentAreaPermission,
-        // t().get("TC_UI_PERMISSION_RESIDENT", forPlayer)),
-        // new DropdownOption(s.friendAreaPermission, t().get("TC_UI_PERMISSION_FRIEND",
+        // t().get("tc.ui.permission.resident", forPlayer)),
+        // new DropdownOption(s.friendAreaPermission, t().get("tc.ui.permission.friend",
         // forPlayer)),
-        // new DropdownOption(s.defaultAreaPermission, t().get("TC_UI_PERMISSION_GUEST",
+        // new DropdownOption(s.defaultAreaPermission, t().get("tc.ui.permission.guest",
         // forPlayer)),
         // new DropdownOption(s.prisonerAreaPermission,
-        // t().get("TC_UI_PERMISSION_PRISONER", forPlayer)),
-        // new DropdownOption(s.exiledAreaPermission, t().get("TC_UI_PERMISSION_EXILED",
+        // t().get("tc.ui.permission.prisoner", forPlayer)),
+        // new DropdownOption(s.exiledAreaPermission, t().get("tc.ui.permission.exiled",
         // forPlayer)));
         // Dropdown dropdown = new Dropdown(options, currentPermission, (selected) ->
         // callback.accept(selected));
@@ -101,21 +101,21 @@ public class PlayerPermissionRow {
 
         // area permissions
         Map<String, String> areaPermissionLabelMap = Map.of(
-                s.defaultAreaPermission, t().get("TC_UI_PERMISSION_GUEST", forPlayer),
-                s.specialAreaPermission, t().get("TC_UI_PERMISSION_SPECIAL", forPlayer),
-                s.specialPvPAreaPermission, t().get("TC_UI_PERMISSION_PVP", forPlayer),
-                s.specialStaticAreaPermission, t().get("TC_UI_PERMISSION_STATIC", forPlayer),
-                s.specialRestAreaPermission, t().get("TC_UI_PERMISSION_REST", forPlayer),
-                s.specialTrapAreaPermission, t().get("TC_UI_PERMISSION_TRAP", forPlayer),
-                s.specialRenewAreaPermission, t().get("TC_UI_PERMISSION_RENEW", forPlayer));
+                s.defaultAreaPermission, t().get("tc.ui.permission.guest", forPlayer),
+                s.specialAreaPermission, t().get("tc.ui.permission.special", forPlayer),
+                s.specialPvPAreaPermission, t().get("tc.ui.permission.pvp", forPlayer),
+                s.specialStaticAreaPermission, t().get("tc.ui.permission.static", forPlayer),
+                s.specialRestAreaPermission, t().get("tc.ui.permission.rest", forPlayer),
+                s.specialTrapAreaPermission, t().get("tc.ui.permission.trap", forPlayer),
+                s.specialRenewAreaPermission, t().get("tc.ui.permission.renew", forPlayer));
 
         // WORKAROUND fix dropdown!
         Map<String, String> permissionLabelMap = Map.of(
-                // s.ownerAreaPermission, t().get("TC_UI_PERMISSION_OWNER", forPlayer),
-                s.residentAreaPermission, t().get("TC_UI_PERMISSION_RESIDENT", forPlayer),
-                s.friendAreaPermission, t().get("TC_UI_PERMISSION_FRIEND", forPlayer),
-                s.prisonerAreaPermission, t().get("TC_UI_PERMISSION_PRISONER", forPlayer),
-                s.exiledAreaPermission, t().get("TC_UI_PERMISSION_EXILED", forPlayer));
+                // s.ownerAreaPermission, t().get("tc.ui.permission.owner", forPlayer),
+                s.residentAreaPermission, t().get("tc.ui.permission.resident", forPlayer),
+                s.friendAreaPermission, t().get("tc.ui.permission.friend", forPlayer),
+                s.prisonerAreaPermission, t().get("tc.ui.permission.prisoner", forPlayer),
+                s.exiledAreaPermission, t().get("tc.ui.permission.exiled", forPlayer));
 
         OZUIElement selectPane = new OZUIElement();
         selectPane.setBorder(2);
@@ -192,8 +192,8 @@ public class PlayerPermissionRow {
     }
 
     private static String permissionLabel(Map<String, String> labels, String permission, Player player) {
-        if (permission == null || permission.isBlank()) return t().get("TC_UI_PERMISSION_GUEST", player);
+        if (permission == null || permission.isBlank()) return t().get("tc.ui.permission.guest", player);
         String label = labels.get(permission);
-        return label == null || label.isBlank() ? t().get("TC_UI_PERMISSION_GUEST", player) : label;
+        return label == null || label.isBlank() ? t().get("tc.ui.permission.guest", player) : label;
     }
 }

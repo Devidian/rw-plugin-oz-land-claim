@@ -16,7 +16,6 @@ import de.omegazirkel.risingworld.tools.ui.AdvancedButtonFactory;
 import de.omegazirkel.risingworld.tools.ui.AdvancedButtonState;
 import de.omegazirkel.risingworld.tools.ui.AdvancedBaseButton.State;
 import de.omegazirkel.risingworld.tools.ui.BasePluginOverlayWithTabs;
-import de.omegazirkel.risingworld.tools.ui.CursorManager;
 import de.omegazirkel.risingworld.tools.ui.OZUIElement;
 import de.omegazirkel.risingworld.tools.ui.table.TableCell;
 import de.omegazirkel.risingworld.tools.ui.table.TableRow;
@@ -58,17 +57,17 @@ public final class CityManagementOverlay extends BasePluginOverlayWithTabs {
     }
 
     @Override protected I18n t() { return I18n.getInstance(LandClaim.name); }
-    @Override protected String titleText() { return t().get("TC_UI_CITY_TITLE", player); }
-    @Override protected String descriptionText() { return t().get("TC_UI_CITY_SUBTITLE", player); }
-    @Override protected String legendText() { return t().get("TC_UI_CITY_LEGEND", player); }
+    @Override protected String titleText() { return t().get("tc.ui.city.title", player); }
+    @Override protected String descriptionText() { return t().get("tc.ui.city.subtitle", player); }
+    @Override protected String legendText() { return t().get("tc.ui.city.legend", player); }
 
     @Override
     protected void setupTabs() {
         setupTabContainer();
-        addTab(t().get("TC_UI_CITY_TAB_CURRENT", player), 200, activeTab == Tab.CURRENT, true, () -> {
+        addTab(t().get("tc.ui.city.tab.current", player), 200, activeTab == Tab.CURRENT, true, () -> {
             activeTab = Tab.CURRENT; rebuild();
         });
-        addTab(t().get("TC_UI_CITY_TAB_OTHERS", player), 200, activeTab == Tab.OTHERS, true, () -> {
+        addTab(t().get("tc.ui.city.tab.others", player), 200, activeTab == Tab.OTHERS, true, () -> {
             activeTab = Tab.OTHERS; rebuild();
         });
         if (activeTab == Tab.CURRENT) setupCurrent(); else setupOthers();
@@ -76,7 +75,7 @@ public final class CityManagementOverlay extends BasePluginOverlayWithTabs {
 
     private void setupCurrent() {
         CityRecord city = cities.findCity(currentCityAreaId).orElse(null);
-        if (city == null) { body.addChild(label(t().get("TC_UI_CITY_NOT_FOUND", player), 20, 20, 700, 40)); return; }
+        if (city == null) { body.addChild(label(t().get("tc.ui.city.not.found", player), 20, 20, 700, 40)); return; }
         long nextChunks = cities.expansionChunkCount(city);
         long nextPrice;
         try { nextPrice = Math.multiplyExact(nextChunks, Math.max(0L, settings.cityExpansionBasePrice)); }
@@ -84,7 +83,7 @@ public final class CityManagementOverlay extends BasePluginOverlayWithTabs {
         if (nextPrice > LandPriceService.MAX_SAFE_INTEGER) nextPrice = -1;
         CityService.ExpansionEligibility geometry = cities.expansionEligibility(city.areaId());
         LeaseholdSummary leaseholds = cities.leaseholdSummary(city.areaId());
-        body.addChild(label(t().get("TC_UI_CITY_OVERVIEW", player)
+        body.addChild(label(t().get("tc.ui.city.overview", player)
                 .replace("PH_CITY_NAME", city.name()).replace("PH_RADIUS", String.valueOf(city.radius()))
                 .replace("PH_BALANCE", String.valueOf(economy.cityBalance(city.areaId())))
                 .replace("PH_NEXT_PRICE", nextPrice < 0 ? "N/A" : String.valueOf(nextPrice))
@@ -98,15 +97,15 @@ public final class CityManagementOverlay extends BasePluginOverlayWithTabs {
                 && economy.cityBalance(city.areaId()) >= expansionPrice;
         AdvancedButton expand = AdvancedButtonFactory.custom(
                 new AdvancedButtonState(State.DEFAULT, 0x00000080, 0x269F59FF, 0xFFFFFFFF, 0x000000AA, 0x32A05AFF,
-                        t().get("TC_UI_CITY_EXPAND", player), event -> {
+                        t().get("tc.ui.city.expand", player), event -> {
             if (expansionPrice < 0 || !cities.expansionEligibility(city.areaId()).eligible()
                     || economy.cityBalance(city.areaId()) < expansionPrice) return;
-            UIElement dialog = UIDialogFactory.getConfirmDangerDialog(player, t().get("TC_DIALOG_CITY_EXPAND_TITLE", player),
-                    t().get("TC_DIALOG_CITY_EXPAND_CONFIRM", player).replace("PH_PRICE", String.valueOf(expansionPrice)),
-                    confirmed -> { if (confirmed) expand(city, expansionPrice); }, p -> CursorManager.show(p));
-            player.addUIElement(dialog, UITarget.HUD); CursorManager.show(player);
+            UIElement dialog = UIDialogFactory.getConfirmDangerDialog(player, t().get("tc.dialog.city.expand.title", player),
+                    t().get("tc.dialog.city.expand.confirm", player).replace("PH_PRICE", String.valueOf(expansionPrice)),
+                    confirmed -> { if (confirmed) expand(city, expansionPrice); }, p -> { });
+            player.addUIElement(dialog, UITarget.Modal);
         }), new AdvancedButtonState(State.DISABLED, 0x414141FF, 0x242424FF, 0x999999FF, 0x414141FF, 0x242424FF,
-                t().get("TC_UI_CITY_EXPAND", player), null));
+                t().get("tc.ui.city.expand", player), null));
         if (!canExpand) expand.setState(State.DISABLED);
         position(expand, 20, 170, 220, 42); body.addChild(expand);
         if (!canExpand) {
@@ -114,9 +113,9 @@ public final class CityManagementOverlay extends BasePluginOverlayWithTabs {
                     20, 218, 760, 28));
         }
 
-        String privateState = city.allowPrivateClaimsOverride() == null ? t().get("TC_UI_CITY_GLOBAL", player)
+        String privateState = city.allowPrivateClaimsOverride() == null ? t().get("tc.ui.city.global", player)
                 : String.valueOf(city.allowPrivateClaimsOverride());
-        AdvancedButton toggle = AdvancedButtonFactory.defaultButton(t().get("TC_UI_CITY_PRIVATE", player)
+        AdvancedButton toggle = AdvancedButtonFactory.defaultButton(t().get("tc.ui.city.private", player)
                 .replace("PH_VALUE", privateState), event -> {
             Boolean next = city.allowPrivateClaimsOverride() == null ? Boolean.TRUE
                     : city.allowPrivateClaimsOverride() ? Boolean.FALSE : null;
@@ -124,9 +123,9 @@ public final class CityManagementOverlay extends BasePluginOverlayWithTabs {
         });
         position(toggle, 260, 170, 240, 42); body.addChild(toggle);
 
-        String price = city.privateClaimPriceOverride() == null ? t().get("TC_UI_CITY_GLOBAL", player)
+        String price = city.privateClaimPriceOverride() == null ? t().get("tc.ui.city.global", player)
                 : String.valueOf(city.privateClaimPriceOverride());
-        AdvancedButton priceButton = AdvancedButtonFactory.defaultButton(t().get("TC_UI_CITY_PRIVATE_PRICE", player)
+        AdvancedButton priceButton = AdvancedButtonFactory.defaultButton(t().get("tc.ui.city.private.price", player)
                 .replace("PH_VALUE", price), event -> editPrivatePrice(city));
         position(priceButton, 520, 170, 260, 42); body.addChild(priceButton);
     }
@@ -135,14 +134,14 @@ public final class CityManagementOverlay extends BasePluginOverlayWithTabs {
         UITextField input = new UITextField();
         input.setText(search); input.setSize(420, 38, false); input.setPosition(20, 8, false);
         body.addChild(input);
-        AdvancedButton find = AdvancedButtonFactory.defaultButton(t().get("TC_UI_CITY_SEARCH", player), event ->
+        AdvancedButton find = AdvancedButtonFactory.defaultButton(t().get("tc.ui.city.search", player), event ->
                 input.getCurrentText(player, text -> { search = text == null ? "" : text.trim(); offset = 0; rebuild(); }));
         position(find, 455, 8, 120, 38); body.addChild(find);
 
         TableScrollView table = new TableScrollView(Arrays.asList(
-                t().get("TC_UI_CITY_TH_NAME", player), t().get("TC_UI_CITY_TH_SECTOR", player),
-                t().get("TC_UI_CITY_TH_POSITION", player), t().get("TC_UI_CITY_TH_RADIUS", player),
-                t().get("TC_UI_CITY_TH_BALANCE", player), t().get("TC_UI_CITY_TH_ACTION", player)),
+                t().get("tc.ui.city.th.name", player), t().get("tc.ui.city.th.sector", player),
+                t().get("tc.ui.city.th.position", player), t().get("tc.ui.city.th.radius", player),
+                t().get("tc.ui.city.th.balance", player), t().get("tc.ui.city.th.action", player)),
                 Arrays.asList(23f, 14f, 16f, 10f, 21f, 16f));
         table.setPosition(0, 58, false); table.setScrollBodyHeight(325f);
         List<CityRecord> values = cities.listCities(search, offset, PAGE_SIZE);
@@ -153,12 +152,12 @@ public final class CityManagementOverlay extends BasePluginOverlayWithTabs {
         position(previous, 620, 395, 50, 34); body.addChild(previous);
         AdvancedButton next = AdvancedButtonFactory.defaultButton(">", event -> { if (values.size() == PAGE_SIZE) offset += PAGE_SIZE; rebuild(); });
         position(next, 730, 395, 50, 34); body.addChild(next);
-        body.addChild(label(t().get("TC_UI_CITY_PAGE", player).replace("PH_PAGE", String.valueOf(offset / PAGE_SIZE + 1)),
+        body.addChild(label(t().get("tc.ui.city.page", player).replace("PH_PAGE", String.valueOf(offset / PAGE_SIZE + 1)),
                 675, 395, 50, 34));
     }
 
     private TableRow cityRow(CityRecord city) {
-        AdvancedButton teleport = AdvancedButtonFactory.defaultButton(t().get("TC_UI_CITY_TELEPORT", player), event -> teleport(city));
+        AdvancedButton teleport = AdvancedButtonFactory.defaultButton(t().get("tc.ui.city.teleport", player), event -> teleport(city));
         // TableCell positions its content relative to the cell.  Pixel sizing
         // keeps the action inside its cell and gives it a usable row height.
         teleport.setSize(100, 24, false);
@@ -176,17 +175,17 @@ public final class CityManagementOverlay extends BasePluginOverlayWithTabs {
         EconomyIntegration.WalletOperationResult payment = price == 0
                 ? new EconomyIntegration.WalletOperationResult(true, "")
                 : economy.transferCityToWorld(city.areaId(), price,
-                        t().get("TC_WALLET_CITY_EXPANSION", economy.walletAuditLanguage())
+                        t().get("tc.wallet.city.expansion", economy.walletAuditLanguage())
                                 .replace("PH_CITY_NAME", city.name()), correlation);
         if (!payment.success()) {
             if (price > 0) cities.updateEconomyOperation(correlation, "FAILED", city.areaId(), payment.message());
-            player.sendTextMessage(t().get("TC_CITY_EXPAND_PAYMENT_FAILED", player)
+            player.sendTextMessage(t().get("tc.city.expand.payment.failed", player)
                     .replace("PH_REASON", payment.message()));
         } else if (!cities.expandCity(city.areaId())) {
             if (price > 0) {
                 cities.updateEconomyOperation(correlation, "PAID", city.areaId(), "");
                 EconomyIntegration.WalletOperationResult reversal = economy.reverseTransfer(correlation,
-                        correlation + ":reversal", t().get("TC_WALLET_CITY_EXPANSION_ROLLBACK", economy.walletAuditLanguage()));
+                        correlation + ":reversal", t().get("tc.wallet.city.expansion.rollback", economy.walletAuditLanguage()));
                 cities.updateEconomyOperation(correlation,
                         reversal.success() ? "REVERSED" : "RECONCILIATION_REQUIRED", city.areaId(), reversal.message());
             }
@@ -194,29 +193,29 @@ public final class CityManagementOverlay extends BasePluginOverlayWithTabs {
             player.sendTextMessage(expansionBlockerText(geometry, price, economy.cityBalance(city.areaId())));
         } else {
             if (price > 0) cities.updateEconomyOperation(correlation, "COMPLETED", city.areaId(), "");
-            player.sendTextMessage(t().get("TC_CITY_EXPANDED", player)
+            player.sendTextMessage(t().get("tc.city.expanded", player)
                     .replace("PH_RADIUS", String.valueOf(city.radius() + 1)));
         }
-        CursorManager.show(player); rebuild();
+        rebuild();
     }
 
     private String expansionBlockerText(CityService.ExpansionEligibility geometry, long price, long balance) {
-        if (price < 0) return t().get("TC_UI_CITY_EXPAND_BLOCKED_PRICE", player);
-        if (balance < price) return t().get("TC_UI_CITY_EXPAND_BLOCKED_FUNDS", player)
+        if (price < 0) return t().get("tc.ui.city.expand.blocked.price", player);
+        if (balance < price) return t().get("tc.ui.city.expand.blocked.funds", player)
                 .replace("PH_PRICE", String.valueOf(price)).replace("PH_BALANCE", String.valueOf(balance));
-        if (geometry == null || geometry.eligible()) return t().get("TC_CITY_EXPAND_FAILED", player);
+        if (geometry == null || geometry.eligible()) return t().get("tc.city.expand.failed", player);
         return t().get("TC_UI_CITY_EXPAND_BLOCKED_" + geometry.blocker().name(), player);
     }
 
     private void editPrivatePrice(CityRecord city) {
-        UIElement dialog = UIDialogFactory.getTextInput(player, t().get("TC_UI_CITY_PRIVATE_PRICE_EDIT", player),
+        UIElement dialog = UIDialogFactory.getTextInput(player, t().get("tc.ui.city.private.price.edit", player),
                 city.privateClaimPriceOverride() == null ? "" : String.valueOf(city.privateClaimPriceOverride()), text -> {
             Long value = null;
             if (text != null && !text.isBlank()) try { value = Long.valueOf(text.trim()); } catch (NumberFormatException ignored) { }
             cities.updateCityOverrides(city.areaId(), city.allowPrivateClaimsOverride(), value);
-            CursorManager.show(player); rebuild();
-        }, p -> CursorManager.show(p));
-        player.addUIElement(dialog, UITarget.HUD); CursorManager.show(player);
+            rebuild();
+        }, p -> { });
+        player.addUIElement(dialog, UITarget.Modal);
     }
 
     private void teleport(CityRecord city) {

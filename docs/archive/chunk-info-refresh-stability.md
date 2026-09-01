@@ -30,7 +30,7 @@ Supporting repositories/plugins: none
 - [x] Run entry-point architecture and PluginAPI verification scripts.
 - [x] Run `git diff --check`.
 - [x] Deploy Land Claim through `dev-upload.sh` and verify plugin reload/start logs.
-- [ ] Confirm countdown and claim-transition refreshes on a development server.
+- [x] Confirm countdown and claim-transition refreshes on a development server.
 
 ## Affected Repositories/Plugins
 - `rw-plugin-oz-land-claim`

@@ -24,7 +24,7 @@ public class LandClaimPluginInfoStatusProvider implements PluginInfoStatusProvid
 
     @Override
     public String getInfo(Player player) {
-        return t().get("TC_LANDCLAIM_INFO_PANEL_INFO", player)
+        return t().get("tc.landclaim.info.panel.info", player)
                 .replace("PH_PLUGIN_NAME", pluginName)
                 .replace("PH_VERSION", version)
                 .replace("PH_PLUGIN_CMD", "lc");
@@ -34,7 +34,7 @@ public class LandClaimPluginInfoStatusProvider implements PluginInfoStatusProvid
     public String getStatus(Player player) {
         PluginSettings settings = PluginSettings.getInstance();
         EconomyIntegration economy = LandClaim.economyIntegration();
-        return t().get("TC_LANDCLAIM_INFO_PANEL_STATUS", player)
+        return t().get("tc.landclaim.info.panel.status", player)
                 .replace("PH_PLAYER_CLAIMS", String.valueOf(plugin.playerClaimCount(player)))
                 .replace("PH_PLAYER_MAX_CLAIMS", String.valueOf(plugin.playerMaxClaims(player)))
                 .replace("PH_PURCHASED_EXTRA_CLAIMS", purchasedExtraClaims(player))

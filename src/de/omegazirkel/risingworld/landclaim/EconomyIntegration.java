@@ -180,8 +180,8 @@ public class EconomyIntegration {
         return (proxy, method, args) -> {
             Player player = args != null && args.length > 0 && args[0] instanceof Player p ? p : null;
             return switch (method.getName()) {
-                case "title" -> translations.get("LANDCLAIM_SHOP_EXTRA_CLAIM_TITLE", player);
-                case "description" -> translations.get("LANDCLAIM_SHOP_EXTRA_CLAIM_DESC", player);
+                case "title" -> translations.get("landclaim.shop.extra.claim.title", player);
+                case "description" -> translations.get("landclaim.shop.extra.claim.desc", player);
                 default -> objectMethodValue(proxy, method);
             };
         };
@@ -235,7 +235,7 @@ public class EconomyIntegration {
                 return shopResult(false, "Extra claim purchase has no player or persistence service.", offer);
             }
             int total = LandClaim.extraClaimCapacityService().addPurchasedCapacity(player, 1);
-            String message = I18n.getInstance(owner).get("LANDCLAIM_SHOP_EXTRA_CLAIM_SUCCESS", player)
+            String message = I18n.getInstance(owner).get("landclaim.shop.extra.claim.success", player)
                     .replace("PH_TOTAL", String.valueOf(total));
             return shopResult(true, message, offer);
         };

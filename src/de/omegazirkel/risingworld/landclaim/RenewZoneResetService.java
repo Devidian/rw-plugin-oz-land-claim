@@ -65,7 +65,7 @@ public class RenewZoneResetService {
 
     private void announceReset(Area area, int resetCount) {
         I18n t = I18n.getInstance(LandClaim.name);
-        String discordMessage = t.get("TC_DISCORD_RENEW_ZONE_RESET", DiscordConnect.botLang())
+        String discordMessage = t.get("tc.discord.renew.zone.reset", DiscordConnect.botLang())
                 .replace("PH_AREA_NAME", areaName(area))
                 .replace("PH_AREA_ID", String.valueOf(area.getID()))
                 .replace("PH_RESET_COUNT", String.valueOf(resetCount));
@@ -81,7 +81,7 @@ public class RenewZoneResetService {
             if (target.equals("admins") && !player.isAdmin()) {
                 continue;
             }
-            player.sendTextMessage(t.get("TC_ANNOUNCEMENT_RENEW_ZONE_RESET", player)
+            player.sendTextMessage(t.get("tc.announcement.renew.zone.reset", player)
                     .replace("PH_AREA_NAME", areaName(area))
                     .replace("PH_RESET_COUNT", String.valueOf(resetCount)));
         }

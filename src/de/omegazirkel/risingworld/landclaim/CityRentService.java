@@ -34,7 +34,7 @@ public final class CityRentService {
             if (area == null) continue;
             String areaName = area.getName() == null ? String.valueOf(area.getID()) : area.getName();
             Player owner = Server.getPlayerByDbID(lease.ownerDbId());
-            String reason = I18n.getInstance(LandClaim.name).get("TC_WALLET_CITY_LEASE_RENT",
+            String reason = I18n.getInstance(LandClaim.name).get("tc.wallet.city.lease.rent",
                     economy.walletAuditLanguage())
                     .replace("PH_AREA_NAME", areaName).replace("PH_AREA_ID", String.valueOf(area.getID()));
             String correlation = "city-rent:" + area.getID() + ":" + billingDate;
@@ -49,7 +49,7 @@ public final class CityRentService {
                         payment.message());
                 clearPermissions(area);
                 cities.clearLeasehold(area.getID());
-                notifyPlayer(lease.ownerDbId(), "TC_CITY_RENT_EVICTED", areaName, billingDate);
+                notifyPlayer(lease.ownerDbId(), "tc.city.rent.evicted", areaName, billingDate);
                 evicted++;
                 continue;
             }
@@ -60,7 +60,7 @@ public final class CityRentService {
             if (lease.dailyRent() > 0) cities.updateEconomyOperation(correlation, "COMPLETED", area.getID(), "");
             paid++;
             if (lease.dailyRent() > 0 && economy.playerBalance(lease.ownerDbId()) / lease.dailyRent() < 7) {
-                notifyPlayer(lease.ownerDbId(), "TC_CITY_RENT_WARNING", areaName, billingDate);
+                notifyPlayer(lease.ownerDbId(), "tc.city.rent.warning", areaName, billingDate);
                 warned++;
             }
         }
@@ -76,7 +76,7 @@ public final class CityRentService {
         String message = translations.get(key, language).replace("PH_AREA_NAME", areaName);
         long pendingId = cities.addPendingNotification(playerDbId, key, areaName);
         boolean mailed = economy.sendMail(playerDbId, playerName == null ? "Player" : playerName,
-                translations.get("TC_CITY_MAIL_SUBJECT", language), message,
+                translations.get("tc.city.mail.subject", language), message,
                 "landclaim-notice:" + key + ":" + playerDbId + ":" + date);
         if (mailed && pendingId > 0) cities.deletePendingNotification(pendingId);
     }

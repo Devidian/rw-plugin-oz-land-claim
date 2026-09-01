@@ -36,7 +36,7 @@ public class LandClaimPlayerPluginData extends PlayerPluginData {
 
                 TableScrollView table = new TableScrollView(
                         Arrays.asList(
-                                t().get("TC_DATA_COL_DESCRIPTION", uiPlayer),
+                                t().get("tc.data.col.description", uiPlayer),
                                 "key",
                                 "value"),
                         Arrays.asList(38f, 42f, 20f));
@@ -44,23 +44,26 @@ public class LandClaimPlayerPluginData extends PlayerPluginData {
                 table.style.width.set(100, Unit.Percent);
                 table.setScrollBodyHeight(320);
 
-                addRow(table, t().get("TC_UI_LABEL_SHOW_CURRENT_CHUNK_FRAME", uiPlayer),
+                addRow(table, t().get("tc.ui.label.show.current.chunk.frame", uiPlayer),
                         LandClaimPlayerPluginSettings.SHOW_CURRENT_CHUNK_FRAME_KEY,
                         booleanValue(uiPlayer, LandClaimPlayerPluginSettings.SHOW_CURRENT_CHUNK_FRAME_KEY, false));
-                addRow(table, t().get("TC_UI_LABEL_SHOW_OWNED_AREAS", uiPlayer),
+                addRow(table, t().get("tc.ui.label.show.owned.areas", uiPlayer),
                         LandClaimPlayerPluginSettings.SHOW_OWNED_AREA_FRAMES_KEY,
                         booleanValue(uiPlayer, LandClaimPlayerPluginSettings.SHOW_OWNED_AREA_FRAMES_KEY, false));
-                addRow(table, t().get("TC_UI_LABEL_SHOW_OTHER_AREAS", uiPlayer),
+                addRow(table, t().get("tc.ui.label.show.other.areas", uiPlayer),
                         LandClaimPlayerPluginSettings.SHOW_OTHER_AREA_FRAMES_KEY,
                         booleanValue(uiPlayer, LandClaimPlayerPluginSettings.SHOW_OTHER_AREA_FRAMES_KEY, false));
-                addRow(table, t().get("TC_UI_LABEL_AREA_FRAME_CHUNK_RADIUS", uiPlayer),
+                addRow(table, t().get("tc.ui.label.area.frame.chunk.radius", uiPlayer),
                         LandClaimPlayerPluginSettings.AREA_FRAME_CHUNK_RADIUS_KEY,
                         String.valueOf(LandClaimPlayerPluginSettings.areaFrameChunkRadius(uiPlayer)));
-                addRow(table, t().get("TC_UI_LABEL_ENABLE_CLAIM_INFO_OVERLAY", uiPlayer),
+                addRow(table, t().get("tc.ui.label.enable.claim.info.overlay", uiPlayer),
                         LandClaimPlayerPluginSettings.ENABLE_CLAIM_INFO_OVERLAY_KEY,
                         booleanValue(uiPlayer, LandClaimPlayerPluginSettings.ENABLE_CLAIM_INFO_OVERLAY_KEY, true));
+                addRow(table, t().get("tc.ui.label.enable.time.measurement.overlay", uiPlayer),
+                        LandClaimPlayerPluginSettings.ENABLE_TIME_MEASUREMENT_OVERLAY_KEY,
+                        booleanValue(uiPlayer, LandClaimPlayerPluginSettings.ENABLE_TIME_MEASUREMENT_OVERLAY_KEY, false));
                 if (uiPlayer.isAdmin()) {
-                    addRow(table, t().get("TC_UI_LABEL_DEVELOPER_MODE", uiPlayer),
+                    addRow(table, t().get("tc.ui.label.developer.mode", uiPlayer),
                             LandClaimPlayerPluginSettings.DEVELOPER_MODE_KEY,
                             booleanValue(uiPlayer, LandClaimPlayerPluginSettings.DEVELOPER_MODE_KEY, false));
                 }

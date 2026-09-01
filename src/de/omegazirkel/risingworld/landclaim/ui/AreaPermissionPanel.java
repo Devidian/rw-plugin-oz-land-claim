@@ -39,10 +39,10 @@ public class AreaPermissionPanel extends UIElement {
     private void setupTable(Area area, Player player, UIElement parentOverlay) {
         TableScrollView table = new TableScrollView(
                 Arrays.asList(
-                        t().get("TC_UI_TH_LABEL_NAME", player),
-                        t().get("TC_UI_TH_LABEL_UID", player),
-                        t().get("TC_UI_TH_LABEL_STATUS", player),
-                        t().get("TC_UI_TH_LABEL_PERMISSION", player)),
+                        t().get("tc.ui.th.label.name", player),
+                        t().get("tc.ui.th.label.uid", player),
+                        t().get("tc.ui.th.label.status", player),
+                        t().get("tc.ui.th.label.permission", player)),
                 Arrays.asList(30f, 35f, 15f, 20f));
         table.setPosition(0, 0, false);
         table.style.width.set(100, Unit.Percent);
@@ -99,21 +99,21 @@ public class AreaPermissionPanel extends UIElement {
             area.setPlayerPermission(playerDBID, newPermission);
             String permissionText = newPermission;
             if (newPermission.equals(s.residentAreaPermission))
-                permissionText = t().get("TC_UI_PERMISSION_RESIDENT", uiPlayer);
+                permissionText = t().get("tc.ui.permission.resident", uiPlayer);
             if (newPermission.equals(s.friendAreaPermission))
-                permissionText = t().get("TC_UI_PERMISSION_FRIEND", uiPlayer);
+                permissionText = t().get("tc.ui.permission.friend", uiPlayer);
             if (newPermission.equals(s.defaultAreaPermission))
-                permissionText = t().get("TC_UI_PERMISSION_GUEST", uiPlayer);
+                permissionText = t().get("tc.ui.permission.guest", uiPlayer);
             if (newPermission.equals(s.prisonerAreaPermission))
-                permissionText = t().get("TC_UI_PERMISSION_PRISONER", uiPlayer);
+                permissionText = t().get("tc.ui.permission.prisoner", uiPlayer);
             if (newPermission.equals(s.exiledAreaPermission))
-                permissionText = t().get("TC_UI_PERMISSION_EXILED", uiPlayer);
-            uiPlayer.sendTextMessage(t().get("TC_UI_PLAYER_PERMISSION_SET", uiPlayer)
+                permissionText = t().get("tc.ui.permission.exiled", uiPlayer);
+            uiPlayer.sendTextMessage(t().get("tc.ui.player.permission.set", uiPlayer)
                     .replace("PH_PLAYER_NAME", playerName)
                     .replace("PH_PERMISSION", permissionText));
         } else {
             area.removePlayerPermission(playerDBID);
-            uiPlayer.sendTextMessage(t().get("TC_UI_PLAYER_PERMISSION_UNSET", uiPlayer)
+            uiPlayer.sendTextMessage(t().get("tc.ui.player.permission.unset", uiPlayer)
                     .replace("PH_PLAYER_NAME", playerName));
             uiPlayer.sendTextMessage("Player permission removed");
         }

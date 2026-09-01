@@ -23,6 +23,7 @@ public class LandClaimPlayerPluginSettings extends PlayerPluginSettings {
     public static final String SHOW_OTHER_AREA_FRAMES_KEY = "oz.landclaim.showOtherAreaFrames";
     public static final String AREA_FRAME_CHUNK_RADIUS_KEY = "oz.landclaim.areaFrameChunkRadius";
     public static final String ENABLE_CLAIM_INFO_OVERLAY_KEY = "oz.landclaim.enableClaimInfoOverlay";
+    public static final String ENABLE_TIME_MEASUREMENT_OVERLAY_KEY = "oz.landclaim.enableTimeMeasurementOverlay";
     public static final String DEVELOPER_MODE_KEY = "oz.landclaim.developerMode";
     public static final int DEFAULT_AREA_FRAME_CHUNK_RADIUS = 15;
     public static final int MIN_AREA_FRAME_CHUNK_RADIUS = 1;
@@ -45,25 +46,27 @@ public class LandClaimPlayerPluginSettings extends PlayerPluginSettings {
             protected void redrawContent() {
                 flexWrapper.removeAllChilds();
                 flexWrapper.addChild(booleanSetting(uiPlayer, shortcutKey(),
-                        "TC_UI_LABEL_LANDCLAIM_SHORTCUT", true, null));
+                        "tc.ui.label.landclaim.shortcut", true, null));
                 flexWrapper.addChild(booleanSetting(uiPlayer, SHOW_CURRENT_CHUNK_FRAME_KEY,
-                        "TC_UI_LABEL_SHOW_CURRENT_CHUNK_FRAME", false, () -> {
+                        "tc.ui.label.show.current.chunk.frame", false, () -> {
                             Area area = ChunkClaimUtil.getVirtualAreaFromChunkVector(uiPlayer.getChunkPosition());
                             Area3DUtils.updateCurrentChunkFrameForPlayer(uiPlayer,
                                     booleanValue(uiPlayer, SHOW_CURRENT_CHUNK_FRAME_KEY, false) ? area : null);
                         }));
                 flexWrapper.addChild(booleanSetting(uiPlayer, SHOW_OWNED_AREA_FRAMES_KEY,
-                        "TC_UI_LABEL_SHOW_OWNED_AREAS", false,
+                        "tc.ui.label.show.owned.areas", false,
                         () -> Area3DUtils.updateAreaFramesForPlayer(uiPlayer)));
                 flexWrapper.addChild(booleanSetting(uiPlayer, SHOW_OTHER_AREA_FRAMES_KEY,
-                        "TC_UI_LABEL_SHOW_OTHER_AREAS", false,
+                        "tc.ui.label.show.other.areas", false,
                         () -> Area3DUtils.updateAreaFramesForPlayer(uiPlayer)));
                 flexWrapper.addChild(areaFrameChunkRadiusSetting(uiPlayer));
                 flexWrapper.addChild(booleanSetting(uiPlayer, ENABLE_CLAIM_INFO_OVERLAY_KEY,
-                        "TC_UI_LABEL_ENABLE_CLAIM_INFO_OVERLAY", true, null));
+                        "tc.ui.label.enable.claim.info.overlay", true, null));
+                flexWrapper.addChild(booleanSetting(uiPlayer, ENABLE_TIME_MEASUREMENT_OVERLAY_KEY,
+                        "tc.ui.label.enable.time.measurement.overlay", false, null));
                 if (uiPlayer.isAdmin())
                     flexWrapper.addChild(booleanSetting(uiPlayer, DEVELOPER_MODE_KEY,
-                            "TC_UI_LABEL_DEVELOPER_MODE", false, null));
+                            "tc.ui.label.developer.mode", false, null));
             }
 
             protected OZUIElement booleanSetting(Player uiPlayer, String key, String labelKey, boolean defaultValue,
@@ -84,7 +87,7 @@ public class LandClaimPlayerPluginSettings extends PlayerPluginSettings {
 
             private OZUIElement areaFrameChunkRadiusSetting(Player uiPlayer) {
                 OZUIElement element = defaultSettingsContainer();
-                element.addChild(defaultSettingsLabel(t().get("TC_UI_LABEL_AREA_FRAME_CHUNK_RADIUS", uiPlayer)));
+                element.addChild(defaultSettingsLabel(t().get("tc.ui.label.area.frame.chunk.radius", uiPlayer)));
 
                 int currentRadius = areaFrameChunkRadius(uiPlayer);
                 Dropdown radius = new Dropdown(

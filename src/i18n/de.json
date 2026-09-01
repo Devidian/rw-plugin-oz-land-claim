@@ -1,0 +1,1039 @@
+{
+  "landclaim": {
+    "shop": {
+      "extra": {
+        "claim": {
+          "desc": "Fügt eine zusätzliche Land-Claim-Kapazität hinzu.",
+          "success": "Zusätzliche Claim-Kapazität gekauft. Insgesamt gekaufte Kapazität: PH_TOTAL.",
+          "title": "Zusätzliche Claim-Kapazität"
+        }
+      }
+    }
+  },
+  "tc": {
+    "admin": {
+      "cleanup": {
+        "blocked": "Säuberung blockiert, weil ein anderer Besitzer einen aktiven Claim in der Chunk-Spalte PH_CHUNK_POS hat.",
+        "special": {
+          "area": {
+            "success": "Spezialzone PH_TARGET gesäubert und PH_RESET_COUNT Chunks zurückgesetzt."
+          }
+        },
+        "success": "PH_TARGET gesäubert: PH_CLAIM_COUNT Claim-Datensätze gelöscht und PH_RESET_COUNT Chunks zurückgesetzt.",
+        "teleport": {
+          "failed": "Teleport zu PH_AREA_NAME fehlgeschlagen.",
+          "success": "Zu PH_AREA_NAME teleportiert."
+        }
+      },
+      "delete": {
+        "special": {
+          "area": {
+            "success": "Spezialzone PH_TARGET gelöscht."
+          }
+        },
+        "success": "PH_CLAIM_COUNT Claim-Datensätze für PH_TARGET gelöscht."
+      }
+    },
+    "announcement": {
+      "area": {
+        "claimed": "Die Zone \u003ccolor\u003dyellow\u003ePH_AREA_NAME\u003c/color\u003e bei \u003ccolor\u003dyellow\u003ePH_CHUNK_POS\u003c/color\u003e wurde von \u003ccolor\u003dyellow\u003ePH_PLAYER_NAME\u003c/color\u003e beansprucht.",
+        "expanded": "Die Zone \u003ccolor\u003dyellow\u003ePH_AREA_NAME\u003c/color\u003e bei \u003ccolor\u003dyellow\u003ePH_CHUNK_POS\u003c/color\u003e wurde von \u003ccolor\u003dyellow\u003ePH_PLAYER_NAME\u003c/color\u003e erweitert.",
+        "released": "Die Zone \u003ccolor\u003dyellow\u003ePH_AREA_NAME\u003c/color\u003e bei \u003ccolor\u003dyellow\u003ePH_CHUNK_POS\u003c/color\u003e wurde von \u003ccolor\u003dyellow\u003ePH_PLAYER_NAME\u003c/color\u003e freigegeben.",
+        "sold": "Der Claim \u003ccolor\u003dyellow\u003ePH_AREA_NAME\u003c/color\u003e wurde von \u003ccolor\u003dyellow\u003ePH_SELLER_NAME\u003c/color\u003e für \u003ccolor\u003dyellow\u003ePH_PRICE\u003c/color\u003e an \u003ccolor\u003dyellow\u003ePH_BUYER_NAME\u003c/color\u003e verkauft.",
+        "special": {
+          "created": "Spieler \u003ccolor\u003dyellow\u003ePH_PLAYER_NAME\u003c/color\u003e hat die Sonderzone \u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e bei \u003ccolor\u003dyellow\u003ePH_CHUNK_POS\u003c/color\u003e erstellt."
+        }
+      },
+      "renew": {
+        "zone": {
+          "reset": "Renaturierungszone \u003ccolor\u003dyellow\u003ePH_AREA_NAME\u003c/color\u003e wurde erneuert. Zurueckgesetzte Chunk-Spalten: \u003ccolor\u003dyellow\u003ePH_RESET_COUNT\u003c/color\u003e."
+        }
+      }
+    },
+    "area": {
+      "config": {
+        "unavailable": "Diese Zone hat kein Konfigurationsinterface."
+      },
+      "release": {
+        "area": "Zone PH_AREA_NAME wurde freigegeben.",
+        "chunk": "Bereich \u003ccolor\u003dblue\u003ePH_CHUNK_POS\u003c/color\u003e der Zone \u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e vom Spieler \u003ccolor\u003dyellow\u003ePH_PLAYER_NAME\u003c/color\u003e wurde freigegeben."
+      },
+      "rennamed": "Die Zone \u003ccolor\u003dred\u003ePH_OLD_NAME\u003c/color\u003e wurde umbenannt zu \u003ccolor\u003dgreen\u003ePH_AREA_NAME\u003c/color\u003e.",
+      "sale": {
+        "invalid": {
+          "price": "Bitte gib einen positiven ganzzahligen Preis ein."
+        },
+        "listed": "Zone PH_AREA_NAME wird jetzt für PH_PRICE PH_CURRENCY angeboten.",
+        "list": {
+          "failed": "Diese Zone konnte nicht zum Verkauf angeboten werden."
+        },
+        "purchased": "Du hast PH_AREA_NAME für PH_PRICE PH_CURRENCY gekauft.",
+        "purchase": {
+          "limit": "Der Kauf dieses Claims würde dein Claim Limit von PH_MAX_CLAIMS überschreiten.",
+          "listing": {
+            "update": {
+              "failed": "Claim-Kauf konnte nicht abgeschlossen werden. Die Zahlung wurde erstattet."
+            }
+          },
+          "self": "Du kannst deinen eigenen Claim nicht kaufen.",
+          "seller": {
+            "credit": {
+              "failed": "Auszahlung an den Verkäufer fehlgeschlagen: PH_REASON. Die Zahlung wurde erstattet."
+            }
+          },
+          "stale": "Dieses Verkaufsangebot ist nicht mehr verfügbar.",
+          "transfer": {
+            "failed": "Claim-Übertragung fehlgeschlagen. Die Zahlung wurde erstattet."
+          },
+          "wallet": {
+            "missing": "Wallet wird benötigt, um angebotene Claims zu kaufen."
+          },
+          "withdraw": {
+            "failed": "Zahlung fehlgeschlagen: PH_REASON"
+          }
+        },
+        "sold": "Dein Claim PH_AREA_NAME wurde für PH_PRICE PH_CURRENCY an PH_PLAYER_NAME verkauft.",
+        "withdrawn": "Verkauf für PH_AREA_NAME wurde zurückgezogen."
+      },
+      "special": {
+        "created": "Sonderzone erfolgreich erstellt."
+      },
+      "split": "Zone \u003ccolor\u003dyellow\u003ePH_AREA_NAME\u003c/color\u003e wurde in \u003ccolor\u003dgreen\u003ePH_CHUNK_COUNT\u003c/color\u003e Bereiche aufgeteilt."
+    },
+    "chunkinfo": {
+      "city": {
+        "core": "Stadtkern: \u003ccolor\u003d#7B61FF\u003ePH_AREA_NAME\u003c/color\u003e",
+        "leasehold": {
+          "free": "Freies Pachtland: \u003ccolor\u003d#00BFA5\u003ePH_AREA_NAME\u003c/color\u003e",
+          "occupied": "Pachtgrundstück von PH_PLAYER_NAME: \u003ccolor\u003d#FF9800\u003ePH_AREA_NAME\u003c/color\u003e",
+          "owned": "Dein Pachtgrundstück: \u003ccolor\u003d#FF9800\u003ePH_AREA_NAME\u003c/color\u003e"
+        },
+        "only": "Beanspruchen von Grundstücken ist nur in Städten möglich.",
+        "price": "Dieses Stadtgrundstück kann für PH_PRICE PH_CURRENCY gekauft werden."
+      },
+      "claim": {
+        "blocked": "Dieser Bereich kann im aktuellen Modus nicht beansprucht werden.",
+        "limit": "\u003ccolor\u003dred\u003eDu hast dein Claim Limit \u003cPH_MAX_CLAIMS\u003e erreicht.\u003c/color\u003e",
+        "possible": "Bereich kann eingenommen werden.",
+        "wait": "Bereich kann in PH_TIME eingenommen werden."
+      },
+      "for": {
+        "sale": "Zum Verkauf: PH_AREA_NAME von PH_PLAYER_NAME für PH_PRICE PH_CURRENCY"
+      },
+      "land": {
+        "price": "Dieses Grundstück kann für PH_PRICE PH_CURRENCY gekauft werden."
+      },
+      "owned": {
+        "$value": "Dein Bereich: PH_AREA_NAME",
+        "by": "PH_PLAYER_NAME\u0027s Bereich: PH_AREA_NAME"
+      },
+      "special": {
+        "area": "Sonderzone: \u003ccolor\u003d#66CCFF\u003ePH_AREA_NAME\u003c/color\u003e",
+        "pvp": {
+          "area": "Kampfzone: \u003ccolor\u003d#FF7777\u003ePH_AREA_NAME\u003c/color\u003e"
+        },
+        "renew": {
+          "area": "Renaturierungszone: \u003ccolor\u003d#00C2A8\u003ePH_AREA_NAME\u003c/color\u003e"
+        },
+        "rest": {
+          "area": "Ruhezone: \u003ccolor\u003d#7FE08A\u003ePH_AREA_NAME\u003c/color\u003e"
+        },
+        "static": {
+          "area": "Statische Zone: \u003ccolor\u003d#B8A1FF\u003ePH_AREA_NAME\u003c/color\u003e"
+        },
+        "trap": {
+          "area": "Fallenzone: \u003ccolor\u003d#FFD166\u003ePH_AREA_NAME\u003c/color\u003e"
+        }
+      },
+      "wallet": {
+        "required": "\u003ccolor\u003dred\u003eDieser Claim-Modus ist nicht verfügbar, weil Wallet fehlt.\u003c/color\u003e"
+      }
+    },
+    "city": {
+      "create": {
+        "failed": {
+          "$value": "Die Stadt konnte nicht erstellt werden.",
+          "city": {
+            "overlap": "Der Stadtradius würde eine bestehende Stadt überschneiden."
+          },
+          "core": {
+            "not": {
+              "single": {
+                "chunk": "Der Stadtkern muss genau einen Chunk groß sein."
+              }
+            }
+          },
+          "invalid": {
+            "core": "Der Stadtkern ist ungültig."
+          },
+          "sector": {
+            "boundary": "Der Stadtradius würde die Sektorgrenze überschreiten."
+          },
+          "service": {
+            "unavailable": "Die Stadtverwaltung ist nicht verfügbar."
+          },
+          "wallet": "Das Stadtkonto konnte nicht angelegt werden: PH_REASON"
+        }
+      },
+      "deleted": "Die Stadt PH_CITY_NAME wurde gelöscht.",
+      "delete": {
+        "account": {
+          "failed": "Das Stadtkonto konnte nicht aufgelöst werden: PH_REASON"
+        },
+        "occupied": "Die Stadt kann nicht gelöscht werden, solange Pachtland belegt ist."
+      },
+      "expanded": "Der Stadtradius beträgt jetzt PH_RADIUS.",
+      "expand": {
+        "failed": "Die Stadterweiterung ist fehlgeschlagen; die Zahlung wurde soweit nötig zurückgebucht.",
+        "funds": "Die Stadt kann nicht erweitert werden: Stadtkasse oder Grenzen reichen nicht aus.",
+        "payment": {
+          "failed": "Die Zahlung der Stadterweiterung an die Weltkasse ist fehlgeschlagen: PH_REASON"
+        }
+      },
+      "leasehold": {
+        "create": {
+          "failed": "Das Pachtland muss vollständig innerhalb genau einer Stadt liegen."
+        }
+      },
+      "lease": {
+        "deleted": "Das Pachtland wurde gelöscht.",
+        "expand": {
+          "limit": "Das belegte Pachtland kann nicht erweitert werden, weil der Besitzer offline ist oder nicht genug Claim-Lizenzen besitzt.",
+          "outside": "Die Pachtlanderweiterung muss vollständig innerhalb der zugeordneten Stadt bleiben."
+        },
+        "expropriated": "Dein Grundstück PH_AREA_NAME wurde durch einen Administrator enteignet und aufgelöst.",
+        "occupied": "Dieses Grundstück ist bereits belegt.",
+        "purchased": "Du hast PH_AREA_NAME gekauft.",
+        "rented": "Du hast PH_AREA_NAME gemietet.",
+        "returned": "PH_AREA_NAME wurde an die Stadt zurückgegeben.",
+        "split": {
+          "occupied": "Belegtes Pachtland kann nicht aufgeteilt werden."
+        },
+        "update": {
+          "failed": "Die Zahlung wurde zurückgebucht, weil der Besitz nicht gespeichert werden konnte."
+        }
+      },
+      "mail": {
+        "subject": "Mitteilung zum Stadtgrundstück"
+      },
+      "notice": {
+        "title": "Wichtige Stadtmitteilung"
+      },
+      "rent": {
+        "evicted": "PH_AREA_NAME wurde an die Stadt zurückgegeben, weil die Tagesmiete nicht bezahlt werden konnte.",
+        "increased": "Die Tagesmiete für PH_AREA_NAME wurde auf PH_RENT erhöht. Der neue Betrag gilt ab der nächsten Abrechnung.",
+        "warning": "Dein Guthaben reicht für weniger als sieben weitere Mietzahlungen für PH_AREA_NAME."
+      }
+    },
+    "claim": {
+      "congratulation": "Herzlichen Glückwunsch zu deinem neuen Claim!",
+      "error": {
+        "city": {
+          "expansion": "Privatgrundstücke können nur innerhalb ihrer Stadt erweitert werden, solange sie erlaubt sind.",
+          "private": "Privatgrundstücke sind hier deaktiviert oder der Chunk liegt außerhalb einer Stadt."
+        },
+        "claimed": "Der Bereich bei \u003ccolor\u003dred\u003ePH_CHUNK_POS\u003c/color\u003e gehört PH_PLAYER_NAME und kann nicht übernommen werden!",
+        "insufficient": {
+          "funds": "Dein Guthaben reicht für diesen Kauf nicht aus."
+        },
+        "limit": "Das Einnehmen weiterer Bereiche überschreitet dein derzeitiges Claim Limit von PH_MAX_CLAIMS!",
+        "max": {
+          "reached": "Aktuelles Claim-Limit erreicht!"
+        },
+        "mode": {
+          "$value": "Im aktuellen Modus können nur Administratoren neue Claims erstellen.",
+          "resize": "Dieser Bereich kann im aktuellen Modus von Spielern nicht vergrößert, geteilt oder aufgegeben werden."
+        },
+        "occupied": "Der Bereich ist bereits beansprucht!",
+        "owner": {
+          "offline": "Die gespeicherten Besitzerdaten dieses Grundstücks konnten nicht vollständig ermittelt werden."
+        },
+        "payment": "Der Grundstückskauf ist fehlgeschlagen: PH_REASON",
+        "price": {
+          "unavailable": "Der Grundstückspreis ist derzeit nicht verfügbar; es wurde nichts abgebucht."
+        },
+        "size": "Die Zone ist zu groß! (Nur 1 Chunk erlaubt)",
+        "special": {
+          "area": "Der Bereich bei \u003ccolor\u003dred\u003ePH_CHUNK_POS\u003c/color\u003e gehört zu einer Sonderzone und kann nicht übernommen werden!"
+        },
+        "time": "Die Gesamtzeit die du in der neuen Zone verbracht hast reicht nicht aus, es fehlen PH_TIME_LEFT.",
+        "wallet": {
+          "required": "Dieser Claim-Modus benötigt Wallet; es wurde kein Besitz geändert."
+        }
+      },
+      "expanded": "Die Zone PH_AREA_NAME wurde erfolgreich erweitert."
+    },
+    "cmd": {
+      "help": "Hilfe:\nVerfügbare Chat-Kommandos:\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD status\u003c/color\u003e oder \u003ccolor\u003dred\u003e/PH_PLUGIN_CMD info\u003c/color\u003e zeigt Plugin-Infos an\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD stats\u003c/color\u003e zeigt spieler infos an\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD open\u003c/color\u003e öffnet das Pluginmenü\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD config\u003c/color\u003e öffnet die aktuelle konfigurierbare Zone\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD help\u003c/color\u003e zeigt diese Hilfe an\n\u003ccolor\u003dred\u003e/PH_PLUGIN_CMD devmode\u003c/color\u003e Developermode für admins\n\n\u003ccolor\u003dyellow\u003eTipp:\u003c/color\u003e Binde den Befehl \u003ccolor\u003dred\u003e/PH_PLUGIN_CMD open\u003c/color\u003e an eine Taste der Maus oder Tastatur.",
+      "repair": {
+        "err": {
+          "permission": "Unzureichende Rechte für diesen Befehl."
+        },
+        "success": "Alle Zonen wurden repariert."
+      },
+      "stats": "Deine Werte:\nAnzahl claims: \u003ccolor\u003dyellow\u003ePH_PLAYER_CLAIMS von PH_PLAYER_MAX_CLAIMS\u003c/color\u003e\nZeit zum beanspruchen: \u003ccolor\u003dyellow\u003ePH_PLAYER_CLAIM_TIME\u003c/color\u003e",
+      "status": "🔎 Plugin Status\n➡️ Plugin version: PH_VERSION\n➡️ Installierte Sprachen: PH_LANG_AVAILABLE\n➡️ Deine Sprache: PH_LANGUAGE\n➡️ Verwendete Sprache: PH_USEDLANG"
+    },
+    "data": {
+      "col": {
+        "description": "Beschreibung"
+      }
+    },
+    "dialog": {
+      "admin": {
+        "cleanup": {
+          "area": {
+            "confirm": "\u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e löschen\nund betroffene Chunks zurücksetzen?",
+            "title": "Claim-Zone säubern"
+          },
+          "owner": {
+            "confirm": "Alle PH_CLAIM_COUNT Claims von\n\u003ccolor\u003dred\u003ePH_PLAYER_NAME\u003c/color\u003e löschen\nund betroffene Chunks zurücksetzen?",
+            "title": "Claims eines Besitzers säubern"
+          },
+          "special": {
+            "area": {
+              "confirm": "\u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e löschen\nund betroffene Chunks zurücksetzen?",
+              "title": "Spezialzone säubern"
+            }
+          }
+        },
+        "delete": {
+          "area": {
+            "confirm": "Claim-Daten und Server-Zone für\n\u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e löschen?\nChunks werden nicht zurückgesetzt.",
+            "title": "Claim-Zone löschen"
+          },
+          "owner": {
+            "confirm": "Alle PH_CLAIM_COUNT Claims von\n\u003ccolor\u003dred\u003ePH_PLAYER_NAME\u003c/color\u003e löschen?\nChunks werden nicht zurückgesetzt.",
+            "title": "Claims eines Besitzers löschen"
+          },
+          "special": {
+            "area": {
+              "confirm": "Server-Zone für\n\u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e löschen?\nChunks werden nicht zurückgesetzt.",
+              "title": "Spezialzone löschen"
+            }
+          }
+        }
+      },
+      "area": {
+        "claim": {
+          "paid": {
+            "confirm": "Dieses Grundstück jetzt für PH_PRICE PH_CURRENCY kaufen?"
+          }
+        },
+        "expand": {
+          "confirm": "Bitte bestätige das du die Zone \n\u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e\nerweitern willst in Richtung: \u003ccolor\u003dyellow\u003ePH_DIRECTION\u003c/color\u003e",
+          "failed": "Erweitern der Zone \u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e fehlgeschlagen.",
+          "paid": {
+            "confirm": "Die Zone\n\u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e\nwird nach \u003ccolor\u003dyellow\u003ePH_DIRECTION\u003c/color\u003e erweitert. Kosten: \u003ccolor\u003dyellow\u003ePH_PRICE PH_CURRENCY\u003c/color\u003e."
+          },
+          "title": "Zone Erweitern"
+        },
+        "release": {
+          "confirm": "Bitte bestätige das du die Zone \n\u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e\nfreigeben willst. ",
+          "success": "Zone erfolgreich freigegeben.",
+          "title": "Zone freigeben"
+        },
+        "rename": {
+          "title": "Zone umbenennen"
+        },
+        "sale": {
+          "buy": {
+            "confirm": "\u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e\nfür \u003ccolor\u003dyellow\u003ePH_PRICE PH_CURRENCY\u003c/color\u003e kaufen?",
+            "title": "Zone kaufen"
+          },
+          "list": {
+            "title": "Zone zum Verkauf anbieten"
+          },
+          "withdraw": {
+            "confirm": "Verkauf für\n\u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e\nzum Preis \u003ccolor\u003dyellow\u003ePH_PRICE PH_CURRENCY\u003c/color\u003e zurückziehen?",
+            "title": "Verkauf zurückziehen"
+          }
+        },
+        "split": {
+          "confirm": "Bitte bestätige das du die Zone aufteilen willst:\n\u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e",
+          "title": "Zone aufteilen"
+        }
+      },
+      "city": {
+        "create": {
+          "title": "Stadt gründen"
+        },
+        "delete": "PH_CITY_NAME mit allen unbelegten Pachtflächen löschen und die Stadtkasse an das Weltkonto übertragen?",
+        "expand": {
+          "confirm": "PH_PRICE aus der Stadtkasse zahlen und den Radius um eins erhöhen?",
+          "title": "Stadt erweitern"
+        },
+        "lease": {
+          "confirm": "PH_AREA_NAME für PH_PRICE übernehmen?",
+          "delete": "\u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e löschen? Bestehender Besitz wird ohne Entschädigung entzogen.",
+          "return": "PH_AREA_NAME ohne Erstattung zurückgeben?"
+        }
+      },
+      "renew": {
+        "zone": {
+          "config": {
+            "title": "Intervall der Renaturierungszone"
+          }
+        }
+      }
+    },
+    "direction": {
+      "down": "Unten",
+      "east": "Osten",
+      "north": "Norden",
+      "south": "Süden",
+      "up": "Oben",
+      "west": "Westen"
+    },
+    "discord": {
+      "admin": {
+        "cleanup": {
+          "$value": "Admin `PH_ADMIN_NAME` hat `PH_TARGET` gesäubert: `PH_CLAIM_COUNT` Claim-Datensätze gelöscht und `PH_RESET_COUNT` Chunks zurückgesetzt.",
+          "blocked": "Admin-Säuberung für `PH_TARGET` wurde blockiert, weil ein anderer Besitzer einen Claim bei `PH_CHUNK_POS` hat.",
+          "special": {
+            "area": "Admin `PH_ADMIN_NAME` hat die Spezialzone `PH_TARGET` gesäubert und `PH_RESET_COUNT` Chunks zurückgesetzt."
+          }
+        },
+        "delete": {
+          "$value": "Admin `PH_ADMIN_NAME` hat Claim-Datensätze für `PH_TARGET` gelöscht: `PH_CLAIM_COUNT`.",
+          "special": {
+            "area": "Admin `PH_ADMIN_NAME` hat die Spezialzone `PH_TARGET` gelöscht."
+          }
+        }
+      },
+      "area": {
+        "claimed": "Die Zone `PH_AREA_NAME` bei `PH_CHUNK_POS` wurde von `PH_PLAYER_NAME` beansprucht.",
+        "expanded": "Die Zone `PH_AREA_NAME` bei `PH_CHUNK_POS` wurde von `PH_PLAYER_NAME` erweitert.",
+        "released": "Die Zone `PH_AREA_NAME` bei `PH_CHUNK_POS` wurde von `PH_PLAYER_NAME` freigegeben.",
+        "sold": "Der Claim `PH_AREA_NAME` wurde von `PH_SELLER_NAME` für `PH_PRICE` an `PH_BUYER_NAME` verkauft.",
+        "special": {
+          "created": "Spieler `PH_PLAYER_NAME` hat die Sonderzone `PH_AREA_NAME` bei `PH_CHUNK_POS` erstellt."
+        }
+      },
+      "auto": {
+        "claim": {
+          "removal": "Automatische Claim-Entfernung für Besitzer mit `PH_DAYS` Tagen Inaktivität: `PH_OWNER_COUNT` Besitzer und `PH_CLAIM_COUNT` Claims entfernt."
+        }
+      },
+      "renew": {
+        "zone": {
+          "reset": "Renaturierungszone `PH_AREA_NAME` (`PH_AREA_ID`) wurde erneuert. Zurueckgesetzte Chunk-Spalten: `PH_RESET_COUNT`."
+        }
+      }
+    },
+    "err": {
+      "cmd": {
+        "unknown": "Unbekanntes Kommando tippe \u003ccolor\u003dred\u003e/PH_PLUGIN_CMD help\u003c/color\u003e für Hilfe."
+      }
+    },
+    "landclaim": {
+      "info": {
+        "panel": {
+          "info": "\u003cb\u003ePH_PLUGIN_NAME\u003c/b\u003e\nVersion: PH_VERSION\nBefehl: /PH_PLUGIN_CMD\n\nLandClaim verwaltet Claim-Schutz, Area-Rechte, Spezialzonen, Claim-Verkäufe und zusätzliche Claim-Kapazität.",
+          "status": "\u003cb\u003eLandClaim Status\u003c/b\u003e\nDeine Claims: PH_PLAYER_CLAIMS / PH_PLAYER_MAX_CLAIMS\nGekaufte Extra-Claims: PH_PURCHASED_EXTRA_CLAIMS\nClaim-Modus: PH_CLAIM_MODE\nClaim-Verkauf: PH_CLAIM_SALE\nExtra-Claim-Shop: PH_EXTRA_CLAIM_SHOP\nWallet: PH_WALLET_STATUS\nShop: PH_SHOP_STATUS\nAuto-Entfernung: PH_AUTO_REMOVAL\nSprache: PH_LANGUAGE\nVerwendete Sprache: PH_USEDLANG\nInstallierte Sprachen: PH_LANG_AVAILABLE"
+        }
+      }
+    },
+    "menu": {
+      "admin": {
+        "$value": "Administration",
+        "cleanup": "Grundstücksverwaltung",
+        "debug": "Debugging",
+        "sync": {
+          "repair": "Zonen reparieren"
+        }
+      },
+      "area": {
+        "config": "Zone konfigurieren",
+        "expand": {
+          "down": "Erweitern nach unten",
+          "east": "Erweitern im Osten",
+          "north": "Erweitern im Norden",
+          "option": "Erweiterungsmöglichkeiten",
+          "south": "Erweitern im Süden",
+          "up": "Erweitern nach oben",
+          "west": "Erweitern im Westen"
+        },
+        "option": "Zoneneinstellungen",
+        "permissions": "Berechtigungen",
+        "release": "Zone freigeben",
+        "rename": "Zone umbenennen",
+        "sale": {
+          "buy": "Zone kaufen",
+          "list": "Zone verkaufen",
+          "withdraw": "Verkauf zurückziehen"
+        },
+        "split": "Zone aufteilen"
+      },
+      "city": {
+        "core": {
+          "create": "Stadtkern erstellen"
+        },
+        "delete": "Stadt löschen",
+        "expand": "Stadt erweitern (PH_PRICE)",
+        "leasehold": {
+          "create": "Pachtland erstellen"
+        },
+        "lease": {
+          "admin": "Pachtverwaltung",
+          "buy": "Grundstück kaufen",
+          "daily": {
+            "rent": "Tagesmiete: PH_PRICE"
+          },
+          "delete": "Pachtland löschen",
+          "disable": {
+            "buy": "Kauf sperren",
+            "rent": "Miete sperren"
+          },
+          "enable": {
+            "buy": "Kauf erlauben",
+            "rent": "Miete erlauben"
+          },
+          "purchase": {
+            "price": "Kaufpreis: PH_PRICE"
+          },
+          "rent": "Grundstück mieten",
+          "return": "Grundstück zurückgeben"
+        },
+        "management": "Stadtverwaltung"
+      },
+      "claim": "Zone beanspruchen",
+      "info": {
+        "status": "Info / Status"
+      },
+      "land": {
+        "buy": "Grundstück kaufen (PH_PRICE PH_CURRENCY)"
+      },
+      "special": {
+        "area": {
+          "$value": "Sonderzonen",
+          "create": "Sonderzone erstellen",
+          "pvp": "Kampfzone (PvP) erstellen",
+          "renew": "Renaturierungszone erstellen",
+          "rest": "Ruhezone erstellen",
+          "static": "Statische Zone erstellen",
+          "trap": "Fallenzone erstellen"
+        }
+      },
+      "visibility": {
+        "$value": "Sichtbarkeit",
+        "current": {
+          "hide": "Aktuellen Chunk ausblenden",
+          "show": "Aktuellen Chunk anzeigen"
+        },
+        "other": {
+          "hide": "Andere Zonen ausblenden",
+          "show": "Andere Zonen anzeigen"
+        },
+        "owned": {
+          "hide": "Eigene Zonen ausblenden",
+          "show": "Eigene Zonen anzeigen"
+        }
+      }
+    },
+    "msg": {
+      "plugin": {
+        "welcome": "➡️ \u003ccolor\u003d#F00000\u003ePH_PLUGIN_NAME\u003c/color\u003e | \u003ccolor\u003d#F0F000\u003evPH_PLUGIN_VERSION\u003c/color\u003e | \u003ccolor\u003d#C0C0C0\u003e/PH_PLUGIN_CMD\u003c/color\u003e | geladen!"
+      }
+    },
+    "renew": {
+      "zone": {
+        "config": {
+          "invalid": {
+            "interval": "Bitte gib ein positives ganzzahliges Intervall in Stunden ein."
+          },
+          "saved": "Intervall der Renaturierungszone auf PH_INTERVAL_HOURS Stunden gesetzt.",
+          "save": {
+            "failed": "Einstellungen der Renaturierungszone konnten nicht gespeichert werden."
+          }
+        }
+      }
+    },
+    "setting": {
+      "adminignorelimit": {
+        "desc": "Erlaubt Admins, Claim-Limits zu umgehen.",
+        "label": "Admin ignoriert Claim-Limit"
+      },
+      "adminignoretime": {
+        "desc": "Erlaubt Admins, Claim-Wartezeiten zu umgehen.",
+        "label": "Admin ignoriert Claim-Zeit"
+      },
+      "adminoverrides": {
+        "desc": "Admin-Bypass-Verhalten für Claim-Limits und Claim-Zeit.",
+        "label": "Admin-Overrides"
+      },
+      "allowadminoverride": {
+        "desc": "Admins können ausgeblendete Sonderzonen-Rahmen sehen.",
+        "label": "Admin-Override erlauben"
+      },
+      "allowclaimbuyexceedlimit": {
+        "desc": "Erlaubt Claim-Käufe über das normale Claim-Limit des Käufers hinaus.",
+        "label": "Über Limit kaufen"
+      },
+      "allowclaimsale": {
+        "desc": "Erlaubt Spielern, eigene Claims für Wallet-gestützten Verkauf anzubieten.",
+        "label": "Claim-Verkauf erlauben"
+      },
+      "autoclaimremovaldelayseconds": {
+        "desc": "Verzögerung in Sekunden, bevor die automatische Entfernungsprüfung nach dem Start läuft.",
+        "label": "Entfernungsverzögerung"
+      },
+      "autoclaimremovalinactivedays": {
+        "desc": "Inaktivitätsdauer des Besitzers vor automatischer Claim-Entfernung.",
+        "label": "Inaktive Tage"
+      },
+      "autoremoval": {
+        "desc": "Automatische Claim-Entfernung bei inaktiven Besitzern.",
+        "label": "Automatische Entfernung"
+      },
+      "basicclaimlimit": {
+        "desc": "Basisanzahl an Claims, die ein Spieler besitzen kann.",
+        "label": "Basis-Claim-Limit"
+      },
+      "cityallowprivateclaims": {
+        "desc": "Erlaubt standardmäßig private Spielergrundstücke innerhalb von Städten.",
+        "label": "Private Stadtgrundstücke"
+      },
+      "citybaseradius": {
+        "desc": "Anfänglicher dreidimensionaler Stadtradius in Chunks.",
+        "label": "Stadt-Grundradius"
+      },
+      "cityexpansionbaseprice": {
+        "desc": "Preis je neu abgedecktem Chunk bei einer Stadterweiterung.",
+        "label": "Grundpreis der Stadterweiterung"
+      },
+      "citymoderules": {
+        "desc": "Regeln für Städte, Privatgrundstücke und Mieten.",
+        "label": "Stadtmodus-Regeln"
+      },
+      "cityprivateclaimprice": {
+        "desc": "Standardpreis je Chunk eines privaten Stadtgrundstücks.",
+        "label": "Preis privater Stadtgrundstücke"
+      },
+      "cityrentbillinghour": {
+        "desc": "Lokale Serverstunde von 0 bis 23 für die tägliche Mietabrechnung.",
+        "label": "Mietabrechnungsstunde"
+      },
+      "claimmode": {
+        "desc": "Globale Regeln für Erwerb und Besitz aller Grundstücke.",
+        "label": "Claim-Modus",
+        "option": {
+          "administrative": "Administrativ",
+          "city": "Städte",
+          "land": {
+            "pricing": "Grundstückspreise"
+          },
+          "time": {
+            "based": "Zeitbasiert"
+          }
+        }
+      },
+      "claimprotectionbasetimedays": {
+        "desc": "Reservierte Grundschutzzeit in Tagen; aktuell nicht verwendet.",
+        "label": "Grundschutzzeit"
+      },
+      "claimprotectionextratimescale": {
+        "desc": "Reservierter Schutzzeitfaktor; aktuell nicht verwendet.",
+        "label": "Schutzzeitfaktor"
+      },
+      "claimrules": {
+        "desc": "Grundverhalten für Claim-Zeit und Limits.",
+        "label": "Claim-Regeln"
+      },
+      "claimsalefee": {
+        "desc": "Dezimaler Wallet-Gebührenanteil bei Grundstücksverkäufen.",
+        "label": "Verkaufsgebühr"
+      },
+      "claimsales": {
+        "desc": "Wallet-gestütztes Verhalten für Claim-Verkauf und -Kauf.",
+        "label": "Claim-Verkäufe"
+      },
+      "claimtimescalefactor": {
+        "desc": "Dezimaler Skalierungsfaktor zum Erhöhen oder Verringern der Claim-Wartezeit.",
+        "label": "Claim-Zeitskalierung"
+      },
+      "discordrenewzonelogchannelid": {
+        "desc": "Discord-Kanal-ID für Erneuerungszonen-Protokolle; 0 deaktiviert sie.",
+        "label": "Discord-Erneuerungsprotokoll"
+      },
+      "enableautoclaimremoval": {
+        "desc": "Entfernt Claims von Besitzern, die länger als die konfigurierten Tage inaktiv sind.",
+        "label": "Automatische Claim-Entfernung"
+      },
+      "enableextraclaimshopoffer": {
+        "desc": "Registriert das Angebot für zusätzliche Claim-Kapazität im OZ Shop, wenn verfügbar.",
+        "label": "Extra-Claim-Shop-Angebot"
+      },
+      "enablewelcomemessage": {
+        "desc": "Zeigt eine kurze LandClaim-Nachricht, wenn ein Spieler beitritt.",
+        "label": "Willkommensnachricht"
+      },
+      "exportroutes": {
+        "desc": "Lesezugriffe für Manager- und Bridge-Integrationen.",
+        "label": "Export-Schnittstellen"
+      },
+      "exposeclaimsales": {
+        "desc": "Erlaubt Bridge-Layern Lesezugriff auf aktive Grundstücksverkäufe.",
+        "label": "Grundstücksverkäufe bereitstellen"
+      },
+      "exposerenewzones": {
+        "desc": "Erlaubt Bridge-Layern Lesezugriff auf Erneuerungszonen.",
+        "label": "Erneuerungszonen bereitstellen"
+      },
+      "extraclaimbaseprice": {
+        "desc": "Preis für die erste gekaufte zusätzliche Claim-Kapazität.",
+        "label": "Extra-Claim-Basispreis"
+      },
+      "extraclaimpriceincreasepercent": {
+        "desc": "Lineare prozentuale Erhöhung pro bereits gekaufter zusätzlicher Claim-Kapazität.",
+        "label": "Extra-Claim-Preiserhöhung"
+      },
+      "extraclaimshopcurrencyidentifier": {
+        "desc": "Währungskennung für Extra-Claim-Shop-Käufe. Leer verwendet den Wallet-Standard.",
+        "label": "Extra-Claim-Währung"
+      },
+      "extraclaims": {
+        "desc": "Shop-Angebot zum Kauf zusätzlicher Claim-Kapazität.",
+        "label": "Extra-Claim-Shop"
+      },
+      "general": {
+        "desc": "Protokollierung, Reload, Willkommens- und Berechtigungslisten-Verhalten.",
+        "label": "Allgemein"
+      },
+      "landpricebase": {
+        "desc": "Grundpreis eines freien Chunks im Grundstückspreis-Modus.",
+        "label": "Grundstücksgrundpreis"
+      },
+      "landpriceclusterincrement": {
+        "desc": "Additiver Preisaufschlag je Chunk eines angrenzenden Clusters.",
+        "label": "Cluster-Preisaufschlag"
+      },
+      "landpriceincludebaseclaimsfree": {
+        "desc": "Erlässt den Grundstücksgrundpreis innerhalb des Basisclaim-Limits; Clusteraufschläge bleiben zahlbar.",
+        "label": "Inklusive Basisclaims kostenlos"
+      },
+      "landpricingrules": {
+        "desc": "Regeln für den Grundstückspreis-Modus.",
+        "label": "Grundstückspreis-Regeln"
+      },
+      "loglevel": {
+        "desc": "Steuert den Detailgrad der LandClaim-Protokollierung.",
+        "label": "Log-Level"
+      },
+      "minutestoclaim": {
+        "desc": "Mindestminuten, die ein Spieler vor dem Claim in einem Chunk bleiben muss.",
+        "label": "Minuten bis Claim"
+      },
+      "playtimehoursextraclaimfactor": {
+        "desc": "Dezimaler Faktor, mit dem zusätzliche Claims aus Spielzeit vergeben werden.",
+        "label": "Spielzeit-Extra-Claim-Faktor"
+      },
+      "recentlyonlinepermissionlisthours": {
+        "desc": "Stundenwert für kürzlich gesehene Spieler in Berechtigungsabläufen.",
+        "label": "Kürzlich-online-Stunden"
+      },
+      "reloadonchange": {
+        "desc": "Dokumentiert, dass LandClaim-Einstellungen neu geladen werden, wenn sich settings.properties ändert.",
+        "label": "Bei Änderung neu laden"
+      },
+      "renewzonedefaultintervalhours": {
+        "desc": "Standardintervall für neue Erneuerungszonen in Stunden.",
+        "label": "Standard-Erneuerungsintervall"
+      },
+      "renewzoneresetannouncementtarget": {
+        "desc": "Empfänger von Erneuerungszonen-Reset-Ankündigungen.",
+        "label": "Reset-Ankündigungen"
+      },
+      "renewzoneresetbasedelayseconds": {
+        "desc": "Minimale Verzögerung vor dem nächsten Erneuerungszonen-Reset.",
+        "label": "Grundverzögerung beim Reset"
+      },
+      "renewzoneresetdelayperchunkmillis": {
+        "desc": "Zusätzliche Verzögerung je zurückgesetzter Chunk-Spalte.",
+        "label": "Reset-Verzögerung je Chunk"
+      },
+      "renewzoneresetmaxdelayseconds": {
+        "desc": "Maximale Verzögerung vor dem nächsten Erneuerungszonen-Reset.",
+        "label": "Maximale Reset-Verzögerung"
+      },
+      "renewzones": {
+        "desc": "Standardwerte und Reset-Verhalten von Erneuerungszonen.",
+        "label": "Erneuerungszonen"
+      },
+      "showpvpareaframes": {
+        "desc": "Zeigt Spielern Rahmen von PvP-Sonderzonen an.",
+        "label": "PvP-Zonen anzeigen"
+      },
+      "showrenewareaframes": {
+        "desc": "Zeigt Spielern Rahmen von Renaturierungszonen an.",
+        "label": "Renaturierungszonen anzeigen"
+      },
+      "showrestareaframes": {
+        "desc": "Zeigt Spielern Rahmen von Ruhe-Sonderzonen an.",
+        "label": "Ruhezonen anzeigen"
+      },
+      "showspecialareaframes": {
+        "desc": "Zeigt Spielern Rahmen neutraler Sonderzonen an.",
+        "label": "Neutrale Sonderzonen anzeigen"
+      },
+      "showstaticareaframes": {
+        "desc": "Zeigt Spielern Rahmen statischer Sonderzonen an.",
+        "label": "Statische Zonen anzeigen"
+      },
+      "showtrapareaframes": {
+        "desc": "Zeigt Spielern Rahmen von Fallen-Sonderzonen an.",
+        "label": "Fallenzonen anzeigen"
+      },
+      "specialzonevisibility": {
+        "desc": "Legt fest, welche Sonderzonen Spieler bei aktiver Sichtbarkeit anderer Zonen sehen.",
+        "label": "Sonderzonen-Sichtbarkeit"
+      },
+      "timemoderules": {
+        "desc": "Regeln für den zeitbasierten Erwerbsmodus.",
+        "label": "Zeitmodus-Regeln"
+      },
+      "unusedrules": {
+        "desc": "Reservierte Einstellungen ohne aktuelle Auswirkung auf das Gameplay.",
+        "label": "Aktuell nicht verwendete Regeln"
+      }
+    },
+    "time": {
+      "measurement": {
+        "chunk": "Chunk",
+        "title": "Zeitmessung",
+        "zone": "Zone"
+      }
+    },
+    "ui": {
+      "admin": {
+        "cleanup": {
+          "action": {
+            "legend": "\u003ccolor\u003d#C7281F\u003eC\u003c/color\u003e säubert und setzt Chunks zurück, \u003ccolor\u003d#F2841F\u003eD\u003c/color\u003e löscht ohne Chunk-Reset, \u003ccolor\u003d#3366E6\u003eT\u003c/color\u003e teleportiert."
+          },
+          "days": "PH_DAYS Tage",
+          "empty": "Keine aktiven Claims gefunden.",
+          "owner": {
+            "system": "System"
+          },
+          "special": {
+            "empty": "Keine Spezialgrundstücke gefunden."
+          },
+          "subtitle": "Prüfe inaktive Besitzer und beanspruchte Zonen vor dem Löschen oder Säubern.",
+          "tab": {
+            "areas": "Grundstücke",
+            "owners": "Grundbesitzer",
+            "special": {
+              "areas": "Spezialgrundstücke"
+            }
+          },
+          "th": {
+            "actions": "Aktionen",
+            "area": "Zone",
+            "chunks": "Chunks",
+            "claims": "Claims",
+            "inactive": "Inaktiv",
+            "last": {
+              "seen": "Zuletzt online"
+            },
+            "max": "Max",
+            "name": "Name",
+            "owner": "Besitzer"
+          },
+          "title": "Grundstücksverwaltung",
+          "today": "Heute",
+          "unknown": "Unbekannt"
+        }
+      },
+      "area": {
+        "permissions": {
+          "info": "Besitzer: PH_AREA_OWNER",
+          "subtitle": "Hier kannst du anderen Spielern \"Freunde\"-Rechte geben oder nehmen.",
+          "title": "Berechtigungen für die Zone \u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e"
+        }
+      },
+      "btn": {
+        "cancel": "Abbrechen",
+        "close": "Schließen",
+        "expand": {
+          "paid": "Kostenpflichtig erweitern"
+        },
+        "no": "Nein",
+        "ok": "OK",
+        "yes": "Ja"
+      },
+      "city": {
+        "expand": {
+          "$value": "Radius erweitern",
+          "blocked": {
+            "city": {
+              "not": {
+                "found": "Stadterweiterung nicht möglich: Die Stadt wurde nicht mehr gefunden."
+              },
+              "overlap": "Stadterweiterung nicht möglich: Der nächste Radius würde eine andere Stadt überlappen."
+            },
+            "funds": "Stadterweiterung nicht möglich: PH_PRICE benötigt, Stadtkasse enthält PH_BALANCE.",
+            "max": {
+              "radius": "Stadterweiterung nicht möglich: Der maximale Radius ist erreicht."
+            },
+            "price": "Der Erweiterungspreis ist ungültig oder zu hoch.",
+            "sector": {
+              "boundary": "Stadterweiterung nicht möglich: Der nächste Radius würde die Sektorgrenze überschreiten."
+            }
+          }
+        },
+        "global": "globale Vorgabe",
+        "legend": "Städtelisten zeigen bis zu 50 Einträge pro Seite.",
+        "not": {
+          "found": "Die aktuelle Stadt wurde nicht gefunden."
+        },
+        "overview": "\u003cb\u003ePH_CITY_NAME\u003c/b\u003e\nRadius: PH_RADIUS\nStadtkasse: PH_BALANCE\nNächste Erweiterung: PH_NEXT_PRICE\nPachtgrundstücke: PH_LEASE_TOTAL (belegt: PH_LEASE_OCCUPIED, frei: PH_LEASE_UNOCCUPIED)\nTägliche Mieteinnahmen: PH_DAILY_RENT PH_CURRENCY",
+        "page": "Seite PH_PAGE",
+        "private": {
+          "$value": "Privatgrundstücke: PH_VALUE",
+          "price": {
+            "$value": "Privatpreis: PH_VALUE",
+            "edit": "Privatgrundstückspreis (leer \u003d global)"
+          }
+        },
+        "search": "Suchen",
+        "subtitle": "Aktuelle Stadt verwalten und andere Stadtkerne durchsuchen.",
+        "tab": {
+          "current": "Stadtverwaltung",
+          "others": "Städteliste"
+        },
+        "teleport": "Teleport",
+        "th": {
+          "action": "Aktion",
+          "balance": "Stadtkasse",
+          "name": "Name",
+          "position": "Position x,z",
+          "radius": "Radius",
+          "sector": "Sektor x,z"
+        },
+        "title": "Stadtverwaltung"
+      },
+      "label": {
+        "area": {
+          "frame": {
+            "chunk": {
+              "radius": "Sichtweite der Zonenrahmen (Chunks)"
+            }
+          }
+        },
+        "developer": {
+          "mode": "Entwicklermodus"
+        },
+        "enable": {
+          "claim": {
+            "info": {
+              "overlay": "Aktiviere Claim Info Overlay"
+            }
+          },
+          "time": {
+            "measurement": {
+              "overlay": "Zeitmessung anzeigen"
+            }
+          }
+        },
+        "input": "Eingabe:",
+        "landclaim": {
+          "shortcut": "Land-Claim-Shortcut in /ozt und Inventar anzeigen"
+        },
+        "show": {
+          "current": {
+            "chunk": {
+              "frame": "Zeige aktuellen Chunk-Rahmen an"
+            }
+          },
+          "other": {
+            "areas": "Zeige andere Zonen an"
+          },
+          "owned": {
+            "areas": "Zeige eigene Zonen an"
+          }
+        }
+      },
+      "lease": {
+        "admin": {
+          "legend": "Mieterhöhungen bei belegtem Pachtland erfordern eine Bestätigung und benachrichtigen den Besitzer.",
+          "subtitle": "Preise und Übernahmeregeln dieses Grundstücks konfigurieren.",
+          "tab": "Pachtverwaltung",
+          "title": "Pachtverwaltung"
+        },
+        "edit": {
+          "price": "Kaufpreis ändern",
+          "rent": "Tagesmiete ändern"
+        },
+        "overview": "\u003cb\u003ePH_AREA_NAME\u003c/b\u003e\nBesitzer: PH_OWNER\nKaufpreis: PH_PURCHASE_PRICE\nTagesmiete: PH_RENT",
+        "purchase": {
+          "allowed": "Kauf möglich"
+        },
+        "rent": {
+          "allowed": "Miete möglich",
+          "increase": {
+            "confirm": "Tagesmiete von PH_OLD_RENT auf PH_NEW_RENT erhöhen? Der Besitzer wird benachrichtigt.",
+            "title": "Miete bei belegtem Grundstück erhöhen"
+          }
+        },
+        "unoccupied": "Unbelegt"
+      },
+      "permission": {
+        "exiled": "Verbannter",
+        "friend": "Freund",
+        "guest": "Gast",
+        "owner": "Eigentümer",
+        "prisoner": "Gefangener",
+        "pvp": "PvP-Zone",
+        "renew": "Renaturierungszone",
+        "resident": "Bewohner",
+        "rest": "Ruhezone",
+        "special": "Spezial-Zone",
+        "static": "Statische Zone",
+        "trap": "Fallenzone"
+      },
+      "player": {
+        "permission": {
+          "set": "Berechtigungen für Spieler \u003ccolor\u003dyellow\u003ePH_PLAYER_NAME\u003c/color\u003e auf \u003ccolor\u003dyellow\u003ePH_PERMISSION\u003c/color\u003e gesetzt.",
+          "unset": "Berechtigungen für Spieler \u003ccolor\u003dyellow\u003ePH_PLAYER_NAME\u003c/color\u003e entfernt."
+        }
+      },
+      "status": {
+        "offline": "Offline",
+        "online": "Online"
+      },
+      "th": {
+        "label": {
+          "name": "Name",
+          "permission": "Berechtigung",
+          "status": "Status",
+          "uid": "UID"
+        }
+      }
+    },
+    "wallet": {
+      "city": {
+        "dissolution": "Einnahmen durch Stadtauflösung PH_CITY_NAME | PH_AREA_ID",
+        "expansion": {
+          "$value": "Erweiterung der Stadt PH_CITY_NAME",
+          "rollback": "Erstattung für fehlgeschlagene Stadterweiterung"
+        },
+        "lease": {
+          "purchase": "Kauf des Grundstücks PH_AREA_NAME (PH_AREA_ID)",
+          "rent": "Miete für das Grundstück PH_AREA_NAME (PH_AREA_ID)",
+          "rollback": "Erstattung für fehlgeschlagene Grundstücksübernahme"
+        },
+        "private": {
+          "expansion": "Erweiterung eines Privatgrundstücks in der Stadt PH_CITY_NAME",
+          "purchase": "Privatgrundstück PH_CHUNK_POS in der Stadt PH_CITY_NAME"
+        }
+      },
+      "land": {
+        "expansion": "Erweiterung des Grundstücks PH_AREA_NAME",
+        "purchase": {
+          "$value": "Kauf des Grundstücks bei PH_CHUNK_POS von PH_PLAYER_NAME",
+          "rollback": "Erstattung für fehlgeschlagenen Grundstückskauf"
+        }
+      }
+    }
+  }
+}

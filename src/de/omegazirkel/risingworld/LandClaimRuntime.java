@@ -32,7 +32,6 @@ import de.omegazirkel.risingworld.landclaim.ui.ChunkInfoManager;
 import de.omegazirkel.risingworld.landclaim.ui.LandClaimPlayerPluginData;
 import de.omegazirkel.risingworld.landclaim.ui.LandClaimPlayerPluginSettings;
 import de.omegazirkel.risingworld.landclaim.ui.UIDialogFactory;
-import de.omegazirkel.risingworld.tools.ui.CursorManager;
 import net.risingworld.api.ui.UIElement;
 import net.risingworld.api.ui.UITarget;
 import de.omegazirkel.risingworld.tools.Colors;
@@ -137,7 +136,6 @@ class LandClaimRuntime extends Plugin {
         s.initSettings();
         cleanupService = new ClaimCleanupService(llcs, s);
         gui = LandClaimGUI.getInstance(chunkClaimUtil, cleanupService, this);
-        logger().setLevel(s.logLevel);
         ensureDefaultPermissionFiles();
 
         // Load Plugin Menu into Main Plugin Menu
@@ -211,7 +209,6 @@ class LandClaimRuntime extends Plugin {
 
     public void onSettingsChanged(Path settingsPath) {
         s.initSettings(settingsPath.toString());
-        logger().setLevel(s.logLevel);
         if (economyIntegration != null) {
             economyIntegration.logStatus();
             economyIntegration.registerExtraClaimOffer(s);
@@ -270,7 +267,7 @@ class LandClaimRuntime extends Plugin {
             }
             logger().info("Auto claim removal checked inactive owners. Owners removed: "
                     + result.ownersRemoved() + ", claims removed: " + result.claimsRemoved());
-            String message = t.get("TC_DISCORD_AUTO_CLAIM_REMOVAL", DiscordConnect.botLang())
+            String message = t.get("tc.discord.auto.claim.removal", DiscordConnect.botLang())
                     .replace("PH_OWNER_COUNT", String.valueOf(result.ownersRemoved()))
                     .replace("PH_CLAIM_COUNT", String.valueOf(result.claimsRemoved()))
                     .replace("PH_DAYS", String.valueOf(result.inactiveDays()));
@@ -354,14 +351,14 @@ class LandClaimRuntime extends Plugin {
                     PluginInfoStatusProviders.show(player, name);
                     break;
                 case "stats":
-                    String statsMessage = t.get("TC_CMD_STATS", player)
+                    String statsMessage = t.get("tc.cmd.stats", player)
                             .replace("PH_PLAYER_CLAIMS", chunkClaimUtil.getPlayerClaimCount(player) + "")
                             .replace("PH_PLAYER_MAX_CLAIMS", chunkClaimUtil.getPlayerMaxClaims(player) + "")
                             .replace("PH_PLAYER_CLAIM_TIME", chunkClaimUtil.getPlayerNextClaimTime(player) + "");
                     player.sendTextMessage(c.okay + this.getName() + ":> " + c.endTag + statsMessage);
                     break;
                 case "help":
-                    String helpMessage = t.get("TC_CMD_HELP", player).replaceAll("PH_PLUGIN_CMD", pluginCMD);
+                    String helpMessage = t.get("tc.cmd.help", player).replaceAll("PH_PLUGIN_CMD", pluginCMD);
                     player.sendTextMessage(c.okay + this.getName() + ":> " + c.endTag + helpMessage);
                     break;
                 case "devmode":
@@ -379,7 +376,7 @@ class LandClaimRuntime extends Plugin {
                     gui.openCurrentAreaConfig(player, (Player p) -> gui.openMainMenu(p));
                     break;
                 default:
-                    player.sendTextMessage(t.get("TC_ERR_CMD_UNKNOWN").replace("PH_PLUGIN_CMD", pluginCMD));
+                    player.sendTextMessage(t.get("tc.err.cmd.unknown").replace("PH_PLUGIN_CMD", pluginCMD));
                     break;
             }
         }
@@ -476,6 +473,9 @@ class LandClaimRuntime extends Plugin {
         if (!player.hasAttribute(LandClaimPlayerPluginSettings.ENABLE_CLAIM_INFO_OVERLAY_KEY))
             player.setAttribute(LandClaimPlayerPluginSettings.ENABLE_CLAIM_INFO_OVERLAY_KEY,
                     ps.getBoolean(dbId, LandClaimPlayerPluginSettings.ENABLE_CLAIM_INFO_OVERLAY_KEY).orElse(true));
+        if (!player.hasAttribute(LandClaimPlayerPluginSettings.ENABLE_TIME_MEASUREMENT_OVERLAY_KEY))
+            player.setAttribute(LandClaimPlayerPluginSettings.ENABLE_TIME_MEASUREMENT_OVERLAY_KEY,
+                    ps.getBoolean(dbId, LandClaimPlayerPluginSettings.ENABLE_TIME_MEASUREMENT_OVERLAY_KEY).orElse(false));
         if (!player.hasAttribute("oz.landclaim.areaFrames"))
             player.setAttribute("oz.landclaim.areaFrames", new ConcurrentHashMap<Long, Area3D>());
         if (!player.hasAttribute("oz.landclaim.currentAreaFrame"))
@@ -518,13 +518,12 @@ class LandClaimRuntime extends Plugin {
         String[] arguments = notice.arguments().split("\\t", 2);
         String message = t.get(notice.messageKey(), player).replace("PH_AREA_NAME", arguments[0]);
         if (arguments.length > 1) message = message.replace("PH_RENT", arguments[1]);
-        UIElement dialog = UIDialogFactory.getWarningDialog(player, t.get("TC_CITY_NOTICE_TITLE", player), message,
+        UIElement dialog = UIDialogFactory.getWarningDialog(player, t.get("tc.city.notice.title", player), message,
                 closed -> {
                     cityService.deletePendingNotification(notice.id());
                     showPendingCityNotifications(closed);
                 });
-        player.addUIElement(dialog, UITarget.HUD);
-        CursorManager.show(player);
+        player.addUIElement(dialog, UITarget.Modal);
     }
 
     public void onPlayerSpawnEvent(PlayerSpawnEvent event) {
@@ -542,7 +541,7 @@ class LandClaimRuntime extends Plugin {
         if (s.enableWelcomeMessage) {
             // Player player = event.getPlayer();
             String lang = de.omegazirkel.risingworld.OZTools.getPlayerLanguage(player);
-            player.sendTextMessage(t.get("TC_MSG_PLUGIN_WELCOME", lang)
+            player.sendTextMessage(t.get("tc.msg.plugin.welcome", lang)
                     .replace("PH_PLUGIN_NAME", getDescription("name"))
                     .replace("PH_PLUGIN_CMD", pluginCMD)
                     .replace("PH_PLUGIN_VERSION", getDescription("version")));

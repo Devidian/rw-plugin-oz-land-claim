@@ -32,18 +32,18 @@ public class PermissionOverlay extends BasePluginOverlay {
 
     @Override
     protected String titleText() {
-        return t().get("TC_UI_AREA_PERMISSIONS_TITLE", uiPlayer)
+        return t().get("tc.ui.area.permissions.title", uiPlayer)
                 .replace("PH_AREA_NAME", area.getName() != null ? area.getName() : "N/A");
     }
 
     @Override
     protected String descriptionText() {
-        return t().get("TC_UI_AREA_PERMISSIONS_SUBTITLE", uiPlayer);
+        return t().get("tc.ui.area.permissions.subtitle", uiPlayer);
     }
 
     @Override
     protected String legendText() {
-        return t().get("TC_UI_AREA_PERMISSIONS_INFO", uiPlayer)
+        return t().get("tc.ui.area.permissions.info", uiPlayer)
                 .replace("PH_AREA_OWNER", resolveOwnerName());
     }
 
