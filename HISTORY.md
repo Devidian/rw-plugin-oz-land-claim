@@ -5,6 +5,7 @@
 ## [0.17.0] - 2026-09-05 | Native claim exports
 
 - feat: expose opt-in native claim-sale and renew-zone exports for Manager integration.
+- change: migrate Claim settings and translations to JSON while keeping existing claim data and configuration compatible.
 
 ## [0.16.2] - 2026-08-12 | Claim time feedback
 
