@@ -89,8 +89,8 @@ All settings can be adjusted in the `settings.properties` file located in the pl
 | `discordRenewZoneLogChannelId`      | `0` | Discord channel id for renew-zone reset logs. `0` disables logging. |
 | `allowClaimSale`                    | `false` | Enables owner sale listings and Wallet-backed claim purchases when Wallet is installed. |
 | `allowClaimBuyExceedLimit`          | `false` | Allows claim purchases to exceed the buyer's normal claim limit. Keep disabled unless this is intentional. |
-| `exposeClaimSales`                  | `true`  | Allows bridge or future native route layers to expose active claim-sale listing metadata. |
-| `exposeRenewZones`                  | `true`  | Allows bridge or future native route layers to expose renew-zone metadata. |
+| `exposeClaimSales`                  | `true`  | Exposes active claim-sale listing metadata at `/plugins/oz---land-claim/claim-sales`. |
+| `exposeRenewZones`                  | `true`  | Exposes renew-zone metadata at `/plugins/oz---land-claim/renew-zones`. |
 | `allowAdminOverride`                 | `false` | Lets administrators bypass special-zone frame visibility filters. |
 | `showSpecialAreaFrames`              | `true`  | Shows neutral special-zone frames for other players. |
 | `showStaticAreaFrames`               | `true`  | Shows static-zone frames for other players. |

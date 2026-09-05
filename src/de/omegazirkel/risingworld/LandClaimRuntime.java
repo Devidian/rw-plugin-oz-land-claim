@@ -27,11 +27,14 @@ import de.omegazirkel.risingworld.landclaim.db.LandClaimChunkStore;
 import de.omegazirkel.risingworld.landclaim.db.RenewZoneConfigService;
 import de.omegazirkel.risingworld.landclaim.db.LandPriceService;
 import de.omegazirkel.risingworld.landclaim.db.CityService;
+import de.omegazirkel.risingworld.landclaim.exports.ClaimSaleExportService;
+import de.omegazirkel.risingworld.landclaim.exports.RenewZoneExportService;
 import de.omegazirkel.risingworld.landclaim.ui.ClaimSaleIndicatorProvider;
 import de.omegazirkel.risingworld.landclaim.ui.ChunkInfoManager;
 import de.omegazirkel.risingworld.landclaim.ui.LandClaimPlayerPluginData;
 import de.omegazirkel.risingworld.landclaim.ui.LandClaimPlayerPluginSettings;
 import de.omegazirkel.risingworld.landclaim.ui.UIDialogFactory;
+import de.omegazirkel.risingworld.landclaim.web.LandClaimExportRoute;
 import net.risingworld.api.ui.UIElement;
 import net.risingworld.api.ui.UITarget;
 import de.omegazirkel.risingworld.tools.Colors;
@@ -50,6 +53,7 @@ import de.omegazirkel.risingworld.tools.ui.SharedIndicators;
 import net.risingworld.api.Timer;
 import net.risingworld.api.Plugin;
 import net.risingworld.api.Server;
+import net.risingworld.api.World;
 import net.risingworld.api.events.player.PlayerCommandEvent;
 import net.risingworld.api.events.player.PlayerConnectEvent;
 import net.risingworld.api.events.player.PlayerDeathEvent;
@@ -64,8 +68,12 @@ import net.risingworld.api.worldelements.Area3D;
 
 class LandClaimRuntime extends Plugin {
     static final String pluginCMD = "lc";
+    private static final String WEBSERVER_CLAIM_SALES_ROUTE = "claim-sales";
+    private static final String WEBSERVER_RENEW_ZONES_ROUTE = "renew-zones";
     private static LandClaim instance;
     private ChunkInfoManager chunkInfoManager;
+    private LandClaimExportRoute webserverClaimSalesRoute;
+    private LandClaimExportRoute webserverRenewZonesRoute;
 
     static final Colors c = Colors.getInstance();
     private static I18n t = null;
@@ -129,6 +137,7 @@ class LandClaimRuntime extends Plugin {
             return; // we cant proceed without sqlite here
         }
         llcs = new LandClaimChunkService(lccStore);
+        registerWebserverExportRoutes();
 
         // wdbAreas = this.getWorldDatabase(Target.Areas);
         // wdbPlayers = this.getWorldDatabase(Target.Players);
@@ -178,6 +187,7 @@ class LandClaimRuntime extends Plugin {
     @Override
     public void onDisable() {
         logger().warn("⚠️ Disabling " + this.getName() + " ...");
+        unregisterWebserverExportRoutes();
         if (chunkInfoManager != null)
             chunkInfoManager.stop();
         if (renewZoneTimer != null) {
@@ -205,6 +215,31 @@ class LandClaimRuntime extends Plugin {
         }
 
         logger().warn("❌ " + this.getName() + " disabled.");
+    }
+
+    private void registerWebserverExportRoutes() {
+        String world = World.getName();
+        webserverClaimSalesRoute = new LandClaimExportRoute(
+                () -> Boolean.TRUE.equals(s.exposeClaimSales),
+                new ClaimSaleExportService(sqliteCon), null, world);
+        webserverRenewZonesRoute = new LandClaimExportRoute(
+                () -> Boolean.TRUE.equals(s.exposeRenewZones),
+                null, new RenewZoneExportService(sqliteCon, s), world);
+        registerWebserverHandler(WEBSERVER_CLAIM_SALES_ROUTE, webserverClaimSalesRoute);
+        registerWebserverHandler(WEBSERVER_RENEW_ZONES_ROUTE, webserverRenewZonesRoute);
+        logger().info("Native Land Claim export routes registered: /" + WEBSERVER_CLAIM_SALES_ROUTE
+                + ", /" + WEBSERVER_RENEW_ZONES_ROUTE);
+    }
+
+    private void unregisterWebserverExportRoutes() {
+        if (webserverClaimSalesRoute != null) {
+            unregisterWebserverHandler(WEBSERVER_CLAIM_SALES_ROUTE);
+            webserverClaimSalesRoute = null;
+        }
+        if (webserverRenewZonesRoute != null) {
+            unregisterWebserverHandler(WEBSERVER_RENEW_ZONES_ROUTE);
+            webserverRenewZonesRoute = null;
+        }
     }
 
     public void onSettingsChanged(Path settingsPath) {

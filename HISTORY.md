@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.17.0] - 2026-09-05 | Native claim exports
+
+- feat: expose opt-in native claim-sale and renew-zone exports for Manager integration.
+
 ## [0.16.2] - 2026-08-12 | Claim time feedback
 
 - fix: render the remaining claim time in every insufficient-time claim response.
