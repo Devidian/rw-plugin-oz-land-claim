@@ -2,7 +2,7 @@
 
 With this plugin, players can secure and manage their own areas in Rising World. The plugin is operated mainly via intuitive UI elements to ensure easy handling.
 
-Server administrators can configure almost all aspects of the plugin to their liking via the `settings.properties` file. Admins can also import existing zones, although compatibility with other plugins is not guaranteed.
+Server administrators can configure almost all aspects of the plugin to their liking via the `settings.<world>.json` file. Admins can also import existing zones, although compatibility with other plugins is not guaranteed.
 
 ## Prerequisites
 
@@ -19,7 +19,7 @@ Wallet and Shop are detected optionally for economy features; core claim protect
 2. Stop your Rising World server.
 3. Place the downloaded `.zip` file into your server's `Plugins` folder and extract it.
 4. Start the server. The plugin will generate its default configuration files during the first run.
-5. Adjust the settings in `Plugins/OZLandClaim/settings.properties` to your needs and restart the server or use `/lc reload`.
+5. Adjust the settings in `Plugins/OZLandClaim/settings.<world>.json` to your needs and restart the server or use `/lc reload`.
 
 ## Features
 
@@ -57,7 +57,7 @@ The main command is `/lc`. You can also use the alias `/landclaim`.
 
 ## Configuration
 
-All settings can be adjusted in the `settings.properties` file located in the plugin's directory.
+All settings can be adjusted in the `settings.<world>.json` file located in the plugin's directory.
 
 | Setting                         | Default | Description                                                                                                    |
 | :------------------------------ | :------ | :------------------------------------------------------------------------------------------------------------- |
@@ -156,3 +156,13 @@ _This README was partially generated and improved by Gemini Code Assist._
 - Run `mvn -B -DskipTests package` and `mvn -B test` before release-facing changes are merged.
 - Use `RUNTIME_TESTING.md` and `scripts/docker-runtime-smoke.sh <PluginFolderName>` for runtime smoke tests when behavior changes need server validation.
 - Keep `README.md` and `HISTORY.md` current and use Conventional Commit titles for commits and PRs.
+
+## JSON-only distribution
+
+Settings defaults (`settings.default.json`) and translations (`i18n/*.json`)
+are shipped only as JSON. Legacy default and translation `.properties` files
+are no longer included. Runtime settings remain world-scoped as
+`settings.<world>.json`; migration of an existing `settings.properties` and
+its backup remains supported. Updating the package does not delete old files
+already present on the server. Use `mvn clean package` for a fresh local
+package; ZIP assembly also excludes stale legacy settings and translations.
