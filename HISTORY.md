@@ -2,6 +2,11 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.18.0] - 2026-09-08 | Player map history
+
+- feat: record player visited chunks as compact sector bitmaps and expose an opt-in, paginated native player-map export for Manager.
+- change: require OZ Tools 0.24.1 for authenticated Manager route access.
+
 ## [0.17.0] - 2026-09-05 | Native claim exports
 
 - feat: expose opt-in native claim-sale and renew-zone exports for Manager integration.

@@ -70,6 +70,7 @@ public class PluginSettings {
         public Boolean allowClaimBuyExceedLimit = false;
         public Boolean exposeClaimSales = true;
         public Boolean exposeRenewZones = true;
+        public Boolean exposePlayerMap = true;
         public Boolean enableExtraClaimShopOffer = true;
         public Integer extraClaimBasePrice = 200;
         public Integer extraClaimPriceIncreasePercent = 10;
@@ -233,6 +234,7 @@ public class PluginSettings {
                                         .contentEquals("true");
                         exposeClaimSales = settings.getProperty("exposeClaimSales", "true").contentEquals("true");
                         exposeRenewZones = settings.getProperty("exposeRenewZones", "true").contentEquals("true");
+                        exposePlayerMap = settings.getProperty("exposePlayerMap", "true").contentEquals("true");
                         enableExtraClaimShopOffer = settings.getProperty("enableExtraClaimShopOffer", "true")
                                         .contentEquals("true");
                         extraClaimBasePrice = Integer.parseInt(settings.getProperty("extraClaimBasePrice", "200"));
@@ -530,6 +532,9 @@ public class PluginSettings {
                                 entry("exposeRenewZones", "Expose renew zones",
                                                 "Allows bridge/native route layers to expose renew-zone metadata.",
                                                 exposeRenewZones, "true", AdminSettingsType.BOOLEAN),
+                                entry("exposePlayerMap", "Expose player map",
+                                                "Allows the authenticated Manager bridge to expose player visit maps.",
+                                                exposePlayerMap, "true", AdminSettingsType.BOOLEAN),
                                 AdminSettingsEntry.group("extraClaims", "Extra claim shop",
                                                 "Shop offer for purchasing additional claim capacity."),
                                 entry("enableExtraClaimShopOffer", "Extra claim shop offer",

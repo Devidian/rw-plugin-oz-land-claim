@@ -24,17 +24,20 @@ import de.omegazirkel.risingworld.landclaim.db.ClaimSaleListingService;
 import de.omegazirkel.risingworld.landclaim.db.ExtraClaimCapacityService;
 import de.omegazirkel.risingworld.landclaim.db.LandClaimChunkService;
 import de.omegazirkel.risingworld.landclaim.db.LandClaimChunkStore;
+import de.omegazirkel.risingworld.landclaim.db.PlayerMapVisitStore;
 import de.omegazirkel.risingworld.landclaim.db.RenewZoneConfigService;
 import de.omegazirkel.risingworld.landclaim.db.LandPriceService;
 import de.omegazirkel.risingworld.landclaim.db.CityService;
 import de.omegazirkel.risingworld.landclaim.exports.ClaimSaleExportService;
 import de.omegazirkel.risingworld.landclaim.exports.RenewZoneExportService;
+import de.omegazirkel.risingworld.landclaim.exports.PlayerMapVisitExportService;
 import de.omegazirkel.risingworld.landclaim.ui.ClaimSaleIndicatorProvider;
 import de.omegazirkel.risingworld.landclaim.ui.ChunkInfoManager;
 import de.omegazirkel.risingworld.landclaim.ui.LandClaimPlayerPluginData;
 import de.omegazirkel.risingworld.landclaim.ui.LandClaimPlayerPluginSettings;
 import de.omegazirkel.risingworld.landclaim.ui.UIDialogFactory;
 import de.omegazirkel.risingworld.landclaim.web.LandClaimExportRoute;
+import de.omegazirkel.risingworld.landclaim.web.PlayerMapVisitsExportRoute;
 import net.risingworld.api.ui.UIElement;
 import net.risingworld.api.ui.UITarget;
 import de.omegazirkel.risingworld.tools.Colors;
@@ -70,10 +73,12 @@ class LandClaimRuntime extends Plugin {
     static final String pluginCMD = "lc";
     private static final String WEBSERVER_CLAIM_SALES_ROUTE = "claim-sales";
     private static final String WEBSERVER_RENEW_ZONES_ROUTE = "renew-zones";
+    private static final String WEBSERVER_PLAYER_MAP_ROUTE = "player-map";
     private static LandClaim instance;
     private ChunkInfoManager chunkInfoManager;
     private LandClaimExportRoute webserverClaimSalesRoute;
     private LandClaimExportRoute webserverRenewZonesRoute;
+    private PlayerMapVisitsExportRoute webserverPlayerMapRoute;
 
     static final Colors c = Colors.getInstance();
     private static I18n t = null;
@@ -102,6 +107,7 @@ class LandClaimRuntime extends Plugin {
 
     public static LandClaimChunkService llcs;
     public static LandClaimChunkStore lccStore;
+    private PlayerMapVisitStore playerMapVisitStore;
 
     public static OZLogger logger() {
         return OZLogger.getInstance("OZ.LandClaim");
@@ -125,6 +131,7 @@ class LandClaimRuntime extends Plugin {
         ps = new PlayerSettings(sqliteCon);
         try {
             lccStore = new LandClaimChunkStore(sqliteCon);
+            playerMapVisitStore = new PlayerMapVisitStore(sqliteCon);
             extraClaimCapacityService = new ExtraClaimCapacityService(sqliteCon);
             claimSaleListingService = new ClaimSaleListingService(sqliteCon);
             renewZoneConfigService = new RenewZoneConfigService(sqliteCon);
@@ -225,10 +232,14 @@ class LandClaimRuntime extends Plugin {
         webserverRenewZonesRoute = new LandClaimExportRoute(
                 () -> Boolean.TRUE.equals(s.exposeRenewZones),
                 null, new RenewZoneExportService(sqliteCon, s), world);
+        webserverPlayerMapRoute = new PlayerMapVisitsExportRoute(
+                () -> Boolean.TRUE.equals(s.exposePlayerMap),
+                new PlayerMapVisitExportService(sqliteCon), world);
         registerWebserverHandler(WEBSERVER_CLAIM_SALES_ROUTE, webserverClaimSalesRoute);
         registerWebserverHandler(WEBSERVER_RENEW_ZONES_ROUTE, webserverRenewZonesRoute);
+        registerWebserverHandler(WEBSERVER_PLAYER_MAP_ROUTE, webserverPlayerMapRoute);
         logger().info("Native Land Claim export routes registered: /" + WEBSERVER_CLAIM_SALES_ROUTE
-                + ", /" + WEBSERVER_RENEW_ZONES_ROUTE);
+                + ", /" + WEBSERVER_RENEW_ZONES_ROUTE + ", /" + WEBSERVER_PLAYER_MAP_ROUTE);
     }
 
     private void unregisterWebserverExportRoutes() {
@@ -239,6 +250,10 @@ class LandClaimRuntime extends Plugin {
         if (webserverRenewZonesRoute != null) {
             unregisterWebserverHandler(WEBSERVER_RENEW_ZONES_ROUTE);
             webserverRenewZonesRoute = null;
+        }
+        if (webserverPlayerMapRoute != null) {
+            unregisterWebserverHandler(WEBSERVER_PLAYER_MAP_ROUTE);
+            webserverPlayerMapRoute = null;
         }
     }
 
@@ -279,6 +294,15 @@ class LandClaimRuntime extends Plugin {
 
     public static CityService cityService() {
         return cityService;
+    }
+
+    private void recordPlayerMapVisit(Player player, Vector3i chunk) {
+        if (playerMapVisitStore == null || player == null || chunk == null) return;
+        try {
+            playerMapVisitStore.recordVisit(player.getUID(), player.getDbID(), World.getName(), chunk.x, chunk.z);
+        } catch (SQLException e) {
+            logger().warn("Could not record player map visit: " + e.getMessage());
+        }
     }
 
     public int playerClaimCount(Player player) {
@@ -431,6 +455,8 @@ class LandClaimRuntime extends Plugin {
         Vector3i oldChunkPos = event.getOldChunkCoordinates();
         Vector3i chunkPos = event.getNewChunkCoordinates();
 
+        recordPlayerMapVisit(player, chunkPos);
+
         logger().debug("Player " + player.getName() + " entered chunk " + chunkPos.toString()
                 + " from chunk " + oldChunkPos.toString());
 
@@ -481,6 +507,7 @@ class LandClaimRuntime extends Plugin {
             chunkInfoManager.onPlayerConnectEvent(event);
         }
         Player player = event.getPlayer();
+        recordPlayerMapVisit(player, player.getChunkPosition());
         if (cityService != null) {
             cityService.rememberPlayerLanguage(player.getDbID(),
                     de.omegazirkel.risingworld.OZTools.getPlayerLanguage(player));
@@ -564,6 +591,7 @@ class LandClaimRuntime extends Plugin {
     public void onPlayerSpawnEvent(PlayerSpawnEvent event) {
         Player player = event.getPlayer();
         Vector3i chunkPos = player.getChunkPosition();
+        recordPlayerMapVisit(player, chunkPos);
         eventLogger().debug("Player " + player.getName() + " spawned. Current chunk position: "
                 + chunkPos.toString());
         chunkClaimUtil.enterChunk(player, chunkPos);

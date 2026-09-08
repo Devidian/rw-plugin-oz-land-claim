@@ -18,6 +18,7 @@
   "enableExtraClaimShopOffer": "true",
   "enableWelcomeMessage": "false",
   "exposeClaimSales": "true",
+  "exposePlayerMap": "true",
   "exposeRenewZones": "true",
   "extraClaimBasePrice": "200",
   "extraClaimPriceIncreasePercent": "10",
