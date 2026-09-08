@@ -299,6 +299,9 @@ class LandClaimRuntime extends Plugin {
     private void recordPlayerMapVisit(Player player, Vector3i chunk) {
         if (playerMapVisitStore == null || player == null || chunk == null) return;
         try {
+            int imported = playerMapVisitStore.initializeFromChunkData(
+                    player.getUID(), player.getDbID(), World.getName());
+            if (imported > 0) logger().info("Initialized " + imported + " player-map chunk visits for " + player.getUID());
             playerMapVisitStore.recordVisit(player.getUID(), player.getDbID(), World.getName(), chunk.x, chunk.z);
         } catch (SQLException e) {
             logger().warn("Could not record player map visit: " + e.getMessage());

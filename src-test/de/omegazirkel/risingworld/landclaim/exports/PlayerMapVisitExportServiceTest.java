@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.Statement;
 
 import org.junit.Test;
 
@@ -32,6 +33,20 @@ public class PlayerMapVisitExportServiceTest {
             assertFalse(second.hasMore());
             assertEquals(0, second.sectors().get(0).sectorX());
             assertEquals(0, second.sectors().get(0).sectorZ());
+        }
+    }
+
+    @Test
+    public void initializesExistingChunkVisitsOnlyOnce() throws Exception {
+        try (Connection connection = DriverManager.getConnection("jdbc:sqlite::memory:")) {
+            try (Statement statement = connection.createStatement()) {
+                statement.execute("CREATE TABLE chunkData (player_uuid TEXT, world TEXT, chunk_x INTEGER, chunk_z INTEGER)");
+                statement.execute("INSERT INTO chunkData VALUES ('player', 'world', -1, -1), ('player', 'world', 300, 1)");
+            }
+            PlayerMapVisitStore store = new PlayerMapVisitStore(connection);
+            assertEquals(2, store.initializeFromChunkData("player", 7, "world"));
+            assertEquals(0, store.initializeFromChunkData("player", 7, "world"));
+            assertEquals(2, new PlayerMapVisitExportService(connection).export("player", "world", 0, 10).sectors().size());
         }
     }
 }

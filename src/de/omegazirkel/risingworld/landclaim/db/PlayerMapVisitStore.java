@@ -52,6 +52,49 @@ public final class PlayerMapVisitStore {
         }
     }
 
+    /** Seeds a new player's history from the existing per-chunk visit store once. */
+    public synchronized int initializeFromChunkData(String playerUuid, int playerDbId, String world) throws SQLException {
+        if (playerUuid == null || playerUuid.isBlank() || playerDbId <= 0 || isInitialized(playerUuid, world)) return 0;
+        int imported = 0;
+        try (PreparedStatement statement = connection.prepareStatement("""
+                SELECT DISTINCT chunk_x, chunk_z FROM chunkData
+                WHERE player_uuid = ? AND world = ?
+                """)) {
+            statement.setString(1, playerUuid);
+            statement.setString(2, world);
+            try (ResultSet result = statement.executeQuery()) {
+                while (result.next()) {
+                    recordVisit(playerUuid, playerDbId, world, result.getInt("chunk_x"), result.getInt("chunk_z"));
+                    imported += 1;
+                }
+            }
+        }
+        markInitialized(playerUuid, world);
+        return imported;
+    }
+
+    private boolean isInitialized(String playerUuid, String world) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement("""
+                SELECT 1 FROM landClaimPlayerMapInitialization WHERE player_uuid = ? AND world = ? LIMIT 1
+                """)) {
+            statement.setString(1, playerUuid);
+            statement.setString(2, world);
+            try (ResultSet result = statement.executeQuery()) {
+                return result.next();
+            }
+        }
+    }
+
+    private void markInitialized(String playerUuid, String world) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement("""
+                INSERT OR IGNORE INTO landClaimPlayerMapInitialization(player_uuid, world) VALUES(?, ?)
+                """)) {
+            statement.setString(1, playerUuid);
+            statement.setString(2, world);
+            statement.executeUpdate();
+        }
+    }
+
     private byte[] readBitmap(String playerUuid, String world, int sectorX, int sectorZ) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement("""
                 SELECT bitmap FROM landClaimPlayerMapVisits
@@ -83,6 +126,13 @@ public final class PlayerMapVisitStore {
                         bitmap BLOB NOT NULL,
                         updated_at_ms BIGINT NOT NULL,
                         PRIMARY KEY (player_uuid, world, sector_x, sector_z)
+                    )
+                    """);
+            statement.execute("""
+                    CREATE TABLE IF NOT EXISTS landClaimPlayerMapInitialization (
+                        player_uuid TEXT NOT NULL,
+                        world TEXT NOT NULL,
+                        PRIMARY KEY (player_uuid, world)
                     )
                     """);
         }

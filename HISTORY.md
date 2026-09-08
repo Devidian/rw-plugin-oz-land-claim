@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.18.1] - 2026-09-08 | Existing player history
+
+- fix: initialize a player's map bitmap from their existing chunkData visits on first login.
+
 ## [0.18.0] - 2026-09-08 | Player map history
 
 - feat: record player visited chunks as compact sector bitmaps and expose an opt-in, paginated native player-map export for Manager.
