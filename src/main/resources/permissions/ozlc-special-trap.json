@@ -42,7 +42,6 @@
     "destroyvehicles": false,
     "dropitems": true,
     "edititems": false,
-    "editnpcs": false,
     "editownitems": true,
     "editownvehicles": true,
     "editvehicles": false,

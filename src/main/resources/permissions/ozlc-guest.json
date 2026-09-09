@@ -41,6 +41,8 @@
     "pve": false,
     "pvp": false,
     "unlockalldoors": false,
+    "useallobjects": false,
+    "useallvehicles": false,
     "voicechat": true
   },
   "world": {
