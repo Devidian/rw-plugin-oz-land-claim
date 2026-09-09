@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.18.2] - 2026-09-09 | Default permission profiles
+
+- fix: correct the bundled permission defaults for NPC editing, mount access, and object or vehicle use.
+
 ## [0.18.1] - 2026-09-08 | Existing player history
 
 - fix: initialize a player's map bitmap from their existing chunkData visits on first login.

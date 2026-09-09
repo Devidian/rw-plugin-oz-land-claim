@@ -1,1 +1,0 @@
-- fix: correct the bundled Land Claim permission profiles for NPC editing, mount access, and object or vehicle use.
