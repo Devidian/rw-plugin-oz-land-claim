@@ -550,6 +550,7 @@
       }
     },
     "setting": {
+      "exposeplayermap": { "label": "Spielerkarte bereitstellen", "desc": "Erlaubt dem Manager lesenden Zugriff auf die Spielerkarte." },
       "adminignorelimit": {
         "desc": "Erlaubt Admins, Claim-Limits zu umgehen.",
         "label": "Admin ignoriert Claim-Limit"

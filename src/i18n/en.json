@@ -550,6 +550,7 @@
       }
     },
     "setting": {
+      "exposeplayermap": { "label": "Expose player map", "desc": "Allows Manager read access to the player map." },
       "adminignorelimit": {
         "desc": "Lets admins bypass claim limits.",
         "label": "Admin ignores claim limit"
