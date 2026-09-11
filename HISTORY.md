@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.18.3] - 2026-09-11 | Plugin-setting localization
+
+- fix: localize the player-map export setting in German and English.
+
 ## [0.18.2] - 2026-09-09 | Default permission profiles
 
 - fix: correct the bundled permission defaults for NPC editing, mount access, and object or vehicle use.
