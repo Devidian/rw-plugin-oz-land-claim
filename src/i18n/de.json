@@ -11,6 +11,41 @@
     }
   },
   "tc": {
+    "property": {
+      "clearance": {
+        "cancel": "Abbrechen",
+        "confirm": { "title": "Grundstück bereinigen" },
+        "demolish": { "$value": "Demontieren",
+          "confirm": "PH_COUNT Elemente demontieren und die Vorschau per Mail zurückgeben? Gebühr: PH_FEE PH_CURRENCY." },
+        "dispose": { "$value": "Auflösen",
+          "confirm": "PH_COUNT Elemente ohne Rückerstattung auflösen? Gebühr: PH_FEE PH_CURRENCY." },
+        "recycle": { "$value": "Recyceln",
+          "confirm": "PH_COUNT Ressourcen recyceln und PH_RECYCLE PH_CURRENCY auszahlen?" ,
+          "success": "Grundstück recycelt: PH_COUNT Elemente entfernt, PH_RECYCLE PH_CURRENCY ausgezahlt." },
+        "remove": { "unresolved": { "$value": "Nicht auflösbare entfernen",
+          "confirm": "PH_COUNT Objekte mit nicht auflösbaren Materialien kostenlos und ohne Rückerstattung entfernen?",
+          "success": "PH_COUNT Objekte mit nicht auflösbaren Materialien entfernt." } },
+        "disabled": "Grundstück bereinigen ist vom Administrator deaktiviert.",
+        "failed": "Grundstück konnte nicht bereinigt werden. Es wurden keine Objekte entfernt.",
+        "fees": "PH_COUNT platzierte Elemente, PH_RESOURCES Ressourcen. Auflösen: PH_DISPOSE PH_CURRENCY, Recyceln: PH_RECYCLE PH_CURRENCY, Demontieren: PH_DEMOLISH PH_CURRENCY.",
+        "legend": "Die Zugehörigkeit wird über den Ankerpunkt bestimmt. Recyceln zahlt den konfigurierten Anteil der Shop-Basispreise aus; Demontieren sendet Materialien und Containerinhalte per Mail zurück.",
+        "mail": { "subject": "Grundstück demontiert", "body": "Die Materialien und Containerinhalte aus deinem Grundstück PH_AREA_NAME wurden zurückgegeben." },
+        "admin": { "menu": "Grundstück administrativ bereinigen", "title": "Grundstück administrativ bereinigen", "fees": "PH_COUNT platzierte Elemente, PH_RESOURCES Ressourcen. Administrator-Demontage und Entfernung: kostenlos; Recycling: PH_RECYCLE PH_CURRENCY an den Eigentümer.", "confirm": "PH_COUNT Elemente kostenlos demontieren und die Materialien per Mail an den Eigentümer zurückgeben? Falls der Eigentümer nicht ermittelt werden kann, erhältst du die Materialien.", "recycle": { "confirm": "PH_COUNT Ressourcen kostenlos recyceln und PH_RECYCLE PH_CURRENCY an den Eigentümer auszahlen? Falls der Eigentümer nicht ermittelt werden kann, erhältst du die Auszahlung." }, "remove": { "unresolved": { "confirm": "PH_COUNT Objekte mit nicht auflösbaren Materialien kostenlos und ohne Rückerstattung entfernen?" } } },
+        "menu": "Grundstück bereinigen",
+        "subtitle": "Material- und Inhaltsvorschau für PH_AREA_NAME",
+        "success": "Grundstück bereinigt: PH_COUNT Elemente entfernt, Gebühr PH_FEE PH_CURRENCY.",
+        "reason": { "mail": "Die Material-Mail konnte nicht vorbereitet werden. Es wurden keine Objekte entfernt.", "payment": "Die Wallet-Buchung konnte nicht ausgeführt werden. Es wurden keine Objekte entfernt.", "shop": "Shop oder Wallet sind für das Recycling nicht verfügbar. Es wurden keine Objekte entfernt.", "unresolved": "Einige platzierte Elemente haben kein auflösbares Baurezept. Es wurden keine Objekte entfernt." },
+        "th": { "amount": "Anzahl", "item": "Gegenstand / Material" },
+        "title": "Grundstück bereinigen",
+        "unavailable": "Die Area kann derzeit nicht vollständig gelesen werden. Es wurden keine Änderungen vorgenommen.",
+        "unresolved": "Einige Baukosten sind nicht eindeutig auflösbar; Demontieren ist deshalb gesperrt.",
+        "unresolved.item": "⚠ Nicht auflösbar: PH_ITEM",
+        "unresolved.container": "Containerinhalt",
+        "unresolved.unknown": "unbekanntes Material",
+        "unresolved.block": "PH_ITEM aus PH_SOURCE (Block-ID: PH_BLOCK_ID)",
+        "unresolved.object": "PH_ITEM aus PH_SOURCE (Objekt-ID: PH_OBJECT_ID)"
+      }
+    },
     "admin": {
       "cleanup": {
         "blocked": "Säuberung blockiert, weil ein anderer Besitzer einen aktiven Claim in der Chunk-Spalte PH_CHUNK_POS hat.",
@@ -551,6 +586,11 @@
     },
     "setting": {
       "exposeplayermap": { "label": "Spielerkarte bereitstellen", "desc": "Erlaubt dem Manager lesenden Zugriff auf die Spielerkarte." },
+      "propertyclearance": { "label": "Grundstück bereinigen", "desc": "Optionale, vom Eigentümer ausgelöste Auflösung und Demontage platzierter Gegenstände." },
+      "enablepropertyclearance": { "label": "Grundstück bereinigen aktivieren", "desc": "Zeigt die Bereinigungsaktion in den Zoneneinstellungen. Standardmäßig deaktiviert." },
+      "propertyclearancedisposefeeperitem": { "label": "Gebühr Auflösen pro Ressource", "desc": "Wallet-Gebühr pro berechneter Rückgabe-Ressource; die Gesamtgebühr wird aufgerundet." },
+      "propertyclearancedemolishfeeperitem": { "label": "Gebühr Demontieren pro Ressource", "desc": "Wallet-Gebühr pro berechneter Rückgabe-Ressource; die Gesamtgebühr wird aufgerundet." },
+      "propertyclearancerecyclerate": { "label": "Recyclingwert", "desc": "Anteil des Shop-Basiswerts, der beim Recycling ausgezahlt wird." },
       "adminignorelimit": {
         "desc": "Erlaubt Admins, Claim-Limits zu umgehen.",
         "label": "Admin ignoriert Claim-Limit"

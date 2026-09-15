@@ -2,6 +2,11 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.19.0] - 2026-09-15 | Property clearance
+
+- feat: add opt-in property clearance with anchored-area previews, disposal, safe material mail, and configurable Shop-price recycling.
+- feat: let administrators clear every claim free of charge, including unresolved placed objects, while recycling to the claim owner.
+
 ## [0.18.3] - 2026-09-11 | Plugin-setting localization
 
 - fix: localize the player-map export setting in German and English.

@@ -145,6 +145,22 @@ Uicons by [Flaticon]("https://www.flaticon.com/uicons")
 
 _This README was partially generated and improved by Gemini Code Assist._
 
+## Property clearance
+
+Administrators can opt in to `enablePropertyClearance`. Owners then find
+**Clear property** in their zone settings, where they can preview anchored
+objects, construction materials, and container contents before choosing one of
+these actions:
+
+- dispose everything without a return;
+- dismantle resolved materials and container contents into individual mail attachments;
+- recycle resolved materials for the configurable share of their OZ Shop base price.
+
+Unresolved materials identify their placed host. That host can only be removed
+through a separate confirmation and is not refunded. Administrators have the
+corresponding **Administratively clear property** action for every claim,
+without fees; administrative recycling pays the owner when one is known.
+
 ## Release Notes
 
 - `0.7.1`: fixed admin special-zone creation when no current area existed in the selected chunk.

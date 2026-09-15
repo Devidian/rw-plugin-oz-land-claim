@@ -15,6 +15,7 @@ import de.omegazirkel.risingworld.landclaim.db.CityRecord;
 import de.omegazirkel.risingworld.landclaim.db.LeaseholdRecord;
 import de.omegazirkel.risingworld.landclaim.db.LandPriceService;
 import de.omegazirkel.risingworld.landclaim.ui.AdminCleanupOverlay;
+import de.omegazirkel.risingworld.landclaim.ui.PropertyClearanceOverlay;
 import de.omegazirkel.risingworld.landclaim.ChunkClaimUtil.Direction;
 import de.omegazirkel.risingworld.landclaim.ui.LandClaimPlayerPluginSettings;
 import de.omegazirkel.risingworld.landclaim.ui.PermissionOverlay;
@@ -118,6 +119,7 @@ public class LandClaimGUI {
         AssetManager.loadIconFromPlugin(p, "zone-claim-delete");
         AssetManager.loadIconFromPlugin(p, "zone-sale");
         AssetManager.loadIconFromPlugin(p, "menu-zone-permissions");
+        AssetManager.loadIconFromPlugin(p, "zone-property-clearance");
         // Area expansion menu
         AssetManager.loadIconFromPlugin(p, "menu-expand-zone");
         AssetManager.loadIconFromPlugin(p, "zone-expand-north");
@@ -639,6 +641,34 @@ public class LandClaimGUI {
                 });
     }
 
+    private MenuItem menuItemPropertyClearance(Player player, Area area, Callback<Player> onResponse) {
+        return new MenuItem("zone-property-clearance", t.get("tc.property.clearance.menu", player), p -> {
+            if (!Boolean.TRUE.equals(s.enablePropertyClearance) || LandClaim.propertyClearanceService() == null) {
+                p.sendTextMessage(t.get("tc.property.clearance.disabled", p));
+                return;
+            }
+            UIElement existing = (UIElement) p.getAttribute(PropertyClearanceOverlay.ATTRIBUTE_KEY);
+            if (existing != null) p.removeUIElement(existing);
+            PropertyClearanceOverlay overlay = new PropertyClearanceOverlay(p, area, LandClaim.propertyClearanceService(), onResponse);
+            p.addUIElement(overlay, UITarget.Modal);
+            p.setAttribute(PropertyClearanceOverlay.ATTRIBUTE_KEY, overlay);
+            p.hideRadialMenu(false);
+        });
+    }
+
+    private MenuItem menuItemAdminPropertyClearance(Player player, Area area, Callback<Player> onResponse) {
+        return new MenuItem("zone-property-clearance", t.get("tc.property.clearance.admin.menu", player), p -> {
+            if (LandClaim.propertyClearanceService() == null) return;
+            UIElement existing = (UIElement) p.getAttribute(PropertyClearanceOverlay.ATTRIBUTE_KEY);
+            if (existing != null) p.removeUIElement(existing);
+            PropertyClearanceOverlay overlay = new PropertyClearanceOverlay(p, area, LandClaim.propertyClearanceService(),
+                    onResponse, true);
+            p.addUIElement(overlay, UITarget.Modal);
+            p.setAttribute(PropertyClearanceOverlay.ATTRIBUTE_KEY, overlay);
+            p.hideRadialMenu(false);
+        });
+    }
+
     private MenuItem menuItemAdminCleanup(Player uiPlayer, Callback<Player> onResponse) {
         return new MenuItem("menu-zone-management",
                 t.get("tc.menu.admin.cleanup", uiPlayer),
@@ -1047,6 +1077,7 @@ public class LandClaimGUI {
         }
         menuItems.add(menuItemAdminCleanup(uiPlayer, onBackReopen));
         if (currentArea != null) {
+            menuItems.add(menuItemAdminPropertyClearance(uiPlayer, currentArea, onBackReopen));
             CityRecord city = LandClaim.cityService() == null ? null
                     : LandClaim.cityService().findCity(currentArea.getID()).orElse(null);
             LeaseholdRecord lease = LandClaim.cityService() == null ? null
@@ -1124,6 +1155,8 @@ public class LandClaimGUI {
             }
 
             menuItems.add(menuItemPermissionManager(uiPlayer, currentArea, onBackReopen));
+            if (Boolean.TRUE.equals(s.enablePropertyClearance))
+                menuItems.add(menuItemPropertyClearance(uiPlayer, currentArea, onBackReopen));
             menuItems.add(menuItemRenameArea(uiPlayer, currentArea, onBackReopen));
             if (ClaimModePolicy.salesAvailable(s.allowClaimSale, walletAvailable())
                     && LandClaim.claimSaleListingService() != null) {

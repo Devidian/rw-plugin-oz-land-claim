@@ -18,6 +18,7 @@ import de.omegazirkel.risingworld.landclaim.LandClaimGUI;
 import de.omegazirkel.risingworld.landclaim.LandClaimPluginInfoStatusProvider;
 import de.omegazirkel.risingworld.landclaim.PermissionFileUtil;
 import de.omegazirkel.risingworld.landclaim.PluginSettings;
+import de.omegazirkel.risingworld.landclaim.PropertyClearanceService;
 import de.omegazirkel.risingworld.landclaim.RenewZoneResetService;
 import de.omegazirkel.risingworld.landclaim.CityRentService;
 import de.omegazirkel.risingworld.landclaim.db.ClaimSaleListingService;
@@ -86,6 +87,7 @@ class LandClaimRuntime extends Plugin {
     private static LandClaimGUI gui;
     private static ChunkClaimUtil chunkClaimUtil;
     private static ClaimCleanupService cleanupService;
+    private static PropertyClearanceService propertyClearanceService;
     private static EconomyIntegration economyIntegration;
     private static ExtraClaimCapacityService extraClaimCapacityService;
     private static ClaimSaleListingService claimSaleListingService;
@@ -163,6 +165,7 @@ class LandClaimRuntime extends Plugin {
         // connect plugins
         DiscordConnect.init(this);
         economyIntegration = new EconomyIntegration(this);
+        propertyClearanceService = new PropertyClearanceService(s, economyIntegration);
         economyIntegration.logStatus();
         economyIntegration.registerExtraClaimOffer(s);
         landPriceService.refresh();
@@ -286,6 +289,10 @@ class LandClaimRuntime extends Plugin {
 
     public static EconomyIntegration economyIntegration() {
         return economyIntegration;
+    }
+
+    public static PropertyClearanceService propertyClearanceService() {
+        return propertyClearanceService;
     }
 
     public static LandPriceService landPriceService() {

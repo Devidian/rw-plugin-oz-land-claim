@@ -4,6 +4,7 @@ import java.nio.file.Path;
 
 import de.omegazirkel.risingworld.landclaim.EconomyIntegration;
 import de.omegazirkel.risingworld.landclaim.RenewZoneResetService;
+import de.omegazirkel.risingworld.landclaim.PropertyClearanceService;
 import de.omegazirkel.risingworld.landclaim.db.ClaimSaleListingService;
 import de.omegazirkel.risingworld.landclaim.db.ExtraClaimCapacityService;
 import de.omegazirkel.risingworld.landclaim.db.RenewZoneConfigService;
@@ -39,6 +40,7 @@ public final class LandClaim extends LandClaimRuntime implements Listener, FileC
         return LandClaimRuntime.renewZoneResetService();
     }
     public static EconomyIntegration economyIntegration() { return LandClaimRuntime.economyIntegration(); }
+    public static PropertyClearanceService propertyClearanceService() { return LandClaimRuntime.propertyClearanceService(); }
     public static LandPriceService landPriceService() { return LandClaimRuntime.landPriceService(); }
     public static CityService cityService() { return LandClaimRuntime.cityService(); }
 

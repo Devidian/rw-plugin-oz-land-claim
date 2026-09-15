@@ -58,6 +58,10 @@ public class PluginSettings {
         public Boolean showTrapAreaFrames = true;
         public Boolean showRenewAreaFrames = false;
         public Boolean enableAutoClaimRemoval = false;
+        public Boolean enablePropertyClearance = false;
+        public double propertyClearanceDisposeFeePerItem = 0.001d;
+        public double propertyClearanceDemolishFeePerItem = 0.01d;
+        public double propertyClearanceRecycleRate = 0.20d;
         public Integer autoClaimRemovalInactiveDays = 90;
         public Integer autoClaimRemovalDelaySeconds = 60;
         public Integer renewZoneDefaultIntervalHours = 24;
@@ -214,6 +218,14 @@ public class PluginSettings {
                         showRenewAreaFrames = settings.getProperty("showRenewAreaFrames", "false").contentEquals("true");
                         enableAutoClaimRemoval = settings.getProperty("enableAutoClaimRemoval", "false")
                                         .contentEquals("true");
+                        enablePropertyClearance = settings.getProperty("enablePropertyClearance", "false")
+                                        .contentEquals("true");
+                        propertyClearanceDisposeFeePerItem = Double.parseDouble(
+                                        settings.getProperty("propertyClearanceDisposeFeePerItem", "0.001"));
+                        propertyClearanceDemolishFeePerItem = Double.parseDouble(
+                                        settings.getProperty("propertyClearanceDemolishFeePerItem", "0.01"));
+                        propertyClearanceRecycleRate = Double.parseDouble(
+                                        settings.getProperty("propertyClearanceRecycleRate", "0.20"));
                         autoClaimRemovalInactiveDays = Integer
                                         .parseInt(settings.getProperty("autoClaimRemovalInactiveDays", "90"));
                         autoClaimRemovalDelaySeconds = Integer
@@ -465,6 +477,20 @@ public class PluginSettings {
                                 entry("autoClaimRemovalDelaySeconds", "Removal delay",
                                                 "Delay in seconds before the automatic removal check runs after startup.",
                                                 autoClaimRemovalDelaySeconds, "60", AdminSettingsType.INTEGER),
+                                AdminSettingsEntry.group("propertyClearance", "Property clearance",
+                                                "Optional owner-controlled disposal and dismantling of placed property."),
+                                entry("enablePropertyClearance", "Enable property clearance",
+                                                "Shows the property-clearance action in zone settings. Disabled by default.",
+                                                enablePropertyClearance, "false", AdminSettingsType.BOOLEAN),
+                                entry("propertyClearanceDisposeFeePerItem", "Dispose fee per returned resource",
+                                                "Wallet fee per calculated return resource; final fee is rounded up.",
+                                                propertyClearanceDisposeFeePerItem, "0.001", AdminSettingsType.DECIMAL),
+                                entry("propertyClearanceDemolishFeePerItem", "Dismantle fee per returned resource",
+                                                "Wallet fee per calculated return resource; final fee is rounded up.",
+                                                propertyClearanceDemolishFeePerItem, "0.01", AdminSettingsType.DECIMAL),
+                                entry("propertyClearanceRecycleRate", "Recycle value rate",
+                                                "Share of the Shop complete-catalog base value paid to the player.",
+                                                propertyClearanceRecycleRate, "0.20", AdminSettingsType.DECIMAL),
                                 AdminSettingsEntry.group("renewZones", "Renew zones",
                                                 "Default interval for newly created renew zones."),
                                 entry("renewZoneDefaultIntervalHours", "Default renew interval",

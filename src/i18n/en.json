@@ -11,6 +11,41 @@
     }
   },
   "tc": {
+    "property": {
+      "clearance": {
+        "cancel": "Cancel",
+        "confirm": { "title": "Clear property" },
+        "demolish": { "$value": "Dismantle",
+          "confirm": "Dismantle PH_COUNT elements and return the preview by mail? Fee: PH_FEE PH_CURRENCY." },
+        "dispose": { "$value": "Dispose",
+          "confirm": "Dispose PH_COUNT elements without a refund? Fee: PH_FEE PH_CURRENCY." },
+        "recycle": { "$value": "Recycle",
+          "confirm": "Recycle PH_COUNT resources and pay out PH_RECYCLE PH_CURRENCY?",
+          "success": "Property recycled: PH_COUNT elements removed, PH_RECYCLE PH_CURRENCY paid out." },
+        "remove": { "unresolved": { "$value": "Remove unresolved",
+          "confirm": "Remove PH_COUNT objects with unresolved materials free of charge and without a return?",
+          "success": "Removed PH_COUNT objects with unresolved materials." } },
+        "disabled": "Property clearance is disabled by the administrator.",
+        "failed": "The property could not be cleared. No objects were removed.",
+        "fees": "PH_COUNT placed elements, PH_RESOURCES resources. Dispose: PH_DISPOSE PH_CURRENCY, recycle: PH_RECYCLE PH_CURRENCY, dismantle: PH_DEMOLISH PH_CURRENCY.",
+        "legend": "Membership uses the placement anchor. Recycling pays the configured share of Shop base prices; dismantling returns materials and container contents by mail.",
+        "mail": { "subject": "Property dismantled", "body": "The materials and container contents from your property PH_AREA_NAME were returned." },
+        "admin": { "menu": "Administratively clear property", "title": "Administratively clear property", "fees": "PH_COUNT placed elements, PH_RESOURCES resources. Administrator dismantling and removal: free; recycling: PH_RECYCLE PH_CURRENCY to the owner.", "confirm": "Dismantle PH_COUNT elements free of charge and return the materials by mail to the owner? You receive the materials if no owner can be determined.", "recycle": { "confirm": "Recycle PH_COUNT resources free of charge and pay PH_RECYCLE PH_CURRENCY to the owner? You receive the payout if no owner can be determined." }, "remove": { "unresolved": { "confirm": "Remove PH_COUNT objects with unresolved materials free of charge and without a return?" } } },
+        "menu": "Clear property",
+        "subtitle": "Material and contents preview for PH_AREA_NAME",
+        "success": "Property cleared: PH_COUNT elements removed, fee PH_FEE PH_CURRENCY.",
+        "reason": { "mail": "The material mail could not be prepared. No objects were removed.", "payment": "The Wallet transaction could not be completed. No objects were removed.", "shop": "Shop or Wallet is unavailable for recycling. No objects were removed.", "unresolved": "Some placed elements have no resolvable build recipe. No objects were removed." },
+        "th": { "amount": "Amount", "item": "Item / material" },
+        "title": "Clear property",
+        "unavailable": "The area cannot currently be read completely. No changes were made.",
+        "unresolved": "Some build costs cannot be resolved unambiguously; dismantling is disabled.",
+        "unresolved.item": "⚠ Cannot dismantle: PH_ITEM",
+        "unresolved.container": "Container contents",
+        "unresolved.unknown": "unknown material",
+        "unresolved.block": "PH_ITEM from PH_SOURCE (Block ID: PH_BLOCK_ID)",
+        "unresolved.object": "PH_ITEM from PH_SOURCE (Object ID: PH_OBJECT_ID)"
+      }
+    },
     "admin": {
       "cleanup": {
         "blocked": "Cleanup blocked because another owner has an active claim in chunk column PH_CHUNK_POS.",
@@ -551,6 +586,11 @@
     },
     "setting": {
       "exposeplayermap": { "label": "Expose player map", "desc": "Allows Manager read access to the player map." },
+      "propertyclearance": { "label": "Property clearance", "desc": "Optional owner-controlled disposal and dismantling of placed property." },
+      "enablepropertyclearance": { "label": "Enable property clearance", "desc": "Shows the property-clearance action in zone settings. Disabled by default." },
+      "propertyclearancedisposefeeperitem": { "label": "Dispose fee per returned resource", "desc": "Wallet fee per calculated return resource; the final fee is rounded up." },
+      "propertyclearancedemolishfeeperitem": { "label": "Dismantle fee per returned resource", "desc": "Wallet fee per calculated return resource; the final fee is rounded up." },
+      "propertyclearancerecyclerate": { "label": "Recycle value rate", "desc": "Share of the Shop base value paid out when recycling." },
       "adminignorelimit": {
         "desc": "Lets admins bypass claim limits.",
         "label": "Admin ignores claim limit"

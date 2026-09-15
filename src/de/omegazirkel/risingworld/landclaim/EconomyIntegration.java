@@ -111,6 +111,14 @@ public class EconomyIntegration {
                 subject, body, correlationId)).success();
     }
 
+    public boolean canReceiveMail(int playerDbId) { return mailBridge.canReceiveMail(playerDbId); }
+
+    public MailBridge.BridgeResult sendAttachments(int playerDbId, String playerName, String subject, String body,
+            String correlationId, List<MailBridge.PluginAttachment> attachments) {
+        return mailBridge.sendAttachmentMail(new MailBridge.PluginAttachmentMailRequest(LandClaim.name, playerDbId,
+                playerName, subject, body, correlationId, attachments));
+    }
+
     public WalletOperationResult closeCityAccount(long cityAreaId, String reason, String correlationPrefix) {
         String cityAccount = cityAccountId(cityAreaId);
         String worldAccount = walletBridge.worldSystemAccountId();
@@ -193,6 +201,19 @@ public class EconomyIntegration {
 
     public WalletOperationResult depositDefault(int playerDbId, long value, String reason) {
         return invokeWalletTransaction("depositDefault", playerDbId, value, reason);
+    }
+
+    public double systemOfferBaseUnitPrice(String itemName, int variant) {
+        Plugin shopPlugin = owner.getPluginByName("OZ - Shop");
+        if (shopPlugin == null) return 0.0d;
+        try {
+            Object value = shopPlugin.getClass().getMethod("systemOfferBaseUnitPrice", String.class, int.class)
+                    .invoke(shopPlugin, itemName, Math.max(0, variant));
+            return value instanceof Number number ? Math.max(0.0d, number.doubleValue()) : 0.0d;
+        } catch (ReflectiveOperationException ex) {
+            LandClaim.logger().warn("Could not read Shop system-offer base price: " + ex.getMessage());
+            return 0.0d;
+        }
     }
 
     private WalletOperationResult invokeWalletTransaction(String methodName, int playerDbId, long value, String reason) {
