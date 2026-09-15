@@ -17,6 +17,9 @@ demontieren oder zum konfigurierten Anteil der Shop-Basispreise recyceln.
 - `rw-plugin-oz-shop` liefert den zwischengespeicherten, vollständigen
   Katalog-Basispreis je Item und Variante; nicht bepreiste Materialien haben
   beim Recycling keinen Gegenwert.
+- Alle optionalen Plugin-Grenzen laufen über Consumer-Bridges: Land Claim nutzt
+  `WalletBridge`, `MailBridge` und `ShopBridge`; die Fachlogik kennt keine
+  fremde Plugin-Hauptklasse.
 - Die Materialliste ist eine Rekonstruktion aus den aktuell geladenen
   Definitionen/Rezepten; Container-Inhalte werden unverändert übernommen.
 

@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.19.1] - 2026-09-15 | Bridge boundaries
+
+- fix: route Shop price lookup and extra-claim offer registration through the LandClaim Shop bridge; route legacy Wallet calls through WalletBridge.
+
 ## [0.19.0] - 2026-09-15 | Property clearance
 
 - feat: add opt-in property clearance with anchored-area previews, disposal, safe material mail, and configurable Shop-price recycling.
