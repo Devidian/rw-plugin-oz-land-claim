@@ -2,6 +2,11 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.19.5] - 2026-09-19 | Automatic property-safe claim cleanup
+
+- change: automatic inactive-claim removal now clears unresolved hosts first, then returns resources by Mail or recycles their value to the former owner or world treasury before removing the claim.
+- change: add optional `discord.channelId.cleanupEvent` for automatic claim-cleanup logs.
+
 ## [0.19.3] - 2026-09-18 | Release pipeline compatibility
 
 - fix: install PluginAPI 0.9.3.2 in release validation and publishing workflows.

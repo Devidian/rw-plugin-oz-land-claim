@@ -14,6 +14,7 @@
   "cityRentBillingHour": "0",
   "claimMode": "TIME_BASED",
   "claimTimeScaleFactor": "1.01",
+  "discord.channelId.cleanupEvent": "0",
   "enableAutoClaimRemoval": "false",
   "enablePropertyClearance": "false",
   "enableExtraClaimShopOffer": "true",

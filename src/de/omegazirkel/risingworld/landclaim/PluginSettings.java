@@ -70,6 +70,7 @@ public class PluginSettings {
         public Integer renewZoneResetDelayPerChunkMillis = 25;
         public Integer renewZoneResetMaxDelaySeconds = 60;
         public long discordRenewZoneLogChannelId = 0;
+        public long discordCleanupEventChannelId = 0;
         public Boolean allowClaimSale = false;
         public Boolean allowClaimBuyExceedLimit = false;
         public Boolean exposeClaimSales = true;
@@ -288,6 +289,8 @@ public class PluginSettings {
                                         .parseLong(settings.getProperty("discordBuyAccouncementChannelId", "0"));
                         discordRenewZoneLogChannelId = Long
                                         .parseLong(settings.getProperty("discordRenewZoneLogChannelId", "0"));
+                        discordCleanupEventChannelId = Long
+                                        .parseLong(settings.getProperty("discord.channelId.cleanupEvent", "0"));
                         // Ingame announcements
                         enableIngameClaimAnnouncement = settings.getProperty("enableIngameClaimAnnouncement", "false")
                                         .contentEquals("true");
@@ -511,6 +514,9 @@ public class PluginSettings {
                                 entry("discordRenewZoneLogChannelId", "Discord renew-zone log",
                                                 "Discord channel id for renew-zone reset logs. 0 disables logging.",
                                                 discordRenewZoneLogChannelId, "0", AdminSettingsType.INTEGER),
+                                entry("discord.channelId.cleanupEvent", "Discord cleanup event log",
+                                                "Discord channel id for automatic claim-cleanup events. 0 disables logging.",
+                                                discordCleanupEventChannelId, "0", AdminSettingsType.INTEGER),
                                 AdminSettingsEntry.group("landPricingRules", "Land-pricing rules",
                                                 "Rules used by the LAND_PRICING acquisition mode."),
                                 entry("landPriceBase", "Land base price",

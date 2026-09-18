@@ -156,7 +156,9 @@ class LandClaimRuntime extends Plugin {
         // wdbPlayers = this.getWorldDatabase(Target.Players);
         chunkClaimUtil = new ChunkClaimUtil(llcs);
         s.initSettings();
-        cleanupService = new ClaimCleanupService(llcs, s);
+        economyIntegration = new EconomyIntegration(this);
+        propertyClearanceService = new PropertyClearanceService(s, economyIntegration);
+        cleanupService = new ClaimCleanupService(llcs, s, propertyClearanceService);
         gui = LandClaimGUI.getInstance(chunkClaimUtil, cleanupService, this);
         ensureDefaultPermissionFiles();
 
@@ -168,8 +170,6 @@ class LandClaimRuntime extends Plugin {
         PluginShortcutVisibility.register(name, LandClaimPlayerPluginSettings::shortcutVisible);
         // connect plugins
         DiscordConnect.init(this);
-        economyIntegration = new EconomyIntegration(this);
-        propertyClearanceService = new PropertyClearanceService(s, economyIntegration);
         economyIntegration.logStatus();
         economyIntegration.registerExtraClaimOffer(s);
         landPriceService.refresh();
@@ -344,7 +344,7 @@ class LandClaimRuntime extends Plugin {
                     .replace("PH_OWNER_COUNT", String.valueOf(result.ownersRemoved()))
                     .replace("PH_CLAIM_COUNT", String.valueOf(result.claimsRemoved()))
                     .replace("PH_DAYS", String.valueOf(result.inactiveDays()));
-            DiscordConnect.sendDiscordReleaseAccouncement(message);
+            DiscordConnect.sendDiscordCleanupEvent(message);
         });
     }
 

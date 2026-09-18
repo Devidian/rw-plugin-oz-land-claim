@@ -81,6 +81,7 @@ All settings can be adjusted in the `settings.<world>.json` file located in the 
 | `enableAutoClaimRemoval`            | `false` | Runs one delayed server-start cleanup for owners inactive longer than the configured threshold. This removes claims and areas but does not reset chunks. |
 | `autoClaimRemovalInactiveDays`      | `90` | Inactivity threshold in days for automatic claim removal. |
 | `autoClaimRemovalDelaySeconds`      | `60` | Delay after server start before automatic claim removal runs. |
+| `discord.channelId.cleanupEvent`    | `0` | Discord channel id for automatic claim-cleanup events. `0` disables logging. |
 | `renewZoneDefaultIntervalHours`     | `24` | Default interval in hours for newly created renew zones. |
 | `renewZoneResetAnnouncementTarget`  | `none` | Who receives renew-zone reset announcements: `none`, `all`, or `admins`. |
 | `renewZoneResetBaseDelaySeconds`    | `2` | Minimum delay before processing the next due renew zone. |

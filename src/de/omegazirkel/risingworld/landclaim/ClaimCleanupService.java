@@ -27,10 +27,13 @@ public class ClaimCleanupService {
 
     private final LandClaimChunkService claimService;
     private final PluginSettings settings;
+    private final PropertyClearanceService propertyClearance;
 
-    public ClaimCleanupService(LandClaimChunkService claimService, PluginSettings settings) {
+    public ClaimCleanupService(LandClaimChunkService claimService, PluginSettings settings,
+            PropertyClearanceService propertyClearance) {
         this.claimService = claimService;
         this.settings = settings;
+        this.propertyClearance = propertyClearance;
     }
 
     public List<OwnerSummary> getOwnerSummaries() {
@@ -159,7 +162,7 @@ public class ClaimCleanupService {
         int claimsRemoved = 0;
         for (OwnerSummary owner : getOwnerSummaries()) {
             if (owner.lastSeenEpochSeconds() > 0 && owner.lastSeenEpochSeconds() <= cutoffEpochSeconds) {
-                CleanupResult result = deleteOwner(owner.ownerUid());
+                CleanupResult result = cleanupInactiveOwner(owner);
                 if (result.success()) {
                     ownersRemoved++;
                     claimsRemoved += result.claimsAffected();
@@ -167,6 +170,24 @@ public class ClaimCleanupService {
             }
         }
         return new AutoRemovalResult(ownersRemoved, claimsRemoved, inactiveDays);
+    }
+
+    private CleanupResult cleanupInactiveOwner(OwnerSummary owner) {
+        List<LandClaimChunkInfo> claims = claimService.getClaimedChunkInfoListByPlayer(owner.ownerUid());
+        Set<Long> processedAreas = new HashSet<>();
+        for (LandClaimChunkInfo claim : claims) {
+            if (claim.areaID <= 0 || !processedAreas.add(claim.areaID)) continue;
+            Area area = Server.getArea(claim.areaID);
+            if (area == null || propertyClearance == null) continue;
+            PropertyClearanceService.Result result = propertyClearance.cleanupInactiveOwner(area,
+                    owner.ownerDbId(), owner.ownerName());
+            if (!result.success()) {
+                LandClaim.logger().warn("Automatic claim removal retained " + owner.ownerUid()
+                        + " because property cleanup for area " + claim.areaID + " failed: " + result.reason());
+                return CleanupResult.blocked(claim.chunkPos);
+            }
+        }
+        return removeClaims(claims, true);
     }
 
     public boolean teleportToArea(Player player, long areaId) {

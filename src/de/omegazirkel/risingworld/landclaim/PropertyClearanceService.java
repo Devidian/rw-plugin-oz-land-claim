@@ -99,6 +99,41 @@ public final class PropertyClearanceService {
     public String defaultCurrencyIdentifier() { return economy.defaultCurrencyIdentifier(); }
     public boolean isRecyclingAvailable() { return economy.isShopAvailable() && economy.isWalletAvailable(); }
 
+    /**
+     * Performs the lossless part of an inactive-owner removal before its claim
+     * is deleted. Unresolvable hosts are removed first; resolved materials are
+     * mailed when possible and otherwise recycled into Wallet custody.
+     */
+    public Result cleanupInactiveOwner(Area area, int ownerDbId, String ownerName) {
+        Preview current = preview(area, "en");
+        if (!current.available()) return failed(area, Mode.REMOVE_UNRESOLVED, current.reason());
+        int removed = destroyTargets(current.elements().stream().filter(ElementRef::unresolved).toList());
+        current = preview(area, "en");
+        if (!current.available()) return failed(area, Mode.DEMOLISH, current.reason());
+        if (current.elements().isEmpty()) return new Result(true, "", removed, 0, 0);
+        String correlation = "landclaim-auto-clear:" + area.getID() + ":" + java.util.UUID.randomUUID();
+        boolean mailed = ownerDbId > 0 && ownerName != null && !ownerName.isBlank()
+                && economy.canReceiveMail(ownerDbId)
+                && economy.sendAttachments(ownerDbId, ownerName,
+                        I18n.getInstance(LandClaim.name).get("tc.property.clearance.mail.subject", "en"),
+                        I18n.getInstance(LandClaim.name).get("tc.property.clearance.mail.body", "en")
+                                .replace("PH_AREA_NAME", areaName(area)),
+                        correlation + ":mail", current.items().stream()
+                                .map(item -> item.key().attachment(item.amount())).toList()).success();
+        long recycledValue = 0;
+        if (!mailed) {
+            if (!isRecyclingAvailable()) return failed(area, Mode.RECYCLE, "SHOP_OR_WALLET_UNAVAILABLE");
+            recycledValue = recycleValue(current);
+            EconomyIntegration.WalletOperationResult payout = economy.creditCleanupToOwnerOrWorld(ownerDbId,
+                    recycledValue, "LandClaim automatic property recycling area " + area.getID(), correlation);
+            if (!payout.success()) return failed(area, Mode.RECYCLE, "PAYMENT_FAILED:" + payout.message());
+        }
+        removed += destroyTargets(current.elements());
+        LandClaim.logger().info("Automatic property clearance in area " + area.getID() + ": " + removed
+                + " elements, mailed=" + mailed + ", recycled=" + recycledValue);
+        return new Result(true, "", removed, 0, recycledValue);
+    }
+
     private Result execute(Player actor, Area area, Mode mode) { return execute(actor, area, mode, false); }
 
     private Result execute(Player actor, Area area, Mode mode, boolean administrator) {
@@ -155,6 +190,13 @@ public final class PropertyClearanceService {
         // Once all demolition materials are in durable mail custody, remove
         // container custody before object destruction so the world cannot drop
         // the same content as loose items.
+        int removed = destroyTargets(targets);
+        LandClaim.logger().info("Property clearance " + mode + " by " + actor.getDbID() + " in area " + area.getID()
+                + ": " + removed + " elements, fee " + fee + ", correlation " + correlation);
+        return new Result(true, "", removed, fee, recycledValue);
+    }
+
+    private int destroyTargets(List<ElementRef> targets) {
         for (ElementRef element : targets) if (element.object() != null && element.object().isValid())
             emptyContainer(element.object());
         int removed = 0;
@@ -162,9 +204,7 @@ public final class PropertyClearanceService {
             if (element.object() != null && element.object().isValid()) { element.object().destroy(true); removed++; }
             if (element.construction() != null && element.construction().isValid()) { element.construction().destroy(true); removed++; }
         }
-        LandClaim.logger().info("Property clearance " + mode + " by " + actor.getDbID() + " in area " + area.getID()
-                + ": " + removed + " elements, fee " + fee + ", correlation " + correlation);
-        return new Result(true, "", removed, fee, recycledValue);
+        return removed;
     }
 
     private String areaName(Area area) {

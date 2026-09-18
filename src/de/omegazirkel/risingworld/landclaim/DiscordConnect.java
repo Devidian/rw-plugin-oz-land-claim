@@ -87,4 +87,9 @@ public class DiscordConnect extends DiscordBridge {
             sendDiscordMessage(message, s.discordRenewZoneLogChannelId);
     }
 
+    public static void sendDiscordCleanupEvent(String message) {
+        if (s.discordCleanupEventChannelId > 0)
+            sendDiscordMessage(message, s.discordCleanupEventChannelId);
+    }
+
 }

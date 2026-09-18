@@ -151,6 +151,32 @@ public class EconomyIntegration {
         return new WalletOperationResult(result.success(), result.message());
     }
 
+    /**
+     * Credits automatic clearance proceeds once, then pays the former owner or
+     * falls back to the world treasury when that player account cannot accept it.
+     */
+    public WalletOperationResult creditCleanupToOwnerOrWorld(int playerDbId, long value, String reason,
+            String correlationId) {
+        if (value <= 0) return new WalletOperationResult(true, "");
+        String currency = defaultCurrencyIdentifier();
+        if (currency.isBlank() || !hasSystemAccountApi()) return new WalletOperationResult(false,
+                "Wallet system-account API is unavailable.");
+        String account = "landclaim::cleanup";
+        WalletBridge.SystemAccountCallResult created = walletBridge.createSystemAccount(account, "CLEARANCE",
+                "Land Claim cleanup", LandClaim.name);
+        if (!created.success()) return new WalletOperationResult(false, created.message());
+        WalletBridge.WalletTransferCallResult credit = walletBridge.creditSystemAccountIdempotent(account, value,
+                reason, currency, LandClaim.name, correlationId + ":credit");
+        if (!credit.success()) return new WalletOperationResult(false, credit.message());
+        WalletBridge.WalletTransferCallResult owner = walletBridge.transferSystemToPlayerIdempotent(account,
+                playerDbId, value, reason, currency, LandClaim.name, correlationId + ":owner");
+        if (owner.success()) return new WalletOperationResult(true, "");
+        WalletBridge.WalletTransferCallResult world = walletBridge.transferSystemToSystemIdempotent(account,
+                walletBridge.worldSystemAccountId(), value, reason, currency, LandClaim.name,
+                correlationId + ":world");
+        return new WalletOperationResult(world.success(), world.message());
+    }
+
     public double systemOfferBaseUnitPrice(String itemName, int variant) {
         return shopBridge.systemOfferBaseUnitPrice(itemName, variant);
     }
