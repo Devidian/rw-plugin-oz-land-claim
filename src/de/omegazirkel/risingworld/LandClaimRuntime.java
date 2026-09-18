@@ -68,6 +68,9 @@ import net.risingworld.api.events.player.ui.PlayerToggleInventoryEvent;
 import net.risingworld.api.objects.Area;
 import net.risingworld.api.objects.Player;
 import net.risingworld.api.utils.Vector3i;
+import net.risingworld.api.utils.Vector3f;
+import net.risingworld.api.utils.Quaternion;
+import net.risingworld.api.utils.SpawnPointType;
 import net.risingworld.api.worldelements.Area3D;
 
 class LandClaimRuntime extends Plugin {
@@ -110,6 +113,7 @@ class LandClaimRuntime extends Plugin {
     public static LandClaimChunkService llcs;
     public static LandClaimChunkStore lccStore;
     private PlayerMapVisitStore playerMapVisitStore;
+    private final Map<Integer, PrisonerRespawn> prisonerRespawns = new ConcurrentHashMap<>();
 
     public static OZLogger logger() {
         return OZLogger.getInstance("OZ.LandClaim");
@@ -600,6 +604,7 @@ class LandClaimRuntime extends Plugin {
 
     public void onPlayerSpawnEvent(PlayerSpawnEvent event) {
         Player player = event.getPlayer();
+        restorePrisonerSpawns(player);
         Vector3i chunkPos = player.getChunkPosition();
         recordPlayerMapVisit(player, chunkPos);
         eventLogger().debug("Player " + player.getName() + " spawned. Current chunk position: "
@@ -623,11 +628,42 @@ class LandClaimRuntime extends Plugin {
 
     public void onPlayerDeathEvent(PlayerDeathEvent event) {
         Player player = event.getPlayer();
+        preparePrisonerRespawn(player, event.getDeathPosition());
         Vector3i chunkPos = player.getChunkPosition();
         eventLogger().debug("Player " + player.getName() + " died. Current chunk position: "
                 + chunkPos.toString());
         chunkClaimUtil.leaveChunk(player, chunkPos);
     }
+
+    private void preparePrisonerRespawn(Player player, Vector3f deathPosition) {
+        if (player == null || deathPosition == null || !isPrisonerInCurrentArea(player)) return;
+        Vector3f primary = player.getSpawnPosition(SpawnPointType.Primary);
+        Vector3f secondary = player.getSpawnPosition(SpawnPointType.Secondary);
+        prisonerRespawns.put(player.getDbID(), new PrisonerRespawn(copy(primary), copy(secondary)));
+        Vector3f temporary = copy(deathPosition);
+        player.setSpawnPoint(SpawnPointType.Primary, temporary, Quaternion.IDENTITY, "Prison death");
+        player.setSpawnPoint(SpawnPointType.Secondary, temporary, Quaternion.IDENTITY, "Prison death");
+    }
+
+    private void restorePrisonerSpawns(Player player) {
+        if (player == null) return;
+        PrisonerRespawn previous = prisonerRespawns.remove(player.getDbID());
+        if (previous == null) return;
+        if (previous.primary() != null) player.setSpawnPoint(SpawnPointType.Primary, previous.primary(), Quaternion.IDENTITY, "Primary spawn");
+        if (previous.secondary() != null) player.setSpawnPoint(SpawnPointType.Secondary, previous.secondary(), Quaternion.IDENTITY, "Secondary spawn");
+    }
+
+    private boolean isPrisonerInCurrentArea(Player player) {
+        Area area = player.getCurrentArea();
+        Map<Integer, String> permissions = area == null ? null : area.getAllPlayerPermissions();
+        return permissions != null && s.prisonerAreaPermission.equals(permissions.get(player.getDbID()));
+    }
+
+    private static Vector3f copy(Vector3f value) {
+        return value == null ? null : new Vector3f(value.x, value.y, value.z);
+    }
+
+    private record PrisonerRespawn(Vector3f primary, Vector3f secondary) { }
 
     public void ensureDefaultPermissionFiles() {
         String[] files = {

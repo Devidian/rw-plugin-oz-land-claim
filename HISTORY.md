@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.19.2] - 2026-09-18 | Prisoner claim respawn
+
+- fix: players explicitly assigned the configured prisoner permission in their current claim respawn at their death position once, then regain their previous spawn points.
+
 ## [0.19.1] - 2026-09-15 | Bridge boundaries
 
 - fix: route Shop price lookup and extra-claim offer registration through the LandClaim Shop bridge; route legacy Wallet calls through WalletBridge.
