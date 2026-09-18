@@ -2,6 +2,10 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.19.3] - 2026-09-18 | Release pipeline compatibility
+
+- fix: install PluginAPI 0.9.3.2 in release validation and publishing workflows.
+
 ## [0.19.2] - 2026-09-18 | Prisoner claim respawn
 
 - fix: players explicitly assigned the configured prisoner permission in their current claim respawn at their death position once, then regain their previous spawn points.
