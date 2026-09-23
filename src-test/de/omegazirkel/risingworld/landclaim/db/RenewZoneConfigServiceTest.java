@@ -62,6 +62,22 @@ public class RenewZoneConfigServiceTest {
         }
     }
 
+    @Test
+    public void updatesAllIntervalsOnlyInCurrentWorldAndPreservesDueTime() throws Exception {
+        try (Connection connection = database()) {
+            RenewZoneConfigService world = new RenewZoneConfigService(connection, "world");
+            RenewZoneConfigService otherWorld = new RenewZoneConfigService(connection, "other-world");
+            world.save(1L, 12, 1_000L);
+            world.save(2L, 24, 2_000L);
+            otherWorld.save(1L, 48, 3_000L);
+
+            assertEquals(2, world.updateAllIntervals(6));
+            assertEquals(6, world.find(1L).orElseThrow().intervalHours());
+            assertEquals(2_000L, world.find(2L).orElseThrow().lastResetAt());
+            assertEquals(48, otherWorld.find(1L).orElseThrow().intervalHours());
+        }
+    }
+
     private static Connection database() throws Exception {
         return DriverManager.getConnection("jdbc:sqlite::memory:");
     }

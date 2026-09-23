@@ -17,4 +17,9 @@ public class ClaimModeTest {
         assertEquals(ClaimMode.LAND_PRICING, ClaimMode.parse("Grundstückspreise"));
         assertEquals(ClaimMode.CITY, ClaimMode.parse("Stadtmodus"));
     }
+
+    @Test
+    public void expansionClaimTimeIncludesTheExistingAreaAtItsOriginalClaimIndex() {
+        assertEquals(1_260L, ChunkClaimUtil.claimTimeForClaimRange(600, 1.1, 0, 2));
+    }
 }

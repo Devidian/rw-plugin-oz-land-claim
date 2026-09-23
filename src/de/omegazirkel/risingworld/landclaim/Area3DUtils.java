@@ -112,7 +112,9 @@ public class Area3DUtils {
 
             long areaId = area.getID();
             String areaPermission = area.getPlayerPermission(player);
-            boolean isOwner = areaPermission != null && areaPermission.equals(s.ownerAreaPermission);
+            boolean isOwner = areaPermission != null && (areaPermission.equals(s.ownerAreaPermission)
+                    || areaPermission.equals(s.landlordAreaPermission)
+                    || areaPermission.equals(s.tenantAreaPermission));
             boolean shouldShow = (isOwner ? Boolean.TRUE.equals(showOwned) : Boolean.TRUE.equals(showOther))
                     && (isOwner || specialAreaVisibleTo(player, playerChunk, area));
 

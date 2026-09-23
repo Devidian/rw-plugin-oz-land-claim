@@ -25,6 +25,20 @@ public class EconomyIntegration {
         return walletBridge.hasSystemAccountApi();
     }
 
+    /** Capability gate for rental payments paid directly to a landlord. */
+    public boolean hasPlayerTransferApi() {
+        return walletBridge.hasPlayerTransferApi();
+    }
+
+    public WalletOperationResult transferPlayerToPlayer(int payerDbId, int payeeDbId, long value, String reason,
+            String correlationId) {
+        String currency = defaultCurrencyIdentifier();
+        if (currency.isBlank()) return new WalletOperationResult(false, "Wallet default currency is unavailable.");
+        WalletBridge.WalletTransferCallResult result = walletBridge.transferIdempotent(payerDbId, payeeDbId, value,
+                reason, currency, LandClaim.name, correlationId);
+        return new WalletOperationResult(result.success(), result.message());
+    }
+
     public WalletOperationResult transferPlayerToWorld(int playerDbId, long value, String reason,
             String correlationId) {
         String currency = defaultCurrencyIdentifier();

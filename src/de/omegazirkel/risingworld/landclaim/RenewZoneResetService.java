@@ -31,6 +31,27 @@ public class RenewZoneResetService {
         if (config == null) {
             return new RenewZoneResetResult(0, 0, 0, 0);
         }
+        return reset(config, nowMs);
+    }
+
+    public synchronized RenewZoneResetResult resetArea(long areaId, long nowMs) {
+        if (configService == null) return new RenewZoneResetResult(0, 0, 0, 0);
+        RenewZoneConfig config = configService.find(areaId).orElse(null);
+        return config == null ? new RenewZoneResetResult(0, 0, 0, 0) : reset(config, nowMs);
+    }
+
+    public synchronized RenewZoneResetResult resetAll(long nowMs) {
+        if (configService == null) return new RenewZoneResetResult(0, 0, 0, 0);
+        int checked = 0, reset = 0, chunks = 0, stale = 0;
+        for (RenewZoneConfig config : configService.list()) {
+            RenewZoneResetResult result = reset(config, nowMs);
+            checked += result.zonesChecked(); reset += result.zonesReset();
+            chunks += result.chunksReset(); stale += result.staleConfigsRemoved();
+        }
+        return new RenewZoneResetResult(checked, reset, chunks, stale);
+    }
+
+    private RenewZoneResetResult reset(RenewZoneConfig config, long nowMs) {
         Area area = Server.getArea(config.areaId());
         if (area == null || !settings.specialRenewAreaPermission.equals(area.getDefaultPermission())) {
             boolean removed = configService.delete(config.areaId());

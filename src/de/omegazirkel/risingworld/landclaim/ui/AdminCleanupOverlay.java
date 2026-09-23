@@ -11,6 +11,9 @@ import de.omegazirkel.risingworld.landclaim.ClaimCleanupService.CleanupResult;
 import de.omegazirkel.risingworld.landclaim.ClaimCleanupService.OwnerSummary;
 import de.omegazirkel.risingworld.landclaim.ClaimCleanupService.SpecialAreaSummary;
 import de.omegazirkel.risingworld.landclaim.DiscordConnect;
+import de.omegazirkel.risingworld.landclaim.PluginSettings;
+import de.omegazirkel.risingworld.landclaim.RenewZoneResetService;
+import de.omegazirkel.risingworld.landclaim.db.RenewZoneConfigService;
 import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.ui.AdvancedButtonFactory;
 import de.omegazirkel.risingworld.tools.ui.BasePluginOverlayWithTabs;
@@ -32,19 +35,26 @@ public class AdminCleanupOverlay extends BasePluginOverlayWithTabs {
     public static final String ATTRIBUTE_KEY = "landclaim-admin-cleanup-overlay";
 
     private enum Tab {
-        OWNERS, AREAS, SPECIAL_AREAS
+        OWNERS, AREAS, SPECIAL_AREAS, RENEW_ZONES
     }
 
     private static final float TABLE_SCROLL_BODY_HEIGHT = 398f;
 
     private final Player player;
     private final ClaimCleanupService cleanupService;
+    private final RenewZoneConfigService renewConfigs;
+    private final RenewZoneResetService renewResetter;
+    private final PluginSettings settings;
     private Tab activeTab = Tab.OWNERS;
 
-    public AdminCleanupOverlay(Player player, ClaimCleanupService cleanupService, Callback<Player> onClose) {
+    public AdminCleanupOverlay(Player player, ClaimCleanupService cleanupService, RenewZoneConfigService renewConfigs,
+            RenewZoneResetService renewResetter, PluginSettings settings, Callback<Player> onClose) {
         super(player, onClose);
         this.player = player;
         this.cleanupService = cleanupService;
+        this.renewConfigs = renewConfigs;
+        this.renewResetter = renewResetter;
+        this.settings = settings;
         rebuild();
     }
 
@@ -83,12 +93,18 @@ public class AdminCleanupOverlay extends BasePluginOverlayWithTabs {
             activeTab = Tab.SPECIAL_AREAS;
             rebuild();
         });
+        addTab(t().get("tc.renew.zone.management.tab", player), 180, activeTab == Tab.RENEW_ZONES, true, () -> {
+            activeTab = Tab.RENEW_ZONES;
+            rebuild();
+        });
         if (activeTab == Tab.OWNERS) {
             setupOwnerTable();
         } else if (activeTab == Tab.AREAS) {
             setupAreaTable();
-        } else {
+        } else if (activeTab == Tab.SPECIAL_AREAS) {
             setupSpecialAreaTable();
+        } else {
+            body.addChild(new RenewZoneManagementPanel(player, renewConfigs, renewResetter, settings));
         }
     }
 
@@ -265,7 +281,8 @@ public class AdminCleanupOverlay extends BasePluginOverlayWithTabs {
                 t().get("tc.dialog.admin.cleanup.owner.title", player),
                 t().get("tc.dialog.admin.cleanup.owner.confirm", player)
                         .replace("PH_PLAYER_NAME", owner.ownerName())
-                        .replace("PH_CLAIM_COUNT", String.valueOf(owner.claimCount())),
+                        .replace("PH_CLAIM_COUNT", String.valueOf(owner.claimCount())) + "\n\n"
+                        + t().get("tc.admin.cleanup.workflow", player),
                 () -> handleCleanupResult(cleanupService.cleanupOwner(owner.ownerUid()), owner.ownerName(), true));
     }
 
@@ -281,7 +298,8 @@ public class AdminCleanupOverlay extends BasePluginOverlayWithTabs {
         showConfirm(
                 t().get("tc.dialog.admin.cleanup.area.title", player),
                 t().get("tc.dialog.admin.cleanup.area.confirm", player)
-                        .replace("PH_AREA_NAME", area.areaName()),
+                        .replace("PH_AREA_NAME", area.areaName()) + "\n\n"
+                        + t().get("tc.admin.cleanup.workflow", player),
                 () -> handleCleanupResult(cleanupService.cleanupArea(area.areaId()), area.areaName(), true));
     }
 
@@ -297,7 +315,8 @@ public class AdminCleanupOverlay extends BasePluginOverlayWithTabs {
         showConfirm(
                 t().get("tc.dialog.admin.cleanup.special.area.title", player),
                 t().get("tc.dialog.admin.cleanup.special.area.confirm", player)
-                        .replace("PH_AREA_NAME", area.areaName()),
+                        .replace("PH_AREA_NAME", area.areaName()) + "\n\n"
+                        + t().get("tc.admin.cleanup.workflow", player),
                 () -> handleSpecialAreaResult(cleanupService.cleanupSpecialArea(area.areaId()), area.areaName(), true));
     }
 
@@ -322,12 +341,9 @@ public class AdminCleanupOverlay extends BasePluginOverlayWithTabs {
     }
 
     private void showConfirm(String title, String message, Runnable onConfirm) {
-        UIElement dialog = UIDialogFactory.getConfirmDangerDialog(player, title, message, confirmed -> {
-            if (confirmed) {
-                onConfirm.run();
-            }
-        }, p -> {
-        });
+        UIElement dialog = UIDialogFactory.getConfirmDangerDialogText(player, title, message, 220, confirmed -> {
+            if (confirmed) onConfirm.run();
+        }, p -> { }, false);
         player.addUIElement(dialog, UITarget.Modal);
     }
 

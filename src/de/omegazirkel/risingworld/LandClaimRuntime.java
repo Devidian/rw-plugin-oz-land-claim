@@ -19,6 +19,8 @@ import de.omegazirkel.risingworld.landclaim.LandClaimPluginInfoStatusProvider;
 import de.omegazirkel.risingworld.landclaim.PermissionFileUtil;
 import de.omegazirkel.risingworld.landclaim.PluginSettings;
 import de.omegazirkel.risingworld.landclaim.PropertyClearanceService;
+import de.omegazirkel.risingworld.landclaim.PlayerLeaseRentService;
+import de.omegazirkel.risingworld.landclaim.UnclaimedLeaseRentService;
 import de.omegazirkel.risingworld.landclaim.RenewZoneResetService;
 import de.omegazirkel.risingworld.landclaim.CityRentService;
 import de.omegazirkel.risingworld.landclaim.db.ClaimSaleListingService;
@@ -26,6 +28,8 @@ import de.omegazirkel.risingworld.landclaim.db.ExtraClaimCapacityService;
 import de.omegazirkel.risingworld.landclaim.db.LandClaimChunkService;
 import de.omegazirkel.risingworld.landclaim.db.LandClaimChunkStore;
 import de.omegazirkel.risingworld.landclaim.db.PlayerMapVisitStore;
+import de.omegazirkel.risingworld.landclaim.db.PlayerLeaseService;
+import de.omegazirkel.risingworld.landclaim.db.UnclaimedLeaseService;
 import de.omegazirkel.risingworld.landclaim.db.RenewZoneConfigService;
 import de.omegazirkel.risingworld.landclaim.db.LandPriceService;
 import de.omegazirkel.risingworld.landclaim.db.CityService;
@@ -98,9 +102,13 @@ class LandClaimRuntime extends Plugin {
     private static RenewZoneResetService renewZoneResetService;
     private static LandPriceService landPriceService;
     private static CityService cityService;
+    private static PlayerLeaseService playerLeaseService;
+    private static UnclaimedLeaseService unclaimedLeaseService;
     private Timer renewZoneTimer;
     private Timer cityRentTimer;
     private CityRentService cityRentService;
+    private PlayerLeaseRentService playerLeaseRentService;
+    private UnclaimedLeaseRentService unclaimedLeaseRentService;
     private LocalDate nextCityRentBillingDate;
     private long nextRenewZoneCheckMs;
     public static String name;
@@ -144,6 +152,8 @@ class LandClaimRuntime extends Plugin {
             renewZoneResetService = new RenewZoneResetService(renewZoneConfigService, s);
             landPriceService = new LandPriceService(sqliteCon);
             cityService = new CityService(sqliteCon);
+            playerLeaseService = new PlayerLeaseService(sqliteCon);
+            unclaimedLeaseService = new UnclaimedLeaseService(sqliteCon);
         } catch (Exception e) {
             logger().error(e.getMessage());
             e.printStackTrace();
@@ -174,6 +184,11 @@ class LandClaimRuntime extends Plugin {
         economyIntegration.registerExtraClaimOffer(s);
         landPriceService.refresh();
         cityRentService = new CityRentService(cityService, economyIntegration, s);
+        playerLeaseRentService = new PlayerLeaseRentService(playerLeaseService, economyIntegration, chunkClaimUtil, s);
+        unclaimedLeaseRentService = new UnclaimedLeaseRentService(unclaimedLeaseService, economyIntegration,
+                chunkClaimUtil, s);
+        normalizeUnclaimedLeasePermissions();
+        normalizePlayerLeasePermissions();
         scheduleCityRentBilling();
         int unresolvedEconomyOperations = cityService.countUnresolvedEconomyOperations();
         if (unresolvedEconomyOperations > 0) logger().warn("LandClaim has " + unresolvedEconomyOperations
@@ -196,6 +211,25 @@ class LandClaimRuntime extends Plugin {
         scheduleAutoClaimRemoval();
 
         logger().info("✅ " + this.getName() + " Plugin is enabled version:" + this.getDescription("version"));
+    }
+
+    /** Restores tenant-only permissions for leases created by an early build. */
+    private void normalizeUnclaimedLeasePermissions() {
+        for (var lease : unclaimedLeaseService.active()) {
+            Area area = Server.getArea(lease.areaId());
+            if (area != null) area.setPlayerPermission(lease.tenantDbId(), s.tenantAreaPermission);
+        }
+    }
+
+    /** Restores the distinct landlord and tenant roles for active player rentals. */
+    private void normalizePlayerLeasePermissions() {
+        for (var lease : playerLeaseService.occupied()) {
+            Area area = Server.getArea(lease.areaId());
+            if (area != null) {
+                area.setPlayerPermission(lease.landlordDbId(), s.landlordAreaPermission);
+                area.setPlayerPermission(lease.tenantDbId(), s.tenantAreaPermission);
+            }
+        }
     }
 
     @Override
@@ -307,6 +341,9 @@ class LandClaimRuntime extends Plugin {
         return cityService;
     }
 
+    public static PlayerLeaseService playerLeaseService() { return playerLeaseService; }
+    public static UnclaimedLeaseService unclaimedLeaseService() { return unclaimedLeaseService; }
+
     private void recordPlayerMapVisit(Player player, Vector3i chunk) {
         if (playerMapVisitStore == null || player == null || chunk == null) return;
         try {
@@ -355,7 +392,7 @@ class LandClaimRuntime extends Plugin {
         float delaySeconds = secondsUntilNextFullHour();
         nextRenewZoneCheckMs = System.currentTimeMillis() + Math.round(delaySeconds * 1000f);
         renewZoneTimer = new Timer(1f, 1f, -1, () -> {
-            if (renewZoneResetService == null) {
+            if (renewZoneResetService == null || !Boolean.TRUE.equals(s.enableRenewZones)) {
                 return;
             }
             long nowMs = System.currentTimeMillis();
@@ -581,6 +618,15 @@ class LandClaimRuntime extends Plugin {
             CityRentService.RentRunResult result = cityRentService.bill(nextCityRentBillingDate);
             logger().info("City rent billing checked " + result.checked() + " leaseholds, paid=" + result.paid()
                     + ", evicted=" + result.evicted() + ", warned=" + result.warned());
+            PlayerLeaseRentService.RentRunResult playerResult = playerLeaseRentService.bill(nextCityRentBillingDate);
+            logger().info("Player rent billing checked " + playerResult.checked() + " leaseholds, paid="
+                    + playerResult.paid() + ", evicted=" + playerResult.evicted() + ", purchased="
+                    + playerResult.purchased());
+            UnclaimedLeaseRentService.RentRunResult unclaimedResult = unclaimedLeaseRentService
+                    .bill(nextCityRentBillingDate);
+            logger().info("Unclaimed rent billing checked " + unclaimedResult.checked() + " leaseholds, paid="
+                    + unclaimedResult.paid() + ", revoked=" + unclaimedResult.revoked() + ", purchased="
+                    + unclaimedResult.purchased());
             nextCityRentBillingDate = current.toLocalDate().plusDays(1);
         });
         cityRentTimer.start();
@@ -668,6 +714,8 @@ class LandClaimRuntime extends Plugin {
     public void ensureDefaultPermissionFiles() {
         String[] files = {
                 "ozlc-owner.json",
+                "ozlc-landlord.json",
+                "ozlc-tenant.json",
                 "ozlc-friend.json",
                 "ozlc-guest.json",
                 "ozlc-resident.json",

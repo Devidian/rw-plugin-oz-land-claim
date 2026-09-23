@@ -49,6 +49,7 @@
     "admin": {
       "cleanup": {
         "blocked": "Cleanup blocked because another owner has an active claim in chunk column PH_CHUNK_POS.",
+        "workflow": "The automatic cleanup workflow settles placed property first. The area is deleted and chunks are reset only after that succeeds.",
         "special": {
           "area": {
             "success": "Cleaned special area PH_TARGET and reset PH_RESET_COUNT chunks."
@@ -271,7 +272,7 @@
         "insufficient": {
           "funds": "Your funds are insufficient for this purchase."
         },
-        "limit": "Claiming more areas exceeds your claim limit of PH_MAX_CLAIMS!",
+        "limit": "Claiming more areas exceeds your claim limit of PH_MAX_CLAIMS. Missing licences: PH_MISSING.",
         "max": {
           "reached": "Current claim limit reached!"
         },
@@ -470,6 +471,7 @@
       }
     },
     "menu": {
+      "renew": { "management": "Manage renew zones" },
       "admin": {
         "$value": "Administration",
         "cleanup": "Property management",
@@ -497,6 +499,32 @@
           "buy": "Buy listed area",
           "list": "List area for sale",
           "withdraw": "Withdraw sale listing"
+        },
+        "lease": {
+          "offer": "Offer area for rent",
+          "withdraw": "Withdraw rental offer",
+          "rent": "Rent this area",
+          "rent-unclaimed": "Rent this area",
+          "price": "Rent-to-own price",
+          "daily": "Daily rent",
+          "cancel": "Cancel rental agreement",
+          "cancel-player": "Cancel the rental agreement for PH_AREA_NAME? The property will return to the landlord. Rent already paid will not be refunded.",
+          "cancel-world": "Cancel the rental agreement for PH_AREA_NAME? The property will return to the world. Rent already paid will not be refunded.",
+          "terminate": "Terminate inactive rental agreement",
+          "terminate-confirm": "Terminate the rental agreement for PH_AREA_NAME? The tenant has not been online for at least seven days. Rent already paid will not be refunded.",
+          "ancillary": "Daily ancillary costs: PH_PRICE",
+          "confirm-player": "Daily rent: PH_RENT PH_CURRENCY\\nRent-to-own: PH_PURCHASE\\nPH_PURCHASE_PRICE",
+          "confirm-unclaimed": "Purchase price: PH_PRICE\nDaily rent: PH_RENT\nDaily ancillary costs: PH_ANCILLARY\nDays until ownership: PH_DAYS",
+          "purchase-yes": "Yes",
+          "purchase-no": "No",
+          "purchase-price": "Rent-to-own price: PH_PRICE PH_CURRENCY",
+  "purchase": "Allow rent-to-own?",
+  "status": "Rental status / settle balance",
+  "status.rent-only": "Rental status",
+  "status.rent-only.player": "Daily rent: PH_DAILY PH_CURRENCY",
+  "status.player": "Remaining balance: PH_REMAINING PH_CURRENCY\nDaily rent: PH_DAILY PH_CURRENCY\nDays until ownership: PH_DAYS\nConfirm to buy this property immediately.",
+  "status.world": "Remaining balance to the world: PH_REMAINING PH_CURRENCY\nDaily rent: PH_DAILY PH_CURRENCY\nDays until ownership: PH_DAYS\nConfirm to buy this property immediately.",
+  "purchased": "Balance settled. You now own this property."
         },
         "split": "Split area"
       },
@@ -573,6 +601,14 @@
     },
     "renew": {
       "zone": {
+        "management": {
+          "title": "Renew-zone management", "subtitle": "Configure and trigger all renaturation zones.",
+          "legend": "✎ rename, ◷ change interval, ▶ renew now.", "tab": "Renew zones", "enabled": "Automatic renewal enabled",
+          "all": { "interval": "Set all intervals", "reset": "Renew all now" },
+          "th": { "area": "Area", "interval": "Hours", "next": "Next renewal", "actions": "Actions" },
+          "empty": "No renew zones configured.", "missing": "Missing area", "rename": "Rename renew zone", "interval": "Renew interval (hours)",
+          "confirm": { "title": "Confirm renewal", "one": "Renew this zone now?", "all": "Renew every configured zone now?", "interval": "Apply this interval to every configured renew zone?" }
+        },
         "config": {
           "invalid": {
             "interval": "Please enter a positive whole-number interval in hours."
@@ -585,6 +621,30 @@
       }
     },
     "setting": {
+      "discord.channelid.cleanupevent": {
+        "label": "Discord cleanup event log",
+        "desc": "Discord channel ID for automatic claim-cleanup events; 0 disables logging."
+      },
+      "rentalpurchase": {
+        "label": "Rental purchase",
+        "desc": "Economy-mode rentals for player-owned and unclaimed areas."
+      },
+      "enableplayerleaseholds": {
+        "label": "Enable player rentals",
+        "desc": "Allows player-owned areas to be offered as rentals in LAND_PRICING mode."
+      },
+      "enableunclaimedleaseholds": {
+        "label": "Enable world rentals",
+        "desc": "Shows the rent option for unclaimed areas in LAND_PRICING mode."
+      },
+      "unclaimedleasedailyrent": {
+        "label": "World rental daily rent",
+        "desc": "Daily rent credited against the world-rental purchase price."
+      },
+      "unclaimedleaseancillarycost": {
+        "label": "World rental ancillary cost",
+        "desc": "Daily additional cost transferred to the world account."
+      },
       "exposeplayermap": { "label": "Expose player map", "desc": "Allows Manager read access to the player map." },
       "propertyclearance": { "label": "Property clearance", "desc": "Optional owner-controlled disposal and dismantling of placed property." },
       "enablepropertyclearance": { "label": "Enable property clearance", "desc": "Shows the property-clearance action in zone settings. Disabled by default." },
@@ -894,6 +954,7 @@
       },
       "btn": {
         "cancel": "Cancel",
+        "confirm": "Confirm",
         "close": "Close",
         "expand": {
           "paid": "Paid expansion"
@@ -1022,6 +1083,8 @@
         "exiled": "Exiled",
         "friend": "Friend",
         "guest": "Guest",
+        "landlord": "Landlord",
+        "tenant": "Tenant",
         "owner": "Owner",
         "prisoner": "Prisoner",
         "pvp": "PvP Area",

@@ -8,6 +8,8 @@ import de.omegazirkel.risingworld.landclaim.PropertyClearanceService;
 import de.omegazirkel.risingworld.landclaim.db.ClaimSaleListingService;
 import de.omegazirkel.risingworld.landclaim.db.ExtraClaimCapacityService;
 import de.omegazirkel.risingworld.landclaim.db.RenewZoneConfigService;
+import de.omegazirkel.risingworld.landclaim.db.PlayerLeaseService;
+import de.omegazirkel.risingworld.landclaim.db.UnclaimedLeaseService;
 import de.omegazirkel.risingworld.landclaim.db.LandPriceService;
 import de.omegazirkel.risingworld.landclaim.db.CityService;
 import de.omegazirkel.risingworld.tools.FileChangeListener;
@@ -39,6 +41,9 @@ public final class LandClaim extends LandClaimRuntime implements Listener, FileC
     public static RenewZoneResetService renewZoneResetService() {
         return LandClaimRuntime.renewZoneResetService();
     }
+
+    public static PlayerLeaseService playerLeaseService() { return LandClaimRuntime.playerLeaseService(); }
+    public static UnclaimedLeaseService unclaimedLeaseService() { return LandClaimRuntime.unclaimedLeaseService(); }
     public static EconomyIntegration economyIntegration() { return LandClaimRuntime.economyIntegration(); }
     public static PropertyClearanceService propertyClearanceService() { return LandClaimRuntime.propertyClearanceService(); }
     public static LandPriceService landPriceService() { return LandClaimRuntime.landPriceService(); }

@@ -194,7 +194,7 @@ public class ChunkInfoController {
         Map<Integer, String> areaPermissions = currentArea.getAllPlayerPermissions();
         if (areaPermissions != null)
             for (Map.Entry<Integer, String> entry : areaPermissions.entrySet()) {
-                if (s.ownerAreaPermission.equals(entry.getValue())) {
+                if (s.ownerAreaPermission.equals(entry.getValue()) || s.landlordAreaPermission.equals(entry.getValue())) {
                     ownerName = Server.getLastKnownPlayerName(entry.getKey());
                     break;
                 }
@@ -221,7 +221,23 @@ public class ChunkInfoController {
     private boolean isOwner() {
         Area currentArea = player.getCurrentArea();
         String areaPermission = currentArea == null ? null : currentArea.getPlayerPermission(player);
-        return areaPermission != null && areaPermission.equals(s.ownerAreaPermission);
+        if (areaPermission == null || currentArea == null) {
+            return false;
+        }
+        if (areaPermission.equals(s.ownerAreaPermission) || areaPermission.equals(s.landlordAreaPermission)) {
+            return true;
+        }
+        if (!areaPermission.equals(s.tenantAreaPermission)) {
+            return false;
+        }
+        return LandClaim.playerLeaseService() != null
+                && LandClaim.playerLeaseService().find(currentArea.getID())
+                        .map(lease -> lease.occupied() && lease.tenantDbId() == player.getDbID())
+                        .orElse(false)
+                || LandClaim.unclaimedLeaseService() != null
+                        && LandClaim.unclaimedLeaseService().find(currentArea.getID())
+                                .map(lease -> lease.tenantDbId() == player.getDbID())
+                                .orElse(false);
     }
 
     private ClaimSaleListing activeSaleListing() {

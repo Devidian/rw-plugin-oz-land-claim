@@ -79,6 +79,12 @@ public class PlayerPermissionRow {
             TableCell cellOwner = new TableCell(ownerLabel, 20);
             return new TableRow(Arrays.asList(cellName, cellUID, cellStatus, cellOwner));
         }
+        if (currentPermission.equals(s.landlordAreaPermission) || currentPermission.equals(s.tenantAreaPermission)) {
+            UILabel fixedLabel = new UILabel(t().get(currentPermission.equals(s.landlordAreaPermission)
+                    ? "tc.ui.permission.landlord" : "tc.ui.permission.tenant", forPlayer));
+            TableCell cellFixed = new TableCell(fixedLabel, 20);
+            return new TableRow(Arrays.asList(cellName, cellUID, cellStatus, cellFixed));
+        }
 
         // List<DropdownOption> options = List.of(
         // // new DropdownOption(s.ownerAreaPermission,

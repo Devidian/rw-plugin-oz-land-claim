@@ -114,6 +114,20 @@ public class RenewZoneConfigService {
         }
     }
 
+    public int updateAllIntervals(int intervalHours) {
+        int normalizedIntervalHours = Math.max(1, intervalHours);
+        String sql = "UPDATE " + TABLE + " SET interval_hours = ?, updated_at = ? WHERE world = ?;";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, normalizedIntervalHours);
+            statement.setLong(2, System.currentTimeMillis());
+            statement.setString(3, world);
+            return statement.executeUpdate();
+        } catch (SQLException ex) {
+            LandClaim.logger().error("Could not update renew zone intervals: " + ex.getMessage());
+            return 0;
+        }
+    }
+
     public boolean delete(long areaId) {
         String sql = "DELETE FROM " + TABLE + " WHERE world = ? AND area_id = ?;";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {

@@ -12,6 +12,7 @@ import de.omegazirkel.risingworld.landclaim.db.LandClaimChunkService;
 import de.omegazirkel.risingworld.landclaim.db.entities.LandClaimChunkInfo;
 import de.omegazirkel.risingworld.landclaim.db.CityRecord;
 import de.omegazirkel.risingworld.landclaim.db.LeaseholdRecord;
+import de.omegazirkel.risingworld.landclaim.db.PlayerLeaseRecord;
 import de.omegazirkel.risingworld.tools.AreaUtils;
 import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.OZLogger;
@@ -140,11 +141,14 @@ public class ChunkClaimUtil {
     }
 
     public long getPlayerNextClaimTime(Player p, Integer chunkCount) {
-        Integer baseTimeSeconds = s.minutesToClaim * 60;
-        long claimCount = getPlayerClaimCount(p);
+        return claimTimeForClaimRange(s.minutesToClaim * 60, s.claimTimeScaleFactor, getPlayerClaimCount(p), chunkCount);
+    }
+
+    static long claimTimeForClaimRange(int baseTimeSeconds, double scaleFactor, long claimCountBeforeRange,
+            int chunkCount) {
         long timeToClaim = 0;
         for (int i = 0; i < chunkCount; i++) {
-            timeToClaim += (long) (baseTimeSeconds * Math.pow(s.claimTimeScaleFactor, claimCount + i));
+            timeToClaim += (long) (baseTimeSeconds * Math.pow(scaleFactor, claimCountBeforeRange + i));
         }
         return timeToClaim;
     }
@@ -459,6 +463,39 @@ public class ChunkClaimUtil {
         return claimArea(p, area, s.defaultAreaPermission, p.getDbID());
     }
 
+    /** Creates a world-rented claim without the normal up-front land purchase. */
+    public Area claimUnclaimedRental(Player player, Area area) {
+        if (!canPlayerClaimArea(player, area, message -> player.sendTextMessage(message))) return null;
+        try {
+            long now = System.currentTimeMillis();
+            area.setNameVisible(true);
+            area.setDefaultPermission(s.defaultAreaPermission);
+            area.setName("Rented by " + player.getName());
+            Server.addArea(area, true);
+            area.setAttribute("ownerUID", player.getUID());
+            area.setAttribute("ownerDBID", player.getDbID());
+            area.setPlayerPermission(player.getDbID(), s.tenantAreaPermission);
+            service.saveChunkClaim(player, area.getStartChunkPosition(), now, area.getID());
+            if (LandClaim.landPriceService() != null) LandClaim.landPriceService().refresh();
+            return area;
+        } catch (RuntimeException ex) {
+            logger().error("Could not create unclaimed rental: " + ex.getMessage());
+            return null;
+        }
+    }
+
+    /** Removes a world-rented area after a failed daily settlement. */
+    public boolean revokeUnclaimedRental(Area area) {
+        if (area == null) return false;
+        Map<Integer, String> permissions = area.getAllPlayerPermissions();
+        if (permissions != null) for (Integer dbId : List.copyOf(permissions.keySet())) area.removePlayerPermission(dbId);
+        List<LandClaimChunkInfo> claims = service.getChunkInfoListByArea(area.getID());
+        Server.removeArea(area);
+        for (LandClaimChunkInfo claim : claims) service.removeChunkClaim(claim.playerUID, claim.playerDBID, claim.chunkPos);
+        if (LandClaim.landPriceService() != null) LandClaim.landPriceService().refresh();
+        return true;
+    }
+
     public Area claimArea(Player p, Area area, String defaultPermission, Integer ownerDBId) {
         if (!canPlayerClaimArea(p, area, (t) -> p.sendTextMessage(t))) {
             return null;
@@ -624,6 +661,10 @@ public class ChunkClaimUtil {
     public Area expandClaim(Area area, Direction dir, Player p) {
         if (area == null)
             return null;
+        if (isOccupiedPlayerLeasehold(area)) {
+            p.sendTextMessage("Occupied rental areas cannot be expanded.");
+            return null;
+        }
         if (!ClaimModePolicy.mayPlayerResizeOrRelease(p.isAdmin())) {
             p.sendTextMessage(t().get("tc.claim.error.mode.resize", p));
             return null;
@@ -789,7 +830,8 @@ public class ChunkClaimUtil {
                 && !(p.isAdmin() && !administrativeClaimExpansion
                         && (s.adminIgnoreLimit || ClaimModePolicy.adminBypassesClaimLimit(true)))) {
             p.sendTextMessage(t().get("tc.claim.error.limit", p)
-                    .replace("PH_MAX_CLAIMS", ownerMaxClaims + ""));
+                    .replace("PH_MAX_CLAIMS", ownerMaxClaims + "")
+                    .replace("PH_MISSING", String.valueOf(currentClaimCount + extendedChunksCount - ownerMaxClaims)));
             return null;
         }
 
@@ -817,11 +859,18 @@ public class ChunkClaimUtil {
             }
         }
 
-        // determine if in-chunk-time fits
-        long timeToClaimNeeded = getPlayerNextClaimTime(p, extendedChunksCount);
+        // Claim time for an expansion is the complete target area, starting at the
+        // claim index before this area existed. Time already spent in the existing
+        // area therefore remains creditable towards the newly required total.
+        long claimCountBeforeArea = Math.max(0L, (long) ownerClaimCount - chunks.size());
+        long timeToClaimNeeded = claimTimeForClaimRange(s.minutesToClaim * 60, s.claimTimeScaleFactor,
+                claimCountBeforeArea, chunkInExtendedArea.size());
         long sumTimeInChunks = 0;
-        for (Vector3i chunk : newlyClaimedChunks) {
+        for (Vector3i chunk : chunkInExtendedArea) {
             sumTimeInChunks += playerTimeInChunkInSeconds(p, chunk);
+        }
+        if (chunkInExtendedArea.contains(p.getChunkPosition())) {
+            sumTimeInChunks += currentTimeinChunkMs(p, p.getChunkPosition()) / 1000L;
         }
 
         if (ClaimModePolicy.usesClaimTime() && sumTimeInChunks < timeToClaimNeeded
@@ -840,7 +889,7 @@ public class ChunkClaimUtil {
                 p.sendTextMessage(t().get("tc.claim.error.wallet.required", p));
                 return null;
             }
-            long expansionPrice = landExpansionPrice(area, dir, claimOwnerUid);
+            long expansionPrice = landExpansionPriceForOwner(area, dir, claimOwnerUid);
             String correlation = "land-expand:" + UUID.randomUUID();
             topologyCorrelation = correlation;
             LandClaim.cityService().beginEconomyOperation(correlation, "LAND_EXPANSION", area.getID(), p.getDbID(),
@@ -859,7 +908,7 @@ public class ChunkClaimUtil {
             LandClaim.cityService().updateEconomyOperation(correlation, "PAID", area.getID(), "");
         }
         if (ClaimModePolicy.current() == ClaimMode.CITY && defaultPermission.equals(s.defaultAreaPermission)) {
-            long expansionPrice = cityPrivateExpansionPrice(area, dir, claimOwnerUid);
+            long expansionPrice = cityPrivateExpansionPriceForOwner(area, dir, claimOwnerUid);
             String correlation = "city-private-expand:" + UUID.randomUUID();
             topologyCorrelation = correlation;
             LandClaim.cityService().beginEconomyOperation(correlation, "CITY_PRIVATE_EXPANSION", area.getID(),
@@ -945,10 +994,15 @@ public class ChunkClaimUtil {
 
     public long landExpansionPrice(Area area, Direction direction) {
         ClaimOwner owner = claimOwner(area);
-        return landExpansionPrice(area, direction, owner == null ? "" : owner.uid());
+        return landExpansionPriceForOwner(area, direction, owner == null ? "" : owner.uid());
     }
 
-    private long landExpansionPrice(Area area, Direction direction, String ownerUid) {
+    /** Preview for the exact claimant that will execute the expansion. */
+    public long landExpansionPrice(Area area, Direction direction, String ownerUid) {
+        return landExpansionPriceForOwner(area, direction, ownerUid == null ? "" : ownerUid);
+    }
+
+    private long landExpansionPriceForOwner(Area area, Direction direction, String ownerUid) {
         if (area == null || direction == null || LandClaim.landPriceService() == null) return 0L;
         Vector3i start = area.getStartChunkPosition();
         Vector3i end = area.getEndChunkPosition();
@@ -985,10 +1039,15 @@ public class ChunkClaimUtil {
     /** Price for the one-cell perimeter added to a city private claim. */
     public long cityPrivateExpansionPrice(Area area, Direction direction) {
         ClaimOwner owner = claimOwner(area);
-        return cityPrivateExpansionPrice(area, direction, owner == null ? "" : owner.uid());
+        return cityPrivateExpansionPriceForOwner(area, direction, owner == null ? "" : owner.uid());
     }
 
-    private long cityPrivateExpansionPrice(Area area, Direction direction, String ownerUid) {
+    /** Preview for the exact claimant that will execute the expansion. */
+    public long cityPrivateExpansionPrice(Area area, Direction direction, String ownerUid) {
+        return cityPrivateExpansionPriceForOwner(area, direction, ownerUid == null ? "" : ownerUid);
+    }
+
+    private long cityPrivateExpansionPriceForOwner(Area area, Direction direction, String ownerUid) {
         if (area == null || direction == null || LandClaim.cityService() == null) return 0L;
         CityRecord city = LandClaim.cityService().containingCity(area.getStartChunkPosition()).orElse(null);
         if (city == null) return 0L;
@@ -1135,6 +1194,10 @@ public class ChunkClaimUtil {
             p.sendTextMessage(t().get("tc.claim.error.mode.resize", p));
             return false;
         }
+        if (isOccupiedPlayerLeasehold(existingArea)) {
+            p.sendTextMessage("Occupied rental areas cannot be split.");
+            return false;
+        }
         LeaseholdRecord lease = LandClaim.cityService() == null || existingArea == null ? null
                 : LandClaim.cityService().findLeasehold(existingArea.getID()).orElse(null);
         if (lease != null && lease.occupied()) {
@@ -1183,5 +1246,10 @@ public class ChunkClaimUtil {
         // existingArea.destroy();
         // note: we do not have to touch any db entry as the chunks remain claimed
         return true;
+    }
+
+    private boolean isOccupiedPlayerLeasehold(Area area) {
+        return area != null && LandClaim.playerLeaseService() != null
+                && LandClaim.playerLeaseService().find(area.getID()).map(PlayerLeaseRecord::occupied).orElse(false);
     }
 }

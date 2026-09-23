@@ -108,7 +108,9 @@ public class ClaimCleanupService {
     }
 
     public CleanupResult cleanupOwner(String ownerUid) {
-        return removeClaims(claimService.getClaimedChunkInfoListByPlayer(ownerUid), true);
+        List<LandClaimChunkInfo> claims = claimService.getClaimedChunkInfoListByPlayer(ownerUid);
+        CleanupResult prepared = preparePropertyCleanup(claims);
+        return prepared.success() ? removeClaims(claims, true) : prepared;
     }
 
     public CleanupResult deleteArea(long areaId) {
@@ -116,7 +118,9 @@ public class ClaimCleanupService {
     }
 
     public CleanupResult cleanupArea(long areaId) {
-        return removeClaims(claimService.getChunkInfoListByArea(areaId), true);
+        List<LandClaimChunkInfo> claims = claimService.getChunkInfoListByArea(areaId);
+        CleanupResult prepared = preparePropertyCleanup(claims);
+        return prepared.success() ? removeClaims(claims, true) : prepared;
     }
 
     public CleanupResult deleteSpecialArea(long areaId) {
@@ -188,6 +192,23 @@ public class ClaimCleanupService {
             }
         }
         return removeClaims(claims, true);
+    }
+
+    /** Uses the same lossless pre-reset routine as automatic inactive-owner cleanup. */
+    private CleanupResult preparePropertyCleanup(List<LandClaimChunkInfo> claims) {
+        if (propertyClearance == null) return CleanupResult.ok(0, 0);
+        Set<Long> processedAreas = new HashSet<>();
+        for (LandClaimChunkInfo claim : claims) {
+            if (claim.areaID <= 0 || !processedAreas.add(claim.areaID)) continue;
+            Area area = Server.getArea(claim.areaID);
+            if (area == null) continue;
+            int ownerDbId = claim.playerDBID == null ? 0 : claim.playerDBID;
+            String ownerName = ownerDbId > 0 ? Server.getLastKnownPlayerName(ownerDbId) : "Player";
+            PropertyClearanceService.Result result = propertyClearance.cleanupInactiveOwner(area, ownerDbId,
+                    ownerName == null ? "Player" : ownerName);
+            if (!result.success()) return CleanupResult.blocked(claim.chunkPos);
+        }
+        return CleanupResult.ok(0, 0);
     }
 
     public boolean teleportToArea(Player player, long areaId) {

@@ -4,6 +4,8 @@ import de.omegazirkel.risingworld.LandClaim;
 import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.ui.AdvancedButtonFactory;
 import de.omegazirkel.risingworld.tools.ui.AdvancedButton;
+import de.omegazirkel.risingworld.tools.ui.SwitchButton;
+import net.risingworld.api.Timer;
 import net.risingworld.api.callbacks.Callback;
 import net.risingworld.api.objects.Player;
 import net.risingworld.api.ui.UIElement;
@@ -14,6 +16,7 @@ import net.risingworld.api.ui.style.Pivot;
 import net.risingworld.api.ui.style.TextAnchor;
 
 public class UIDialogFactory {
+    public record RentalOfferInput(String purchasePrice, String dailyRent, boolean rentToOwn) { }
 
     protected static I18n t = I18n.getInstance(LandClaim.name);
 
@@ -88,6 +91,28 @@ public class UIDialogFactory {
         return Math.max(FOOTER_BUTTON_WIDTH, Math.min(260, 28 + characters * 9));
     }
 
+    /**
+     * Removing the element alone leaves the modal input target active until the
+     * next Escape press. Clear it before any callback reopens a radial menu.
+     */
+    private static void closeModal(Player player, UIElement window, Runnable onClosed) {
+        closeModal(player, window, true, onClosed);
+    }
+
+    private static void closeModal(Player player, UIElement window, boolean closeAllActiveUiWindows,
+            Runnable onClosed) {
+        player.removeUIElement(window);
+        if (!closeAllActiveUiWindows) {
+            onClosed.run();
+            return;
+        }
+        player.closeAllActiveUIWindows();
+        // The engine applies closeAllActiveUIWindows asynchronously. Wait for a
+        // complete UI cycle before a callback adds its replacement modal/menu.
+        Timer reopenTimer = new Timer(0.5f, 0f, 1, onClosed);
+        reopenTimer.start();
+    }
+
     public static UIElement getConfirmDangerDialog(
             Player player,
             String title,
@@ -124,8 +149,7 @@ public class UIDialogFactory {
         body.addChild(lbl);
 
         AdvancedButton btnOk = AdvancedButtonFactory.danger(confirmLabel, event -> {
-            player.removeUIElement(window);
-            onOk.onCall(true);
+            closeModal(player, window, () -> onOk.onCall(true));
         });
 
         btnOk.setPivot(Pivot.LowerRight);
@@ -134,8 +158,7 @@ public class UIDialogFactory {
         window.addChild(btnOk);
 
         AdvancedButton btnCancel = AdvancedButtonFactory.ok(t.get("tc.ui.btn.no", player), event -> {
-            player.removeUIElement(window);
-            onCancel.onCall(player);
+            closeModal(player, window, () -> onCancel.onCall(player));
         });
 
         btnCancel.setPivot(Pivot.LowerLeft);
@@ -143,6 +166,68 @@ public class UIDialogFactory {
         styleFooterButton(btnCancel);
         window.addChild(btnCancel);
 
+        return window;
+    }
+
+    /**
+     * Builds a confirmation dialog from already rendered text. This is used for
+     * dynamic messages (names, calculated amounts and process descriptions),
+     * which must not be looked up as translation keys again.
+     */
+    public static UIElement getConfirmDangerDialogText(
+            Player player,
+            String title,
+            String message,
+            int bodyHeight,
+            Callback<Boolean> onOk,
+            Callback<Player> onCancel) {
+        return getConfirmDangerDialogText(player, title, message, bodyHeight, onOk, onCancel, true);
+    }
+
+    /**
+     * A dialog opened on top of an existing overlay must remove only itself;
+     * closing all active UI windows would also remove that underlying overlay.
+     */
+    public static UIElement getConfirmDangerDialogText(
+            Player player,
+            String title,
+            String message,
+            int bodyHeight,
+            Callback<Boolean> onOk,
+            Callback<Player> onCancel,
+            boolean closeAllActiveUiWindows) {
+        int safeBodyHeight = Math.max(CONFIRM_BODY_HEIGHT, bodyHeight);
+        int height = CONFIRM_BODY_Y + safeBodyHeight + 66;
+        int footerY = height - 14;
+        UIElement window = getDialogWindow(CONFIRM_DIALOG_WIDTH, height);
+        addTitle(window, title, CONFIRM_TITLE_Y);
+        UIElement body = addBody(window, CONFIRM_BODY_Y, CONFIRM_BODY_WIDTH, safeBodyHeight);
+        UILabel label = new UILabel(message == null ? "" : message);
+        label.setRichTextEnabled(true);
+        label.setTextWrap(true);
+        label.setFontSize(16);
+        label.setTextAlign(TextAnchor.UpperLeft);
+        label.setPivot(Pivot.UpperLeft);
+        label.setPosition(16, 12, false);
+        label.setSize(CONFIRM_BODY_WIDTH - 32, safeBodyHeight - 20, false);
+        body.addChild(label);
+
+        String confirmLabel = t.get("tc.ui.btn.yes", player);
+        AdvancedButton ok = AdvancedButtonFactory.danger(confirmLabel, event -> {
+            closeModal(player, window, closeAllActiveUiWindows, () -> onOk.onCall(true));
+        });
+        ok.setPivot(Pivot.LowerRight);
+        ok.setPosition(CONFIRM_DIALOG_WIDTH - BUTTON_OFFSET_X, footerY, false);
+        styleFooterButton(ok, confirmButtonWidth(confirmLabel));
+        window.addChild(ok);
+
+        AdvancedButton cancel = AdvancedButtonFactory.ok(t.get("tc.ui.btn.no", player), event -> {
+            closeModal(player, window, closeAllActiveUiWindows, () -> onCancel.onCall(player));
+        });
+        cancel.setPivot(Pivot.LowerLeft);
+        cancel.setPosition(BUTTON_OFFSET_X, footerY, false);
+        styleFooterButton(cancel);
+        window.addChild(cancel);
         return window;
     }
 
@@ -172,8 +257,7 @@ public class UIDialogFactory {
         body.addChild(lbl);
 
         AdvancedButton btnOk = AdvancedButtonFactory.ok(t.get("tc.ui.btn.yes", player), event -> {
-            player.removeUIElement(window);
-            onOk.onCall(true);
+            closeModal(player, window, () -> onOk.onCall(true));
         });
 
         btnOk.setPivot(Pivot.LowerRight);
@@ -182,8 +266,7 @@ public class UIDialogFactory {
         window.addChild(btnOk);
 
         AdvancedButton btnCancel = AdvancedButtonFactory.cancel(t.get("tc.ui.btn.no", player), event -> {
-            player.removeUIElement(window);
-            onCancel.onCall(player);
+            closeModal(player, window, () -> onCancel.onCall(player));
         });
 
         btnCancel.setPivot(Pivot.LowerLeft);
@@ -208,8 +291,9 @@ public class UIDialogFactory {
         label.setSize(CONFIRM_BODY_WIDTH - 32, CONFIRM_BODY_HEIGHT - 20, false);
         body.addChild(label);
         AdvancedButton close = AdvancedButtonFactory.danger(t.get("tc.ui.btn.ok", player), event -> {
-            player.removeUIElement(window);
-            if (onClose != null) onClose.onCall(player);
+            closeModal(player, window, () -> {
+                if (onClose != null) onClose.onCall(player);
+            });
         });
         close.setPivot(Pivot.LowerRight);
         close.setPosition(CONFIRM_DIALOG_WIDTH - BUTTON_OFFSET_X, CONFIRM_FOOTER_Y, false);
@@ -255,8 +339,7 @@ public class UIDialogFactory {
 
         AdvancedButton btnOk = AdvancedButtonFactory.ok(t.get("tc.ui.btn.ok", player), event -> {
             txt.getCurrentText(player, (String text) -> {
-                player.removeUIElement(window);
-                onOk.onCall(text.trim());
+                closeModal(player, window, () -> onOk.onCall(text.trim()));
             });
         });
 
@@ -266,8 +349,7 @@ public class UIDialogFactory {
         window.addChild(btnOk);
 
         AdvancedButton btnCancel = AdvancedButtonFactory.cancel(t.get("tc.ui.btn.cancel", player), event -> {
-            player.removeUIElement(window);
-            onCancel.onCall(player);
+            closeModal(player, window, () -> onCancel.onCall(player));
         });
 
         btnCancel.setPivot(Pivot.LowerLeft);
@@ -276,5 +358,44 @@ public class UIDialogFactory {
         window.addChild(btnCancel);
 
         return window;
+    }
+
+    /** One-step configuration dialog for a player rental offer. */
+    public static UIElement getRentalOfferForm(Player player, String title, String priceLabel, String rentLabel,
+            String purchaseLabel, Callback<RentalOfferInput> onOk, Callback<Player> onCancel) {
+        int width = TEXT_INPUT_DIALOG_WIDTH;
+        UIElement window = getDialogWindow(width, 330);
+        addTitle(window, title, TEXT_INPUT_TITLE_Y);
+        UIElement body = addBody(window, TEXT_INPUT_BODY_Y, TEXT_INPUT_BODY_WIDTH, 196);
+        UITextField price = input(body, priceLabel, 12, "0");
+        UITextField rent = input(body, rentLabel, 76, "0");
+        UILabel purchase = new UILabel(purchaseLabel);
+        purchase.setPivot(Pivot.UpperLeft); purchase.setPosition(16, 146, false); purchase.setFontSize(16);
+        body.addChild(purchase);
+        final boolean[] rentToOwn = { true };
+        SwitchButton enabled = new SwitchButton(true, value -> rentToOwn[0] = Boolean.TRUE.equals(value));
+        enabled.setPivot(Pivot.UpperLeft); enabled.setPosition(300, 144, false); enabled.setSize(72, 28, false);
+        body.addChild(enabled);
+        AdvancedButton confirm = AdvancedButtonFactory.ok(t.get("tc.ui.btn.confirm", player), event ->
+                price.getCurrentText(player, priceValue -> rent.getCurrentText(player, rentValue -> {
+                    closeModal(player, window,
+                            () -> onOk.onCall(new RentalOfferInput(priceValue.trim(), rentValue.trim(), rentToOwn[0])));
+                })));
+        confirm.setPivot(Pivot.LowerRight); confirm.setPosition(width - BUTTON_OFFSET_X, 316, false);
+        styleFooterButton(confirm); window.addChild(confirm);
+        AdvancedButton cancel = AdvancedButtonFactory.cancel(t.get("tc.ui.btn.cancel", player), event -> {
+            closeModal(player, window, () -> onCancel.onCall(player));
+        });
+        cancel.setPivot(Pivot.LowerLeft); cancel.setPosition(BUTTON_OFFSET_X, 316, false);
+        styleFooterButton(cancel); window.addChild(cancel);
+        return window;
+    }
+
+    private static UITextField input(UIElement body, String label, int y, String value) {
+        UILabel caption = new UILabel(label); caption.setPivot(Pivot.UpperLeft); caption.setPosition(16, y, false);
+        caption.setFontSize(15); body.addChild(caption);
+        UITextField field = new UITextField(); field.setText(value); field.setPivot(Pivot.UpperLeft);
+        field.setPosition(200, y - 6, false); field.setSize(190, 38, false); body.addChild(field);
+        return field;
     }
 }

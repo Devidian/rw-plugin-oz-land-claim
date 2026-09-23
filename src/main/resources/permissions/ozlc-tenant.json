@@ -1,0 +1,6 @@
+{
+  "area": { "canenter": true, "canleave": true },
+  "general": { "destroyitems": true, "dropitems": true, "pickupitems": true, "placeitems": true, "useallchests": true, "useallfurnaces": true, "usealllights": true, "useallobjects": true, "useallvehicles": true },
+  "world": { "destroyconstructions": true, "destroyobjects": true, "destroyterrain": true, "destroyvegetations": true, "editconstructions": true, "editobjects": true, "editvegetations": true, "placeconstructions": true, "placeobjects": true, "placeterrain": true, "placevegetations": true },
+  "forbidden": { "items": [] }
+}

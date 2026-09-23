@@ -2,6 +2,16 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.20.0] - 2026-09-23 | Renew management and rental purchase
+
+- feat: add administration of renew zones, including individual and bulk
+  actions, plus a scheduler enable gate that preserves due timestamps.
+- feat: add persistent player and unclaimed-claim rental purchase, daily Wallet
+  settlement, tenant and landlord permission groups, and safe eviction after a
+  failed payment.
+- change: route administrative claim removal through the automatic-cleanup
+  safety path and require OZ Tools 0.25.0 for the player-transfer capability.
+
 ## [0.19.5] - 2026-09-19 | Automatic property-safe claim cleanup
 
 - change: automatic inactive-claim removal now clears unresolved hosts first, then returns resources by Mail or recycles their value to the former owner or world treasury before removing the claim.

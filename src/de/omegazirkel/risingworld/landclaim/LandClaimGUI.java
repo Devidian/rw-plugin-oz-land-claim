@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.time.LocalDate;
 
@@ -14,6 +15,8 @@ import de.omegazirkel.risingworld.landclaim.db.RenewZoneConfig;
 import de.omegazirkel.risingworld.landclaim.db.CityRecord;
 import de.omegazirkel.risingworld.landclaim.db.LeaseholdRecord;
 import de.omegazirkel.risingworld.landclaim.db.LandPriceService;
+import de.omegazirkel.risingworld.landclaim.db.PlayerLeaseRecord;
+import de.omegazirkel.risingworld.landclaim.db.UnclaimedLeaseRecord;
 import de.omegazirkel.risingworld.landclaim.ui.AdminCleanupOverlay;
 import de.omegazirkel.risingworld.landclaim.ui.PropertyClearanceOverlay;
 import de.omegazirkel.risingworld.landclaim.ChunkClaimUtil.Direction;
@@ -23,6 +26,7 @@ import de.omegazirkel.risingworld.landclaim.ui.UIDialogFactory;
 import de.omegazirkel.risingworld.landclaim.ui.CityManagementOverlay;
 import de.omegazirkel.risingworld.landclaim.ui.LeaseholdManagementOverlay;
 import de.omegazirkel.risingworld.tools.I18n;
+import de.omegazirkel.risingworld.tools.PlayerDatabaseHelper;
 import de.omegazirkel.risingworld.tools.ui.AssetManager;
 import de.omegazirkel.risingworld.tools.ui.MenuItem;
 import de.omegazirkel.risingworld.tools.ui.PluginInfoStatusProviders;
@@ -104,6 +108,7 @@ public class LandClaimGUI {
         AssetManager.loadIconFromPlugin(p, "zone-sale-indicator");
         AssetManager.loadIconFromPlugin(p, "zone-city-core");
         AssetManager.loadIconFromPlugin(p, "zone-city-leasehold");
+        AssetManager.loadIconFromPlugin(p, "zone-rent-unclaimed");
 
         // Visibility menu
         AssetManager.loadIconFromPlugin(p, "menu-zone-visibility"); // menu icon
@@ -161,15 +166,9 @@ public class LandClaimGUI {
                                             area.getName() == null ? "Unnamed Area"
                                                     : area.getName()),
                             (Boolean v) -> {
-                                if (v) {
-                                    if (!chunkClaimUtil.splitClaim(area, p))
-                                        onCancel.onCall(p);
-                                    // if claim succeeds close menu
-                                    else {
-                                        p.hideRadialMenu(false);
-                                        Area3DUtils.updateAreaFramesForAllPlayers();
-                                    }
-                                }
+                                if (v && chunkClaimUtil.splitClaim(area, p))
+                                    Area3DUtils.updateAreaFramesForAllPlayers();
+                                onCancel.onCall(p);
                             }, onCancel);
 
                     p.addUIElement(confirmDialog, UITarget.Modal);
@@ -207,6 +206,7 @@ public class LandClaimGUI {
                                             .replace("PH_AREA_NAME", v)
                                             .replace("PH_OLD_NAME",
                                                     currentName != null ? currentName : "Unnamed Area"));
+                                    onCancel.onCall(p);
                                 }
                             }, onCancel);
 
@@ -230,6 +230,7 @@ public class LandClaimGUI {
                                     Area3DUtils.updateAreaFramesForAllPlayers();
                                     p.sendTextMessage(t.get("tc.dialog.area.release.success", p));
                                 }
+                                onCancel.onCall(p);
                             }, onCancel);
 
                     p.addUIElement(confirmDialog, UITarget.Modal);
@@ -310,6 +311,183 @@ public class LandClaimGUI {
                     p.addUIElement(confirmDialog, UITarget.Modal);
                     p.hideRadialMenu(false);
                 });
+    }
+
+    private MenuItem menuItemOfferAreaForRent(Player player, Area area, Callback<Player> onCancel) {
+        return new MenuItem("zone-sale", t.get("tc.menu.area.lease.offer", player), p -> {
+            UIElement form = UIDialogFactory.getRentalOfferForm(p, t.get("tc.menu.area.lease.offer", p),
+                    t.get("tc.menu.area.lease.price", p), t.get("tc.menu.area.lease.daily", p),
+                    t.get("tc.menu.area.lease.purchase", p), values -> {
+                        long purchasePrice = parseNonNegativeLong(values.purchasePrice());
+                        long dailyRent = parseNonNegativeLong(values.dailyRent());
+                        if (purchasePrice >= 0 && dailyRent >= 0)
+                            LandClaim.playerLeaseService().offer(area.getID(), p.getUID(), p.getDbID(),
+                                    purchasePrice, dailyRent, values.rentToOwn());
+                        onCancel.onCall(p);
+                    }, onCancel);
+            p.addUIElement(form, UITarget.Modal);
+            p.hideRadialMenu(false);
+        });
+    }
+
+    private MenuItem menuItemWithdrawAreaRent(Player player, Area area, Callback<Player> onCancel) {
+        return new MenuItem("zone-claim-delete", t.get("tc.menu.area.lease.withdraw", player), p -> {
+            LandClaim.playerLeaseService().withdrawOffer(area.getID());
+            onCancel.onCall(p);
+        });
+    }
+
+    private MenuItem menuItemCancelPlayerLease(Player player, Area area, Callback<Player> onCancel) {
+        return new MenuItem("zone-claim-delete", t.get("tc.menu.area.lease.cancel", player), p -> {
+            String message = t.get("tc.menu.area.lease.cancel-player", p)
+                    .replace("PH_AREA_NAME", areaName(area));
+            p.addUIElement(UIDialogFactory.getConfirmDangerDialogText(p,
+                    t.get("tc.menu.area.lease.cancel", p), message, 120, accepted -> {
+                        if (!accepted) {
+                            onCancel.onCall(p);
+                            return;
+                        }
+                        PlayerLeaseRecord current = LandClaim.playerLeaseService().find(area.getID()).orElse(null);
+                        if (current != null && current.occupied() && current.tenantDbId() == p.getDbID()
+                                && LandClaim.playerLeaseService().clearTenant(area.getID())) {
+                            PlayerLeasePermissionRestorer.restore(area, LandClaim.playerLeaseService(),
+                                    current.landlordDbId(), s);
+                            Area3DUtils.updateAreaFramesForAllPlayers();
+                        }
+                        onCancel.onCall(p);
+                    }, onCancel), UITarget.Modal);
+            p.hideRadialMenu(false);
+        });
+    }
+
+    private MenuItem menuItemCancelUnclaimedLease(Player player, Area area, Callback<Player> onCancel) {
+        return new MenuItem("zone-claim-delete", t.get("tc.menu.area.lease.cancel", player), p -> {
+            String message = t.get("tc.menu.area.lease.cancel-world", p)
+                    .replace("PH_AREA_NAME", areaName(area));
+            p.addUIElement(UIDialogFactory.getConfirmDangerDialogText(p,
+                    t.get("tc.menu.area.lease.cancel", p), message, 120, accepted -> {
+                        if (!accepted) {
+                            onCancel.onCall(p);
+                            return;
+                        }
+                        UnclaimedLeaseRecord current = LandClaim.unclaimedLeaseService().find(area.getID()).orElse(null);
+                        if (current != null && current.tenantDbId() == p.getDbID()
+                                && chunkClaimUtil.revokeUnclaimedRental(area)) {
+                            LandClaim.unclaimedLeaseService().remove(area.getID());
+                            Area3DUtils.updateAreaFramesForAllPlayers();
+                        }
+                        onCancel.onCall(p);
+                    }, onCancel), UITarget.Modal);
+            p.hideRadialMenu(false);
+        });
+    }
+
+    private MenuItem menuItemTerminateInactivePlayerLease(Player player, Area area, PlayerLeaseRecord lease,
+            Callback<Player> onCancel) {
+        return new MenuItem("zone-claim-delete", t.get("tc.menu.area.lease.terminate", player), p -> {
+            String message = t.get("tc.menu.area.lease.terminate-confirm", p)
+                    .replace("PH_AREA_NAME", areaName(area));
+            p.addUIElement(UIDialogFactory.getConfirmDangerDialogText(p,
+                    t.get("tc.menu.area.lease.terminate", p), message, 120, accepted -> {
+                        if (!accepted) {
+                            onCancel.onCall(p);
+                            return;
+                        }
+                        PlayerLeaseRecord current = LandClaim.playerLeaseService().find(area.getID()).orElse(null);
+                        if (current != null && current.occupied() && current.landlordDbId() == p.getDbID()
+                                && tenantInactiveForAtLeastSevenDays(current)
+                                && LandClaim.playerLeaseService().clearTenant(area.getID())) {
+                            PlayerLeasePermissionRestorer.restore(area, LandClaim.playerLeaseService(),
+                                    current.landlordDbId(), s);
+                            Area3DUtils.updateAreaFramesForAllPlayers();
+                        }
+                        onCancel.onCall(p);
+                    }, onCancel), UITarget.Modal);
+            p.hideRadialMenu(false);
+        });
+    }
+
+    private MenuItem menuItemRentArea(Player player, Area area, PlayerLeaseRecord offered,
+            Callback<Player> onCancel) {
+        return new MenuItem("zone-sale", t.get("tc.menu.area.lease.rent", player), p -> {
+            String purchasePrice = offered.purchaseAllowed()
+                    ? t.get("tc.menu.area.lease.purchase-price", p)
+                            .replace("PH_PRICE", String.valueOf(offered.purchasePrice()))
+                            .replace("PH_CURRENCY", defaultCurrency())
+                    : "";
+            String confirmation = t.get("tc.menu.area.lease.confirm-player", p)
+                    .replace("PH_RENT", String.valueOf(offered.dailyRent()))
+                    .replace("PH_CURRENCY", defaultCurrency())
+                    .replace("PH_PURCHASE_PRICE", purchasePrice)
+                    .replace("PH_PURCHASE", t.get(offered.purchaseAllowed()
+                            ? "tc.menu.area.lease.purchase-yes"
+                            : "tc.menu.area.lease.purchase-no", p));
+            UIElement confirm = UIDialogFactory.getConfirmDangerDialogText(p, t.get("tc.menu.area.lease.rent", p),
+                    confirmation, 130,
+                    accepted -> {
+                        if (!accepted) { onCancel.onCall(p); return; }
+                        PlayerLeaseRecord current = LandClaim.playerLeaseService().find(area.getID()).orElse(null);
+                        if (current == null || current.occupied() || current.landlordDbId() == p.getDbID()) {
+                            onCancel.onCall(p); return;
+                        }
+                        if (!LandClaim.playerLeaseService().assign(area.getID(), p.getUID(), p.getDbID(),
+                                LocalDate.now().toString())) {
+                            onCancel.onCall(p);
+                            return;
+                        }
+                        Map<Integer, String> originalPermissions = area.getAllPlayerPermissions() == null ? Map.of()
+                                : new HashMap<>(area.getAllPlayerPermissions());
+                        if (!LandClaim.playerLeaseService().savePermissionSnapshot(area.getID(), originalPermissions)) {
+                            LandClaim.playerLeaseService().clearTenant(area.getID());
+                            onCancel.onCall(p);
+                            return;
+                        }
+                        if (LandClaim.claimSaleListingService() != null
+                                && LandClaim.claimSaleListingService().activeListing(area.getID()).isPresent()
+                                && !LandClaim.claimSaleListingService().withdrawActiveListing(area.getID())) {
+                            LandClaim.playerLeaseService().clearTenant(area.getID());
+                            LandClaim.playerLeaseService().removePermissionSnapshot(area.getID());
+                            onCancel.onCall(p);
+                            return;
+                        }
+                        area.setPlayerPermission(current.landlordDbId(), s.landlordAreaPermission);
+                        area.setPlayerPermission(p.getDbID(), s.tenantAreaPermission);
+                        Area3DUtils.updateAreaFramesForAllPlayers();
+                        onCancel.onCall(p);
+                    }, onCancel);
+            p.addUIElement(confirm, UITarget.Modal);
+            p.hideRadialMenu(false);
+        });
+    }
+
+    private MenuItem menuItemRentUnclaimedArea(Player player, Callback<Player> onCancel) {
+        return new MenuItem("zone-rent-unclaimed", t.get("tc.menu.area.lease.rent-unclaimed", player), p -> {
+            Area virtualArea = ChunkClaimUtil.getVirtualAreaFromChunkVector(p.getChunkPosition());
+            long purchasePrice = LandClaim.landPriceService() == null ? -1L
+                    : LandClaim.landPriceService().price(p.getChunkPosition(), s.landPriceBase);
+            if (purchasePrice < 0) { onCancel.onCall(p); return; }
+            long dailyRent = Math.max(0L, s.unclaimedLeaseDailyRent);
+            long days = dailyRent == 0 ? -1L : (purchasePrice + dailyRent - 1L) / dailyRent;
+            String confirmation = t.get("tc.menu.area.lease.confirm-unclaimed", p)
+                    .replace("PH_PRICE", String.valueOf(purchasePrice))
+                    .replace("PH_RENT", String.valueOf(dailyRent))
+                    .replace("PH_ANCILLARY", String.valueOf(Math.max(0L, s.unclaimedLeaseAncillaryCost)))
+                    .replace("PH_DAYS", days < 0 ? "—" : String.valueOf(days));
+            UIElement confirm = UIDialogFactory.getConfirmDangerDialogText(p,
+                    t.get("tc.menu.area.lease.rent-unclaimed", p), confirmation, 150, accepted -> {
+                        if (!accepted) { onCancel.onCall(p); return; }
+                        Area created = chunkClaimUtil.claimUnclaimedRental(p, virtualArea);
+                        if (created != null && !LandClaim.unclaimedLeaseService().create(created.getID(), p.getUID(),
+                                p.getDbID(), purchasePrice, dailyRent,
+                                Math.max(0L, s.unclaimedLeaseAncillaryCost), LocalDate.now().toString())) {
+                            chunkClaimUtil.revokeUnclaimedRental(created);
+                        }
+                        Area3DUtils.updateAreaFramesForAllPlayers();
+                        onCancel.onCall(p);
+                    }, onCancel);
+            p.addUIElement(confirm, UITarget.Modal);
+            p.hideRadialMenu(false);
+        });
     }
 
     private MenuItem menuItemBuyArea(Player player, Area area, ClaimSaleListing listing, Callback<Player> onCancel) {
@@ -593,8 +771,8 @@ public class LandClaimGUI {
                             || isCityPrivateClaim(area));
                     long expansionPrice = !paidExpansion ? 0L
                             : ClaimModePolicy.current() == ClaimMode.LAND_PRICING
-                                    ? chunkClaimUtil.landExpansionPrice(area, direction)
-                                    : chunkClaimUtil.cityPrivateExpansionPrice(area, direction);
+                                    ? chunkClaimUtil.landExpansionPrice(area, direction, p.getUID())
+                                    : chunkClaimUtil.cityPrivateExpansionPrice(area, direction, p.getUID());
                     String confirmText = t.get(paidExpansion ? "tc.dialog.area.expand.paid.confirm"
                             : "tc.dialog.area.expand.confirm", p)
                                     .replace("PH_AREA_NAME", area.getName() == null ? "Unnamed Area" : area.getName())
@@ -677,7 +855,8 @@ public class LandClaimGUI {
                     if (overlay != null) {
                         p.removeUIElement(overlay);
                     }
-                    AdminCleanupOverlay cleanupOverlay = new AdminCleanupOverlay(p, cleanupService, onResponse);
+                    AdminCleanupOverlay cleanupOverlay = new AdminCleanupOverlay(p, cleanupService,
+                            LandClaim.renewZoneConfigService(), LandClaim.renewZoneResetService(), s, onResponse);
                     p.addUIElement(cleanupOverlay, UITarget.Modal);
                     p.setAttribute(AdminCleanupOverlay.ATTRIBUTE_KEY, cleanupOverlay);
                     p.hideRadialMenu(false);
@@ -1145,6 +1324,38 @@ public class LandClaimGUI {
             return;
         }
 
+        PlayerLeaseRecord playerLease = LandClaim.playerLeaseService() != null && currentArea != null
+                ? LandClaim.playerLeaseService().find(currentArea.getID()).orElse(null) : null;
+        UnclaimedLeaseRecord unclaimedLease = LandClaim.unclaimedLeaseService() != null && currentArea != null
+                ? LandClaim.unclaimedLeaseService().find(currentArea.getID()).orElse(null) : null;
+        if (playerLease != null && playerLease.occupied() && playerLease.tenantDbId() == uiPlayer.getDbID()) {
+            menuItems.add(menuItemPlayerLeaseStatus(uiPlayer, currentArea, playerLease, onBackReopen));
+            menuItems.add(menuItemRenameArea(uiPlayer, currentArea, onBackReopen));
+            menuItems.add(menuItemPermissionManager(uiPlayer, currentArea, onBackReopen));
+            menuItems.add(menuItemCancelPlayerLease(uiPlayer, currentArea, onBackReopen));
+            menuItems.add(MenuItem.closeMenu(uiPlayer));
+            menuItems.add(MenuItem.backMenu(uiPlayer, onBack));
+            PluginMenuManager.showMenu(uiPlayer, menuItems);
+            return;
+        }
+        if (unclaimedLease != null && unclaimedLease.tenantDbId() == uiPlayer.getDbID()) {
+            menuItems.add(menuItemUnclaimedLeaseStatus(uiPlayer, currentArea, unclaimedLease, onBackReopen));
+            menuItems.add(menuItemRenameArea(uiPlayer, currentArea, onBackReopen));
+            menuItems.add(menuItemPermissionManager(uiPlayer, currentArea, onBackReopen));
+            menuItems.add(menuItemCancelUnclaimedLease(uiPlayer, currentArea, onBackReopen));
+            menuItems.add(MenuItem.closeMenu(uiPlayer));
+            menuItems.add(MenuItem.backMenu(uiPlayer, onBack));
+            PluginMenuManager.showMenu(uiPlayer, menuItems);
+            return;
+        }
+        if (playerLease != null && playerLease.occupied() && playerLease.landlordDbId() == uiPlayer.getDbID()) {
+            if (tenantInactiveForAtLeastSevenDays(playerLease))
+                menuItems.add(menuItemTerminateInactivePlayerLease(uiPlayer, currentArea, playerLease, onBackReopen));
+            menuItems.add(MenuItem.closeMenu(uiPlayer));
+            menuItems.add(MenuItem.backMenu(uiPlayer, onBack));
+            PluginMenuManager.showMenu(uiPlayer, menuItems);
+            return;
+        }
         if (isOwner) {
             if (ClaimModePolicy.mayPlayerResizeOrRelease(uiPlayer.isAdmin())) {
                 menuItems.add(new MenuItem("menu-expand-zone",
@@ -1165,6 +1376,10 @@ public class LandClaimGUI {
                 menuItems.add(listing == null
                         ? menuItemListAreaForSale(uiPlayer, currentArea, onBackReopen)
                         : menuItemWithdrawAreaSale(uiPlayer, currentArea, listing, onBackReopen));
+            }
+            if (playerLeasesEnabled()) {
+                if (playerLease == null) menuItems.add(menuItemOfferAreaForRent(uiPlayer, currentArea, onBackReopen));
+                else if (!playerLease.occupied()) menuItems.add(menuItemWithdrawAreaRent(uiPlayer, currentArea, onBackReopen));
             }
             if (ClaimModePolicy.mayPlayerResizeOrRelease(uiPlayer.isAdmin()))
                 menuItems.add(menuItemRemoveArea(uiPlayer, currentArea, onBackReopen));
@@ -1347,6 +1562,8 @@ public class LandClaimGUI {
         Boolean canClaimArea = chunkClaimUtil.canPlayerClaimArea(uiPlayer, currentArea, null);
         ClaimSaleListing activeSaleListing = activeSaleListing(currentArea);
         boolean currentAreaOwner = isOwner(uiPlayer, currentArea);
+        PlayerLeaseRecord playerLease = LandClaim.playerLeaseService() != null && currentArea != null
+                ? LandClaim.playerLeaseService().find(currentArea.getID()).orElse(null) : null;
 
         List<MenuItem> menuItems = new ArrayList<>();
 
@@ -1383,6 +1600,11 @@ public class LandClaimGUI {
                         }
                         claimCurrentChunk(p);
                     }));
+        if (canClaimArea && unclaimedLeasesEnabled())
+            menuItems.add(menuItemRentUnclaimedArea(uiPlayer, player -> openMainMenu(player)));
+        if (playerLeasesEnabled() && !currentAreaOwner && playerLease != null && !playerLease.occupied()
+                && playerLease.landlordDbId() != uiPlayer.getDbID())
+            menuItems.add(menuItemRentArea(uiPlayer, currentArea, playerLease, player -> openMainMenu(player)));
         if (activeSaleListing != null && !currentAreaOwner) {
             menuItems.add(menuItemBuyArea(uiPlayer, currentArea, activeSaleListing,
                     (Player player) -> openMainMenu(player)));
@@ -1469,9 +1691,93 @@ public class LandClaimGUI {
                 : LandClaim.economyIntegration().defaultCurrencyIdentifier();
     }
 
+    private MenuItem menuItemPlayerLeaseStatus(Player player, Area area, PlayerLeaseRecord lease,
+            Callback<Player> onBack) {
+        return new MenuItem("zone-sale", t.get(lease.purchaseAllowed()
+                ? "tc.menu.area.lease.status" : "tc.menu.area.lease.status.rent-only", player), p -> {
+            if (!lease.purchaseAllowed()) {
+                String message = t.get("tc.menu.area.lease.status.rent-only.player", p)
+                        .replace("PH_DAILY", String.valueOf(lease.dailyRent()))
+                        .replace("PH_CURRENCY", defaultCurrency());
+                p.addUIElement(UIDialogFactory.getWarningDialog(p,
+                        t.get("tc.menu.area.lease.status.rent-only", p), message, onBack), UITarget.Modal);
+                p.hideRadialMenu(false);
+                return;
+            }
+            long remaining = Math.max(0L, lease.purchasePrice() - lease.rentCredit());
+            String message = t.get("tc.menu.area.lease.status.player", p)
+                    .replace("PH_REMAINING", String.valueOf(remaining))
+                    .replace("PH_DAILY", String.valueOf(lease.dailyRent()))
+                    .replace("PH_DAYS", lease.dailyRent() <= 0 ? "—" : String.valueOf((remaining + lease.dailyRent() - 1) / lease.dailyRent()))
+                    .replace("PH_CURRENCY", defaultCurrency());
+            player.addUIElement(UIDialogFactory.getConfirmDangerDialogText(p,
+                    t.get("tc.menu.area.lease.status", p), message, 140, accepted -> {
+                        if (!accepted || !lease.purchaseAllowed()) return;
+                        EconomyIntegration.WalletOperationResult paid = LandClaim.economyIntegration()
+                                .transferPlayerToPlayer(p.getDbID(), lease.landlordDbId(), remaining,
+                                        "Land Claim lease payoff for area #" + area.getID(), "player-lease-payoff:" + area.getID());
+                        if (paid.success() && chunkClaimUtil.transferAreaOwnership(area, p)
+                                && LandClaim.playerLeaseService().completePurchase(area.getID()))
+                            p.sendTextMessage(t.get("tc.menu.area.lease.purchased", p));
+                        onBack.onCall(p);
+                    }, onBack), UITarget.Modal);
+            p.hideRadialMenu(false);
+        });
+    }
+
+    private MenuItem menuItemUnclaimedLeaseStatus(Player player, Area area, UnclaimedLeaseRecord lease,
+            Callback<Player> onBack) {
+        return new MenuItem("zone-sale", t.get("tc.menu.area.lease.status", player), p -> {
+            long remaining = Math.max(0L, lease.purchasePrice() - lease.rentCredit());
+            String message = t.get("tc.menu.area.lease.status.world", p)
+                    .replace("PH_REMAINING", String.valueOf(remaining))
+                    .replace("PH_DAILY", String.valueOf(lease.dailyRent()))
+                    .replace("PH_DAYS", lease.dailyRent() <= 0 ? "—" : String.valueOf((remaining + lease.dailyRent() - 1) / lease.dailyRent()))
+                    .replace("PH_CURRENCY", defaultCurrency());
+            player.addUIElement(UIDialogFactory.getConfirmDangerDialogText(p,
+                    t.get("tc.menu.area.lease.status", p), message, 140, accepted -> {
+                        if (!accepted) return;
+                        EconomyIntegration.WalletOperationResult paid = LandClaim.economyIntegration()
+                                .transferPlayerToWorld(p.getDbID(), remaining,
+                                        "Land Claim world lease payoff for area #" + area.getID(), "world-lease-payoff:" + area.getID());
+                        if (paid.success() && chunkClaimUtil.transferAreaOwnership(area, p)
+                                && LandClaim.unclaimedLeaseService().remove(area.getID()))
+                            p.sendTextMessage(t.get("tc.menu.area.lease.purchased", p));
+                        onBack.onCall(p);
+                    }, onBack), UITarget.Modal);
+            p.hideRadialMenu(false);
+        });
+    }
+
     private boolean isOwner(Player player, Area area) {
         String areaPermission = area == null ? null : area.getPlayerPermission(player);
         return areaPermission != null && areaPermission.equals(s.ownerAreaPermission);
+    }
+
+    private boolean playerLeasesEnabled() {
+        return ClaimModePolicy.current() == ClaimMode.LAND_PRICING
+                && Boolean.TRUE.equals(s.enablePlayerLeaseholds)
+                && LandClaim.playerLeaseService() != null
+                && LandClaim.economyIntegration() != null
+                && LandClaim.economyIntegration().hasPlayerTransferApi();
+    }
+
+    private boolean tenantInactiveForAtLeastSevenDays(PlayerLeaseRecord lease) {
+        if (lease == null || !lease.occupied() || Server.getPlayerByUID(lease.tenantUuid()) != null) {
+            return false;
+        }
+        var record = PlayerDatabaseHelper.findPlayersByDbIds(LandClaim.getInstance(), Set.of(lease.tenantDbId()))
+                .get(lease.tenantDbId());
+        return record != null && record.lastSeenEpochSeconds > 0
+                && System.currentTimeMillis() / 1000L - record.lastSeenEpochSeconds >= 7L * 24L * 60L * 60L;
+    }
+
+    private boolean unclaimedLeasesEnabled() {
+        return ClaimModePolicy.current() == ClaimMode.LAND_PRICING
+                && Boolean.TRUE.equals(s.enableUnclaimedLeaseholds)
+                && LandClaim.unclaimedLeaseService() != null
+                && LandClaim.economyIntegration() != null
+                && LandClaim.economyIntegration().hasSystemAccountApi();
     }
 
     private boolean isRenewArea(Area area) {

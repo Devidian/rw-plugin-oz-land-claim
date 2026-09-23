@@ -49,6 +49,7 @@
     "admin": {
       "cleanup": {
         "blocked": "Säuberung blockiert, weil ein anderer Besitzer einen aktiven Claim in der Chunk-Spalte PH_CHUNK_POS hat.",
+        "workflow": "Zuerst wird der automatische Säuberungsablauf für platzierte Objekte ausgeführt. Erst danach werden Zone gelöscht und Chunks zurückgesetzt.",
         "special": {
           "area": {
             "success": "Spezialzone PH_TARGET gesäubert und PH_RESET_COUNT Chunks zurückgesetzt."
@@ -271,7 +272,7 @@
         "insufficient": {
           "funds": "Dein Guthaben reicht für diesen Kauf nicht aus."
         },
-        "limit": "Das Einnehmen weiterer Bereiche überschreitet dein derzeitiges Claim Limit von PH_MAX_CLAIMS!",
+        "limit": "Das Einnehmen weiterer Bereiche überschreitet dein derzeitiges Claim-Limit von PH_MAX_CLAIMS. Fehlende Lizenzen: PH_MISSING.",
         "max": {
           "reached": "Aktuelles Claim-Limit erreicht!"
         },
@@ -470,6 +471,7 @@
       }
     },
     "menu": {
+      "renew": { "management": "Renaturierungszonen verwalten" },
       "admin": {
         "$value": "Administration",
         "cleanup": "Grundstücksverwaltung",
@@ -497,6 +499,32 @@
           "buy": "Zone kaufen",
           "list": "Zone verkaufen",
           "withdraw": "Verkauf zurückziehen"
+        },
+        "lease": {
+          "offer": "Gebiet zur Miete anbieten",
+          "withdraw": "Mietangebot zurückziehen",
+          "rent": "Dieses Gebiet mieten",
+          "rent-unclaimed": "Dieses Gebiet mieten",
+          "price": "Mietkaufpreis",
+          "daily": "Tagesmiete",
+          "cancel": "Mietvertrag kündigen",
+          "cancel-player": "Mietvertrag für PH_AREA_NAME kündigen? Das Grundstück geht an den Vermieter zurück. Bereits gezahlte Mieten werden nicht erstattet.",
+          "cancel-world": "Mietvertrag für PH_AREA_NAME kündigen? Das Grundstück geht an die Welt zurück. Bereits gezahlte Mieten werden nicht erstattet.",
+          "terminate": "Mietvertrag wegen Inaktivität kündigen",
+          "terminate-confirm": "Mietvertrag für PH_AREA_NAME kündigen? Der Mieter war mindestens sieben Tage nicht online. Bereits gezahlte Mieten werden nicht erstattet.",
+          "ancillary": "Tägliche Nebenkosten: PH_PRICE",
+          "confirm-player": "Tägliche Miete: PH_RENT PH_CURRENCY\\nMietkauf: PH_PURCHASE\\nPH_PURCHASE_PRICE",
+          "confirm-unclaimed": "Kaufpreis: PH_PRICE\nTagesmiete: PH_RENT\nTägliche Nebenkosten: PH_ANCILLARY\nTage bis Eigentum: PH_DAYS",
+          "purchase-yes": "Ja",
+          "purchase-no": "Nein",
+          "purchase-price": "Mietkaufpreis: PH_PRICE PH_CURRENCY",
+  "purchase": "Mietkauf erlauben?",
+  "status": "Mietstatus / Restschuld begleichen",
+  "status.rent-only": "Mietstatus",
+  "status.rent-only.player": "Tägliche Miete: PH_DAILY PH_CURRENCY",
+  "status.player": "Restschuld: PH_REMAINING PH_CURRENCY\nTägliche Miete: PH_DAILY PH_CURRENCY\nTage bis Eigentum: PH_DAYS\nMit Bestätigung wird das Grundstück sofort gekauft.",
+  "status.world": "Restschuld an die Welt: PH_REMAINING PH_CURRENCY\nTägliche Miete: PH_DAILY PH_CURRENCY\nTage bis Eigentum: PH_DAYS\nMit Bestätigung wird das Grundstück sofort gekauft.",
+  "purchased": "Restschuld beglichen. Das Grundstück gehört jetzt dir."
         },
         "split": "Zone aufteilen"
       },
@@ -573,6 +601,14 @@
     },
     "renew": {
       "zone": {
+        "management": {
+          "title": "Renaturierungsverwaltung", "subtitle": "Alle Renaturierungszonen konfigurieren und ausführen.",
+          "legend": "✎ umbenennen, ◷ Zeit ändern, ▶ jetzt renaturieren.", "tab": "Renaturierungszonen", "enabled": "Automatische Renaturierung aktiv",
+          "all": { "interval": "Alle Zeiten setzen", "reset": "Alle jetzt renaturieren" },
+          "th": { "area": "Bereich", "interval": "Stunden", "next": "Nächste Renaturierung", "actions": "Aktionen" },
+          "empty": "Keine Renaturierungszonen konfiguriert.", "missing": "Fehlender Bereich", "rename": "Renaturierungszone umbenennen", "interval": "Renaturierungsintervall (Stunden)",
+          "confirm": { "title": "Renaturierung bestätigen", "one": "Diese Zone jetzt renaturieren?", "all": "Alle konfigurierten Zonen jetzt renaturieren?", "interval": "Diese Zeit für alle konfigurierten Zonen setzen?" }
+        },
         "config": {
           "invalid": {
             "interval": "Bitte gib ein positives ganzzahliges Intervall in Stunden ein."
@@ -585,6 +621,30 @@
       }
     },
     "setting": {
+      "discord.channelid.cleanupevent": {
+        "label": "Discord-Log für Säuberungsereignisse",
+        "desc": "Discord-Kanal-ID für automatische Grundstückssäuberungen; 0 deaktiviert die Protokollierung."
+      },
+      "rentalpurchase": {
+        "label": "Mietkauf",
+        "desc": "Mieten für Spielereigentum und unbeanspruchte Gebiete im Wirtschaftsmodus."
+      },
+      "enableplayerleaseholds": {
+        "label": "Spielermieten aktivieren",
+        "desc": "Erlaubt Mietangebote für Grundstücke von Spielern im Wirtschaftsmodus."
+      },
+      "enableunclaimedleaseholds": {
+        "label": "Weltmieten aktivieren",
+        "desc": "Zeigt die Mietoption für unbeanspruchte Gebiete im Wirtschaftsmodus."
+      },
+      "unclaimedleasedailyrent": {
+        "label": "Tagesmiete der Welt",
+        "desc": "Tagesmiete, die auf den Kaufpreis des Welt-Mietkaufs angerechnet wird."
+      },
+      "unclaimedleaseancillarycost": {
+        "label": "Nebenkosten der Weltmiete",
+        "desc": "Tägliche Zusatzkosten, die an das Weltkonto überwiesen werden."
+      },
       "exposeplayermap": { "label": "Spielerkarte bereitstellen", "desc": "Erlaubt dem Manager lesenden Zugriff auf die Spielerkarte." },
       "propertyclearance": { "label": "Grundstück bereinigen", "desc": "Optionale, vom Eigentümer ausgelöste Auflösung und Demontage platzierter Gegenstände." },
       "enablepropertyclearance": { "label": "Grundstück bereinigen aktivieren", "desc": "Zeigt die Bereinigungsaktion in den Zoneneinstellungen. Standardmäßig deaktiviert." },
@@ -894,6 +954,7 @@
       },
       "btn": {
         "cancel": "Abbrechen",
+        "confirm": "Bestätigen",
         "close": "Schließen",
         "expand": {
           "paid": "Kostenpflichtig erweitern"
@@ -1022,6 +1083,8 @@
         "exiled": "Verbannter",
         "friend": "Freund",
         "guest": "Gast",
+        "landlord": "Vermieter",
+        "tenant": "Mieter",
         "owner": "Eigentümer",
         "prisoner": "Gefangener",
         "pvp": "PvP-Zone",

@@ -65,6 +65,11 @@ public class PluginSettings {
         public Integer autoClaimRemovalInactiveDays = 90;
         public Integer autoClaimRemovalDelaySeconds = 60;
         public Integer renewZoneDefaultIntervalHours = 24;
+        public Boolean enableRenewZones = true;
+        public Boolean enablePlayerLeaseholds = false;
+        public Boolean enableUnclaimedLeaseholds = false;
+        public long unclaimedLeaseDailyRent = 100;
+        public long unclaimedLeaseAncillaryCost = 0;
         public String renewZoneResetAnnouncementTarget = "none";
         public Integer renewZoneResetBaseDelaySeconds = 2;
         public Integer renewZoneResetDelayPerChunkMillis = 25;
@@ -103,6 +108,8 @@ public class PluginSettings {
         public String specialAreaPermission = "ozlc-special";
         public String defaultAreaPermission = "ozlc-guest";
         public String ownerAreaPermission = "ozlc-owner";
+        public String landlordAreaPermission = "ozlc-landlord";
+        public String tenantAreaPermission = "ozlc-tenant";
         public String residentAreaPermission = "ozlc-resident";
         public String prisonerAreaPermission = "ozlc-prisoner";
         public String exiledAreaPermission = "ozlc-exiled";
@@ -233,6 +240,11 @@ public class PluginSettings {
                                         .parseInt(settings.getProperty("autoClaimRemovalDelaySeconds", "60"));
                         renewZoneDefaultIntervalHours = Integer
                                         .parseInt(settings.getProperty("renewZoneDefaultIntervalHours", "24"));
+                        enableRenewZones = settings.getProperty("enableRenewZones", "true").contentEquals("true");
+                        enablePlayerLeaseholds = settings.getProperty("enablePlayerLeaseholds", "false").contentEquals("true");
+                        enableUnclaimedLeaseholds = settings.getProperty("enableUnclaimedLeaseholds", "false").contentEquals("true");
+                        unclaimedLeaseDailyRent = Long.parseLong(settings.getProperty("unclaimedLeaseDailyRent", "100"));
+                        unclaimedLeaseAncillaryCost = Long.parseLong(settings.getProperty("unclaimedLeaseAncillaryCost", "0"));
                         renewZoneResetAnnouncementTarget = settings
                                         .getProperty("renewZoneResetAnnouncementTarget", "none");
                         renewZoneResetBaseDelaySeconds = Integer
@@ -322,6 +334,8 @@ public class PluginSettings {
                         specialAreaPermission = settings.getProperty("specialAreaPermission", "ozlc-special");
                         defaultAreaPermission = settings.getProperty("defaultAreaPermission", "ozlc-guest");
                         ownerAreaPermission = settings.getProperty("ownerAreaPermission", "ozlc-owner");
+                        landlordAreaPermission = settings.getProperty("landlordAreaPermission", "ozlc-landlord");
+                        tenantAreaPermission = settings.getProperty("tenantAreaPermission", "ozlc-tenant");
                         friendAreaPermission = settings.getProperty("friendAreaPermission", "ozlc-friend");
                         residentAreaPermission = settings.getProperty("residentAreaPermission", "ozlc-resident");
                         prisonerAreaPermission = settings.getProperty("prisonerAreaPermission", "ozlc-prisoner");
@@ -499,6 +513,9 @@ public class PluginSettings {
                                 entry("renewZoneDefaultIntervalHours", "Default renew interval",
                                                 "Default interval in hours for newly created renew zones.",
                                                 renewZoneDefaultIntervalHours, "24", AdminSettingsType.INTEGER),
+                                entry("enableRenewZones", "Enable renew zones",
+                                                "Pauses automatic renew-zone resets while disabled. Due times are retained.",
+                                                enableRenewZones, "true", AdminSettingsType.BOOLEAN),
                                 entry("renewZoneResetAnnouncementTarget", "Reset announcements",
                                         "Who receives renew-zone reset announcements: none, all, or admins.",
                                         renewZoneResetAnnouncementTarget, "none", AdminSettingsType.STRING),
@@ -528,6 +545,20 @@ public class PluginSettings {
                                 entry("landPriceIncludeBaseClaimsFree", "Included base claims free",
                                                 "Waives the base land price within the base claim limit; cluster surcharges remain payable.",
                                                 landPriceIncludeBaseClaimsFree, "false", AdminSettingsType.BOOLEAN),
+                                AdminSettingsEntry.group("rentalPurchase", "Rental purchase",
+                                                "Economy-mode rentals for player-owned and unclaimed areas."),
+                                entry("enablePlayerLeaseholds", "Enable player rentals",
+                                                "Allows player-owned areas to be offered as rentals in LAND_PRICING mode.",
+                                                enablePlayerLeaseholds, "false", AdminSettingsType.BOOLEAN),
+                                entry("enableUnclaimedLeaseholds", "Enable world rentals",
+                                                "Shows the rent option for unclaimed areas in LAND_PRICING mode.",
+                                                enableUnclaimedLeaseholds, "false", AdminSettingsType.BOOLEAN),
+                                entry("unclaimedLeaseDailyRent", "World rental daily rent",
+                                                "Daily rent credited against the world-rental purchase price.",
+                                                unclaimedLeaseDailyRent, "100", AdminSettingsType.INTEGER),
+                                entry("unclaimedLeaseAncillaryCost", "World rental ancillary cost",
+                                                "Daily additional cost transferred to the world account.",
+                                                unclaimedLeaseAncillaryCost, "0", AdminSettingsType.INTEGER),
                                 AdminSettingsEntry.group("cityModeRules", "City-mode rules",
                                                 "Rules used by the CITY acquisition mode."),
                                 entry("cityBaseRadius", "City base radius",
@@ -601,7 +632,7 @@ public class PluginSettings {
                                 defaultValue,
                                 type,
                                 false,
-                                newValue -> SettingsFileEditor.writeValue(settingsPath(), key, newValue));
+                                newValue -> saveSetting(key, newValue));
         }
 
         private AdminSettingsEntry readOnlyEntry(String key, String label, String description, Object value,
@@ -627,12 +658,22 @@ public class PluginSettings {
                                 defaultValue,
                                 AdminSettingsType.SELECT,
                                 false,
-                                newValue -> SettingsFileEditor.writeValue(settingsPath(), key, newValue),
+                                newValue -> saveSetting(key, newValue),
                                 options);
         }
 
         private Path settingsPath() {
                 return JsonSettingsFile.worldSettingsFile(plugin.getPath() != null ? plugin.getPath() : ".");
+        }
+
+        public boolean saveAdminSetting(String key, String value) {
+                boolean saved = SettingsFileEditor.writeValue(settingsPath(), key, value);
+                if (saved) initSettings();
+                return saved;
+        }
+
+        private boolean saveSetting(String key, String value) {
+                return saveAdminSetting(key, value);
         }
 
         /** Keeps explicit legacy settings paths usable for tooling and existing tests. */
