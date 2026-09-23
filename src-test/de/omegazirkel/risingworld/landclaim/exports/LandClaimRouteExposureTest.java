@@ -14,8 +14,11 @@ public class LandClaimRouteExposureTest {
 
     @Test
     public void loadsClaimSaleExposureFlagFromSettings() throws Exception {
-        Path settings = Files.createTempFile("oz-land-claim-settings-", ".properties");
-        Files.writeString(settings, "exposeClaimSales=false\nexposeRenewZones=false\n");
+        Path directory = Files.createTempDirectory("oz-land-claim-settings-");
+        Path settings = directory.resolve("settings.world.json");
+        Files.writeString(directory.resolve("settings.default.json"),
+                "{\"exposeClaimSales\":true,\"exposeRenewZones\":true}");
+        Files.writeString(settings, "{\"exposeClaimSales\":false,\"exposeRenewZones\":false}");
 
         PluginSettings pluginSettings = PluginSettings.getInstance();
         pluginSettings.initSettings(settings.toString());
