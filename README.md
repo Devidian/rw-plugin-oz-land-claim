@@ -7,7 +7,7 @@ Server administrators can configure almost all aspects of the plugin to their li
 ## Prerequisites
 
 This plugin requires the **OmegaZirkel Tools** plugin to be installed.
-Use OZTools `0.23.11` or newer with this release.
+Use OZTools `0.26.2` or newer with this release.
 Wallet and Shop are detected optionally for economy features; core claim protection remains usable without them. Claim sales require Wallet. Extra-claim purchases require Shop and Wallet.
 
 1. Download the latest `oz-tools-....zip` from the [OZ-Tools](https://github.com/Devidian/rw-plugin-oz-tools/releases) Releases Page.

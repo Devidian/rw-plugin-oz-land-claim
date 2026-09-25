@@ -2,6 +2,11 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## [0.21.1] - 2026-09-25 | Claim menu actions
+
+- fix: execute each Land Claim dialog action once even when its delayed close callback fires more than once; this prevents duplicate renames and expansions.
+- change: require OZ Tools 0.26.2 for single-dispatch radial-menu selections.
+
 ## [0.21.0] - 2026-09-23 | JSON-only settings runtime
 
 - change: use world-scoped JSON settings only; transfer legacy Properties values manually.
