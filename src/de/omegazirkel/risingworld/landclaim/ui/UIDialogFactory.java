@@ -5,6 +5,7 @@ import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.ui.AdvancedButtonFactory;
 import de.omegazirkel.risingworld.tools.ui.AdvancedButton;
 import de.omegazirkel.risingworld.tools.ui.SwitchButton;
+import java.util.concurrent.atomic.AtomicBoolean;
 import net.risingworld.api.Timer;
 import net.risingworld.api.callbacks.Callback;
 import net.risingworld.api.objects.Player;
@@ -109,7 +110,9 @@ public class UIDialogFactory {
         player.closeAllActiveUIWindows();
         // The engine applies closeAllActiveUIWindows asynchronously. Wait for a
         // complete UI cycle before a callback adds its replacement modal/menu.
-        Timer reopenTimer = new Timer(0.5f, 0f, 1, onClosed);
+        // The timer can deliver its task twice even with one repetition.
+        // A repeated callback would apply the same claim mutation twice.
+        Timer reopenTimer = new Timer(0.5f, 0f, 1, ModalResponseGuard.once(onClosed));
         reopenTimer.start();
     }
 
@@ -132,6 +135,7 @@ public class UIDialogFactory {
 
         // --- Window ---
         UIElement window = getDialogWindow(CONFIRM_DIALOG_WIDTH, CONFIRM_DIALOG_HEIGHT);
+        AtomicBoolean responded = new AtomicBoolean();
 
         // --- Title ---
         addTitle(window, title, CONFIRM_TITLE_Y);
@@ -149,7 +153,7 @@ public class UIDialogFactory {
         body.addChild(lbl);
 
         AdvancedButton btnOk = AdvancedButtonFactory.danger(confirmLabel, event -> {
-            closeModal(player, window, () -> onOk.onCall(true));
+            ModalResponseGuard.runOnce(responded, () -> closeModal(player, window, () -> onOk.onCall(true)));
         });
 
         btnOk.setPivot(Pivot.LowerRight);
@@ -158,7 +162,7 @@ public class UIDialogFactory {
         window.addChild(btnOk);
 
         AdvancedButton btnCancel = AdvancedButtonFactory.ok(t.get("tc.ui.btn.no", player), event -> {
-            closeModal(player, window, () -> onCancel.onCall(player));
+            ModalResponseGuard.runOnce(responded, () -> closeModal(player, window, () -> onCancel.onCall(player)));
         });
 
         btnCancel.setPivot(Pivot.LowerLeft);
@@ -200,6 +204,7 @@ public class UIDialogFactory {
         int height = CONFIRM_BODY_Y + safeBodyHeight + 66;
         int footerY = height - 14;
         UIElement window = getDialogWindow(CONFIRM_DIALOG_WIDTH, height);
+        AtomicBoolean responded = new AtomicBoolean();
         addTitle(window, title, CONFIRM_TITLE_Y);
         UIElement body = addBody(window, CONFIRM_BODY_Y, CONFIRM_BODY_WIDTH, safeBodyHeight);
         UILabel label = new UILabel(message == null ? "" : message);
@@ -214,7 +219,7 @@ public class UIDialogFactory {
 
         String confirmLabel = t.get("tc.ui.btn.yes", player);
         AdvancedButton ok = AdvancedButtonFactory.danger(confirmLabel, event -> {
-            closeModal(player, window, closeAllActiveUiWindows, () -> onOk.onCall(true));
+            ModalResponseGuard.runOnce(responded, () -> closeModal(player, window, closeAllActiveUiWindows, () -> onOk.onCall(true)));
         });
         ok.setPivot(Pivot.LowerRight);
         ok.setPosition(CONFIRM_DIALOG_WIDTH - BUTTON_OFFSET_X, footerY, false);
@@ -222,7 +227,7 @@ public class UIDialogFactory {
         window.addChild(ok);
 
         AdvancedButton cancel = AdvancedButtonFactory.ok(t.get("tc.ui.btn.no", player), event -> {
-            closeModal(player, window, closeAllActiveUiWindows, () -> onCancel.onCall(player));
+            ModalResponseGuard.runOnce(responded, () -> closeModal(player, window, closeAllActiveUiWindows, () -> onCancel.onCall(player)));
         });
         cancel.setPivot(Pivot.LowerLeft);
         cancel.setPosition(BUTTON_OFFSET_X, footerY, false);
@@ -238,8 +243,8 @@ public class UIDialogFactory {
             Callback<Boolean> onOk,
             Callback<Player> onCancel) {
 
-        // --- Window ---
         UIElement window = getDialogWindow(CONFIRM_DIALOG_WIDTH, CONFIRM_DIALOG_HEIGHT);
+        AtomicBoolean responded = new AtomicBoolean();
 
         // --- Title ---
         addTitle(window, title, CONFIRM_TITLE_Y);
@@ -257,7 +262,7 @@ public class UIDialogFactory {
         body.addChild(lbl);
 
         AdvancedButton btnOk = AdvancedButtonFactory.ok(t.get("tc.ui.btn.yes", player), event -> {
-            closeModal(player, window, () -> onOk.onCall(true));
+            ModalResponseGuard.runOnce(responded, () -> closeModal(player, window, () -> onOk.onCall(true)));
         });
 
         btnOk.setPivot(Pivot.LowerRight);
@@ -266,7 +271,7 @@ public class UIDialogFactory {
         window.addChild(btnOk);
 
         AdvancedButton btnCancel = AdvancedButtonFactory.cancel(t.get("tc.ui.btn.no", player), event -> {
-            closeModal(player, window, () -> onCancel.onCall(player));
+            ModalResponseGuard.runOnce(responded, () -> closeModal(player, window, () -> onCancel.onCall(player)));
         });
 
         btnCancel.setPivot(Pivot.LowerLeft);
@@ -279,6 +284,7 @@ public class UIDialogFactory {
 
     public static UIElement getWarningDialog(Player player, String title, String message, Callback<Player> onClose) {
         UIElement window = getDialogWindow(CONFIRM_DIALOG_WIDTH, CONFIRM_DIALOG_HEIGHT);
+        AtomicBoolean responded = new AtomicBoolean();
         addTitle(window, title, CONFIRM_TITLE_Y);
         UIElement body = addBody(window, CONFIRM_BODY_Y, CONFIRM_BODY_WIDTH, CONFIRM_BODY_HEIGHT);
         UILabel label = new UILabel(message);
@@ -291,9 +297,9 @@ public class UIDialogFactory {
         label.setSize(CONFIRM_BODY_WIDTH - 32, CONFIRM_BODY_HEIGHT - 20, false);
         body.addChild(label);
         AdvancedButton close = AdvancedButtonFactory.danger(t.get("tc.ui.btn.ok", player), event -> {
-            closeModal(player, window, () -> {
+            ModalResponseGuard.runOnce(responded, () -> closeModal(player, window, () -> {
                 if (onClose != null) onClose.onCall(player);
-            });
+            }));
         });
         close.setPivot(Pivot.LowerRight);
         close.setPosition(CONFIRM_DIALOG_WIDTH - BUTTON_OFFSET_X, CONFIRM_FOOTER_Y, false);
@@ -309,8 +315,8 @@ public class UIDialogFactory {
             Callback<String> onOk,
             Callback<Player> onCancel) {
 
-        // --- Window ---
         UIElement window = getDialogWindow(TEXT_INPUT_DIALOG_WIDTH, TEXT_INPUT_DIALOG_HEIGHT);
+        AtomicBoolean responded = new AtomicBoolean();
 
         // --- Title ---
         addTitle(window, title, TEXT_INPUT_TITLE_Y);
@@ -338,9 +344,8 @@ public class UIDialogFactory {
         body.addChild(txt);
 
         AdvancedButton btnOk = AdvancedButtonFactory.ok(t.get("tc.ui.btn.ok", player), event -> {
-            txt.getCurrentText(player, (String text) -> {
-                closeModal(player, window, () -> onOk.onCall(text.trim()));
-            });
+            ModalResponseGuard.runOnce(responded, () -> txt.getCurrentText(player, (String text) ->
+                    closeModal(player, window, () -> onOk.onCall(text.trim()))));
         });
 
         btnOk.setPivot(Pivot.LowerRight);
@@ -349,7 +354,7 @@ public class UIDialogFactory {
         window.addChild(btnOk);
 
         AdvancedButton btnCancel = AdvancedButtonFactory.cancel(t.get("tc.ui.btn.cancel", player), event -> {
-            closeModal(player, window, () -> onCancel.onCall(player));
+            ModalResponseGuard.runOnce(responded, () -> closeModal(player, window, () -> onCancel.onCall(player)));
         });
 
         btnCancel.setPivot(Pivot.LowerLeft);
@@ -365,6 +370,7 @@ public class UIDialogFactory {
             String purchaseLabel, Callback<RentalOfferInput> onOk, Callback<Player> onCancel) {
         int width = TEXT_INPUT_DIALOG_WIDTH;
         UIElement window = getDialogWindow(width, 330);
+        AtomicBoolean responded = new AtomicBoolean();
         addTitle(window, title, TEXT_INPUT_TITLE_Y);
         UIElement body = addBody(window, TEXT_INPUT_BODY_Y, TEXT_INPUT_BODY_WIDTH, 196);
         UITextField price = input(body, priceLabel, 12, "0");
@@ -377,14 +383,13 @@ public class UIDialogFactory {
         enabled.setPivot(Pivot.UpperLeft); enabled.setPosition(300, 144, false); enabled.setSize(72, 28, false);
         body.addChild(enabled);
         AdvancedButton confirm = AdvancedButtonFactory.ok(t.get("tc.ui.btn.confirm", player), event ->
-                price.getCurrentText(player, priceValue -> rent.getCurrentText(player, rentValue -> {
-                    closeModal(player, window,
-                            () -> onOk.onCall(new RentalOfferInput(priceValue.trim(), rentValue.trim(), rentToOwn[0])));
-                })));
+                ModalResponseGuard.runOnce(responded, () -> price.getCurrentText(player, priceValue -> rent.getCurrentText(player,
+                        rentValue -> closeModal(player, window, () -> onOk.onCall(
+                                new RentalOfferInput(priceValue.trim(), rentValue.trim(), rentToOwn[0])))))));
         confirm.setPivot(Pivot.LowerRight); confirm.setPosition(width - BUTTON_OFFSET_X, 316, false);
         styleFooterButton(confirm); window.addChild(confirm);
         AdvancedButton cancel = AdvancedButtonFactory.cancel(t.get("tc.ui.btn.cancel", player), event -> {
-            closeModal(player, window, () -> onCancel.onCall(player));
+            ModalResponseGuard.runOnce(responded, () -> closeModal(player, window, () -> onCancel.onCall(player)));
         });
         cancel.setPivot(Pivot.LowerLeft); cancel.setPosition(BUTTON_OFFSET_X, 316, false);
         styleFooterButton(cancel); window.addChild(cancel);

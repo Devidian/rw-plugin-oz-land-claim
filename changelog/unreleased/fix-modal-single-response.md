@@ -1,0 +1,1 @@
+- fix: prevent duplicate claim actions when a modal response or its delayed close callback is delivered more than once
