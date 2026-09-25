@@ -2,6 +2,8 @@
 
 With this plugin, players can secure and manage their own areas in Rising World. The plugin is operated mainly via intuitive UI elements to ensure easy handling.
 
+The admin claim-mode choices are localized in German and English.
+
 Server administrators can configure almost all aspects of the plugin to their liking via the `settings.<world>.json` file. Admins can also import existing zones, although compatibility with other plugins is not guaranteed.
 
 ## Prerequisites

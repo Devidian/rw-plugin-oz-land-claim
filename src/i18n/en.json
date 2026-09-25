@@ -721,6 +721,8 @@
         "option": {
           "administrative": "Administrative",
           "city": "Cities",
+          "land_pricing": "Land pricing",
+          "time_based": "Time-based",
           "land": {
             "pricing": "Land pricing"
           },

@@ -2,6 +2,12 @@
 
 <https://www.conventionalcommits.org/en/v1.0.0/>
 
+## Unreleased
+
+## [0.21.2] - 2026-09-25 | Localized claim mode
+
+- fix: provide direct localized labels for all claim-mode choices in the admin selection grid.
+
 ## [0.21.1] - 2026-09-25 | Claim menu actions
 
 - fix: execute each Land Claim dialog action once even when its delayed close callback fires more than once; this prevents duplicate renames and expansions.
