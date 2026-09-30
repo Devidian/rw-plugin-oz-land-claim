@@ -1,5 +1,7 @@
 # OmegaZirkel Land Claim Plugin for Rising World
 
+Administrative area release clears stored claims by owner UID and database ID, including offline owners.
+
 With this plugin, players can secure and manage their own areas in Rising World. The plugin is operated mainly via intuitive UI elements to ensure easy handling.
 
 The admin claim-mode choices are localized in German and English.

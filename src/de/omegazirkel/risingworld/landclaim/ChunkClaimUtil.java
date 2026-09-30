@@ -1153,13 +1153,15 @@ public class ChunkClaimUtil {
             // remove area and claim information from database
             List<LandClaimChunkInfo> infoList = service.getChunkInfoListByArea(area.getID());
             for (LandClaimChunkInfo info : infoList) {
-                Player owner = Server.getPlayerByUID(info.playerUID);
+                String ownerName = info.playerDBID == null || info.playerDBID <= 0 ? null
+                        : Server.getLastKnownPlayerName(info.playerDBID);
+                if (ownerName == null || ownerName.isBlank()) ownerName = info.playerUID;
                 if (p.isAdmin())
                     p.sendTextMessage(t().get("tc.area.release.chunk", p)
                             .replace("PH_AREA_NAME", areaName)
                             .replace("PH_CHUNK_POS", info.chunkPos.toString())
-                            .replace("PH_PLAYER_NAME", owner.getName()));
-                service.saveChunkClaim(owner, info.chunkPos, 0, 0);
+                            .replace("PH_PLAYER_NAME", ownerName));
+                service.removeChunkClaim(info.playerUID, info.playerDBID, info.chunkPos);
             }
             // Discord announcement
             String message = t().get("tc.discord.area.released", DiscordConnect.botLang())

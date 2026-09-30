@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+## [0.21.3] - 2026-09-30 | Offline owner claim release
+
+- fix: clear claims for offline owners during administrative area release without dereferencing an online Player.
+
 ## [0.21.2] - 2026-09-25 | Localized claim mode
 
 - fix: provide direct localized labels for all claim-mode choices in the admin selection grid.

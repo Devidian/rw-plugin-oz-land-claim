@@ -1,5 +1,7 @@
 # PLANS.md
 
+- [ ] Validate the next-300926 change on Development with a controlled player check.
+
 Planning is stored in repository-local docs.
 
 - Active implementation tasks: [docs/active/](docs/active/)
