@@ -1081,7 +1081,51 @@
         },
         "unoccupied": "Unbelegt"
       },
+      "custom": {
+        "apply": "Übernehmen",
+        "cancel": "Abbrechen",
+        "edit": "Ändern",
+        "failed": "Benutzerdefinierte Berechtigungen konnten nicht gespeichert werden.",
+        "flag": {
+          "destroyconstructions": "Konstruktionen zerstören",
+          "destroyobjects": "Objekte zerstören",
+          "destroyownconstructions": "Eigene Konstruktionen zerstören",
+          "destroyownobjects": "Eigene Objekte zerstören",
+          "destroyownvegetations": "Eigene Vegetation entfernen",
+          "destroyterrain": "Terrain abbauen",
+          "destroyvegetations": "Vegetation entfernen",
+          "editconstructions": "Konstruktionen bearbeiten",
+          "editobjects": "Objekte bearbeiten",
+          "editownconstructions": "Eigene Konstruktionen bearbeiten",
+          "editownobjects": "Eigene Objekte bearbeiten",
+          "editownvegetations": "Eigene Vegetation bearbeiten",
+          "editvegetations": "Vegetation bearbeiten",
+          "placeconstructions": "Konstruktionen platzieren",
+          "placeobjects": "Objekte platzieren",
+          "placeterrain": "Terrain platzieren",
+          "placevegetations": "Vegetation pflanzen",
+          "keepinventory": "Inventar behalten",
+          "pve": "PvE (Kreaturen bekämpfen)",
+          "pvp": "PvP (Spieler bekämpfen)",
+          "ridemounts": "Reittiere nutzen",
+          "unlockalldoors": "Alle Türen öffnen",
+          "useallchests": "Alle Kisten nutzen",
+          "usealldoors": "Alle Türen nutzen",
+          "useallfurnaces": "Alle Öfen nutzen",
+          "usealllights": "Alle Lampen nutzen",
+          "useallobjects": "Alle Objekte nutzen",
+          "useallvehicles": "Alle Fahrzeuge nutzen"
+        },
+        "legend": "Gilt für alle Spieler mit Benutzerdefiniert auf diesem Gebiet. Änderungen werden erst mit Übernehmen gespeichert.",
+        "section": {
+          "general": "Allgemein",
+          "world": "Welt"
+        },
+        "subtitle": "Gebiet: PH_AREA_NAME",
+        "title": "Benutzerdefinierte Berechtigungen"
+      },
       "permission": {
+        "custom": "Benutzerdefiniert",
         "exiled": "Verbannter",
         "friend": "Freund",
         "guest": "Gast",
@@ -1099,6 +1143,9 @@
       },
       "player": {
         "permission": {
+          "custom": {
+            "failed": "Spieler \u003ccolor\u003dyellow\u003ePH_PLAYER_NAME\u003c/color\u003e konnte nicht auf Benutzerdefiniert gesetzt werden."
+          },
           "set": "Berechtigungen für Spieler \u003ccolor\u003dyellow\u003ePH_PLAYER_NAME\u003c/color\u003e auf \u003ccolor\u003dyellow\u003ePH_PERMISSION\u003c/color\u003e gesetzt.",
           "unset": "Berechtigungen für Spieler \u003ccolor\u003dyellow\u003ePH_PLAYER_NAME\u003c/color\u003e entfernt."
         }

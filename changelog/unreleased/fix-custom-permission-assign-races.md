@@ -1,0 +1,1 @@
+- fix: reload Custom area permissions after recreating a group file so stale permissions are not kept, stop pending Custom assignments once the player gets another permission or the area is removed, sold, or rented, and re-check owner or admin rights before the Custom editor opens and saves

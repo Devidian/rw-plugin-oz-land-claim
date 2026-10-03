@@ -114,6 +114,8 @@ public class PluginSettings {
         public String prisonerAreaPermission = "ozlc-prisoner";
         public String exiledAreaPermission = "ozlc-exiled";
         public String friendAreaPermission = "ozlc-friend";
+        public String customAreaPermissionTemplate = "ozlc-custom-template";
+        public String customAreaPermissionPrefix = "ozlc-custom-";
         // Colors
         // -- Border colors --
         // color="#FFFF0015"
@@ -335,6 +337,9 @@ public class PluginSettings {
                         residentAreaPermission = settings.getProperty("residentAreaPermission", "ozlc-resident");
                         prisonerAreaPermission = settings.getProperty("prisonerAreaPermission", "ozlc-prisoner");
                         exiledAreaPermission = settings.getProperty("exiledAreaPermission", "ozlc-exiled");
+                        customAreaPermissionTemplate = settings.getProperty("customAreaPermissionTemplate",
+                                        "ozlc-custom-template");
+                        customAreaPermissionPrefix = settings.getProperty("customAreaPermissionPrefix", "ozlc-custom-");
 
                         claimBaseCost = Integer.parseInt(settings.getProperty("claimBaseCost", "100"));
                         claimSaleFee = Double.parseDouble(settings.getProperty("claimSaleFee", "0.01"));
