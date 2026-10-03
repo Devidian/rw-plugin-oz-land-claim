@@ -8,8 +8,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.gson.Gson;
@@ -39,6 +41,7 @@ public class CustomAreaPermissionService {
     private static final int ASSIGN_RETRY_COUNT = 10;
     private static final float ASSIGN_RETRY_INTERVAL = 0.4f;
     private static final String RELOAD_PERMISSION_KEY = "command_reloadpermissions";
+    private static final Map<String, Integer> ASSIGN_GENERATIONS = new ConcurrentHashMap<>();
 
     public static OZLogger logger() {
         return LandClaim.logger();
@@ -67,21 +70,43 @@ public class CustomAreaPermissionService {
                 || LandClaim.playerLeaseService().find(area.getID()).map(lease -> !lease.occupied()).orElse(true);
     }
 
+    /** Only the current owner or an admin may edit the area's custom group. */
+    public static boolean canEdit(Player player, Area area) {
+        if (Server.getArea(area.getID()) == null || !isAvailable(area))
+            return false;
+        return player.isAdmin() || s.ownerAreaPermission.equals(area.getPlayerPermission(player));
+    }
+
     /** Creates the area's group from the template if needed and assigns it to the player. */
     public static void assignCustom(Area area, int playerDbId, Callback<Boolean> done) {
-        if (!ensureGroupFile(groupName(area.getID()))) {
-            done.onCall(false);
-            return;
+        String groupName = groupName(area.getID());
+        boolean created = !groupFile(groupName).exists();
+        if (created) {
+            ensureTemplatePresent();
+            if (!copyGroupFile(s.customAreaPermissionTemplate, groupName)) {
+                done.onCall(false);
+                return;
+            }
         }
-        assignWhenLoaded(Map.of(area, List.of(playerDbId)), done);
+        assignWhenLoaded(Map.of(area, List.of(playerDbId)), created, done);
     }
 
     /**
      * Assigns each area's custom group to the given players. New group files are only
      * known to the engine after an asynchronous reload, so failed assignments are retried.
+     * Pass {@code requireReload} after writing a group file: the engine may still know the
+     * group name with its old content. Assignments superseded via {@link #cancelAssign} or
+     * {@link #cleanupArea} stop silently without calling {@code done}.
      */
-    public static void assignWhenLoaded(Map<Area, List<Integer>> assignments, Callback<Boolean> done) {
-        if (trySetPlayerPermissions(assignments)) {
+    public static void assignWhenLoaded(Map<Area, List<Integer>> assignments, boolean requireReload,
+            Callback<Boolean> done) {
+        Map<String, Integer> generations = new HashMap<>();
+        for (Map.Entry<Area, List<Integer>> entry : assignments.entrySet())
+            for (int playerDbId : entry.getValue()) {
+                String key = assignKey(entry.getKey().getID(), playerDbId);
+                generations.put(key, ASSIGN_GENERATIONS.merge(key, 1, Integer::sum));
+            }
+        if (!requireReload && trySetPlayerPermissions(assignments, generations)) {
             finishAssign(assignments, true, done);
             return;
         }
@@ -91,10 +116,15 @@ public class CustomAreaPermissionService {
         Timer timer = new Timer(ASSIGN_RETRY_INTERVAL, ASSIGN_RETRY_INTERVAL, ASSIGN_RETRY_COUNT, () -> {
             if (finished.get())
                 return;
+            if (!anyWanted(assignments, generations)) {
+                if (finished.compareAndSet(false, true))
+                    finishAssign(assignments, false, null);
+                return;
+            }
             attempt[0]++;
             if (attempt[0] == 1 || attempt[0] == 4 || attempt[0] == 7)
                 reloadPermissions();
-            boolean ok = trySetPlayerPermissions(assignments);
+            boolean ok = trySetPlayerPermissions(assignments, generations);
             if (ok || attempt[0] >= ASSIGN_RETRY_COUNT) {
                 if (finished.compareAndSet(false, true)) {
                     if (!ok)
@@ -111,7 +141,31 @@ public class CustomAreaPermissionService {
         for (Area area : assignments.keySet()) {
             releaseIfUnused(area, groupName(area.getID()));
         }
-        done.onCall(ok);
+        if (done != null)
+            done.onCall(ok);
+    }
+
+    /** Stops a pending custom assignment, e.g. after the player was set to another permission. */
+    public static void cancelAssign(long areaId, int playerDbId) {
+        ASSIGN_GENERATIONS.merge(assignKey(areaId, playerDbId), 1, Integer::sum);
+    }
+
+    private static String assignKey(long areaId, int playerDbId) {
+        return areaId + ":" + playerDbId;
+    }
+
+    private static boolean isWanted(Area area, int playerDbId, Map<String, Integer> generations) {
+        String key = assignKey(area.getID(), playerDbId);
+        return generations.get(key).equals(ASSIGN_GENERATIONS.get(key))
+                && Server.getArea(area.getID()) != null && isAvailable(area);
+    }
+
+    private static boolean anyWanted(Map<Area, List<Integer>> assignments, Map<String, Integer> generations) {
+        for (Map.Entry<Area, List<Integer>> entry : assignments.entrySet())
+            for (int playerDbId : entry.getValue())
+                if (isWanted(entry.getKey(), playerDbId, generations))
+                    return true;
+        return false;
     }
 
     /**
@@ -194,6 +248,8 @@ public class CustomAreaPermissionService {
     }
 
     public static void cleanupArea(long areaId) {
+        String prefix = areaId + ":";
+        ASSIGN_GENERATIONS.replaceAll((key, generation) -> key.startsWith(prefix) ? generation + 1 : generation);
         deleteGroupFile(groupName(areaId));
     }
 
@@ -229,25 +285,22 @@ public class CustomAreaPermissionService {
         new Timer(1f, 0f, 1, () -> grantee.setPermissionValue(RELOAD_PERMISSION_KEY, false)).start();
     }
 
-    private static boolean ensureGroupFile(String groupName) {
-        if (groupFile(groupName).exists())
-            return true;
-        ensureTemplatePresent();
-        return copyGroupFile(s.customAreaPermissionTemplate, groupName);
-    }
-
     private static void ensureTemplatePresent() {
         new PermissionFileUtil(LandClaim.getInstance())
                 .copyPermissionFile(s.customAreaPermissionTemplate + ".json", false);
     }
 
-    private static boolean trySetPlayerPermissions(Map<Area, List<Integer>> assignments) {
+    /** Returns false while a wanted assignment is not applied yet, or when none is wanted anymore. */
+    private static boolean trySetPlayerPermissions(Map<Area, List<Integer>> assignments,
+            Map<String, Integer> generations) {
+        boolean anyWanted = false;
         for (Map.Entry<Area, List<Integer>> entry : assignments.entrySet()) {
-            // expand removes areas it has just split off
-            if (Server.getArea(entry.getKey().getID()) == null)
-                continue;
             String groupName = groupName(entry.getKey().getID());
             for (int playerDbId : entry.getValue()) {
+                // superseded, or expand removed an area it has just split off
+                if (!isWanted(entry.getKey(), playerDbId, generations))
+                    continue;
+                anyWanted = true;
                 try {
                     entry.getKey().setPlayerPermission(playerDbId, groupName);
                 } catch (RuntimeException ex) {
@@ -258,7 +311,7 @@ public class CustomAreaPermissionService {
                     return false;
             }
         }
-        return true;
+        return anyWanted;
     }
 
     private static boolean copyGroupFile(String sourceGroupName, String targetGroupName) {

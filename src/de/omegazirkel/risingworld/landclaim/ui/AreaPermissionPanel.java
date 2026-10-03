@@ -117,6 +117,7 @@ public class AreaPermissionPanel extends UIElement {
             return;
         }
 
+        CustomAreaPermissionService.cancelAssign(area.getID(), playerDBID);
         if (newPermission != null && !newPermission.isEmpty() && !newPermission.equals(areaDefault)) {
             area.setPlayerPermission(playerDBID, newPermission);
             String permissionText = newPermission;

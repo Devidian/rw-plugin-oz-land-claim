@@ -1262,7 +1262,7 @@ public class ChunkClaimUtil {
         if (customAssignments.keySet().stream().noneMatch(a -> a.getID() == existingArea.getID()))
             CustomAreaPermissionService.cleanupArea(existingArea.getID());
         if (!customAssignments.isEmpty())
-            CustomAreaPermissionService.assignWhenLoaded(customAssignments, ok -> {
+            CustomAreaPermissionService.assignWhenLoaded(customAssignments, true, ok -> {
             });
 
         p.sendTextMessage(t().get("tc.area.split", p)

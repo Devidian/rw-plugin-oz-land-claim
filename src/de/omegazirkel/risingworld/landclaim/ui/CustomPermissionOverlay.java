@@ -57,7 +57,7 @@ public final class CustomPermissionOverlay extends BasePluginOverlay {
      * Closes the permission manager while the editor is open and reopens it on close.
      */
     public static void open(Player player, Area area, int playerDbId) {
-        if (!CustomAreaPermissionService.isAvailable(area)
+        if (!CustomAreaPermissionService.canEdit(player, area)
                 || !CustomAreaPermissionService.groupName(area.getID()).equals(area.getPlayerPermission(playerDbId)))
             return;
 
@@ -176,6 +176,13 @@ public final class CustomPermissionOverlay extends BasePluginOverlay {
         AdvancedButton cancel = AdvancedButtonFactory.cancel(t().get("tc.ui.custom.cancel", uiPlayer), event -> close());
         button(cancel, 18, buttonY);
         AdvancedButton apply = AdvancedButtonFactory.ok(t().get("tc.ui.custom.apply", uiPlayer), event -> {
+            // ownership may have changed while the editor was open; do not reopen the manager then
+            if (!CustomAreaPermissionService.canEdit(uiPlayer, area)) {
+                uiPlayer.sendTextMessage(t().get("tc.ui.custom.failed", uiPlayer));
+                uiPlayer.deleteAttribute(ATTRIBUTE_KEY);
+                uiPlayer.removeUIElement(this);
+                return;
+            }
             if (!CustomAreaPermissionService.writeFlags(groupName, draft)) {
                 uiPlayer.sendTextMessage(t().get("tc.ui.custom.failed", uiPlayer));
                 return;
