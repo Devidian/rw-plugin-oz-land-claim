@@ -583,6 +583,7 @@ public class LandClaimGUI {
             Area3DUtils.updateAreaFramesForAllPlayers();
             return;
         }
+        CustomAreaPermissionService.cleanupArea(area.getID());
 
         buyer.sendTextMessage(t.get("tc.area.sale.purchased", buyer)
                 .replace("PH_AREA_NAME", displayAreaName)
@@ -806,14 +807,7 @@ public class LandClaimGUI {
         return new MenuItem("menu-zone-permissions",
                 t.get("tc.menu.area.permissions", player),
                 (p) -> {
-                    UIElement overlay = (UIElement) p.getAttribute(PermissionOverlay.ATTRIBUTE_KEY);
-                    if (overlay != null) {
-                        p.removeUIElement(overlay);
-                    }
-                    PermissionOverlay permissionOverlay = new PermissionOverlay(area, p, onResponse);
-                    p.addUIElement(permissionOverlay, UITarget.Modal);
-                    p.setAttribute(PermissionOverlay.ATTRIBUTE_KEY, permissionOverlay);
-
+                    PermissionOverlay.open(p, area, onResponse);
                     p.hideRadialMenu(false);
 
                 });
@@ -1717,8 +1711,10 @@ public class LandClaimGUI {
                                 .transferPlayerToPlayer(p.getDbID(), lease.landlordDbId(), remaining,
                                         "Land Claim lease payoff for area #" + area.getID(), "player-lease-payoff:" + area.getID());
                         if (paid.success() && chunkClaimUtil.transferAreaOwnership(area, p)
-                                && LandClaim.playerLeaseService().completePurchase(area.getID()))
+                                && LandClaim.playerLeaseService().completePurchase(area.getID())) {
+                            CustomAreaPermissionService.cleanupArea(area.getID());
                             p.sendTextMessage(t.get("tc.menu.area.lease.purchased", p));
+                        }
                         onBack.onCall(p);
                     }, onBack), UITarget.Modal);
             p.hideRadialMenu(false);

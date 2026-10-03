@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import de.omegazirkel.risingworld.LandClaim;
+import de.omegazirkel.risingworld.landclaim.CustomAreaPermissionService;
 import de.omegazirkel.risingworld.landclaim.PluginSettings;
 import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.ui.AdvancedButton;
@@ -34,6 +35,8 @@ public class PlayerPermissionRow {
             + (OPTION_COUNT * (OPTION_HEIGHT + OPTION_GAP))
             + SELECT_PANE_PADDING;
     private static final float SELECT_PANE_TOP_PERCENT = 31f;
+    /** Dropdown value for Custom; resolved to the area's shared group on apply, never stored on an area. */
+    public static final String CUSTOM_PERMISSION_OPTION = "__ozlc_custom__";
 
     public static final PluginSettings s = PluginSettings.getInstance();
 
@@ -46,6 +49,8 @@ public class PlayerPermissionRow {
             boolean isOnline,
             String currentPermission,
             String defaultPermission,
+            boolean allowCustom,
+            Runnable onEditCustom,
             Callback<String> callback,
             Player forPlayer,
             UIElement parentOverlay) {
@@ -128,7 +133,7 @@ public class PlayerPermissionRow {
         selectPane.setPivot(Pivot.UpperRight);
         selectPane.setPosition(94, SELECT_PANE_TOP_PERCENT, true);
         selectPane.style.width.set(12, Unit.Percent);
-        selectPane.style.height.set(SELECT_PANE_HEIGHT, Unit.Pixel);
+        selectPane.style.height.set(SELECT_PANE_HEIGHT + (allowCustom ? OPTION_HEIGHT + OPTION_GAP : 0), Unit.Pixel);
         selectPane.setVisible(false);
         selectPane.setBackgroundColor(0, 0, 0, 0.85f);
         selectPane.setBorderColor(0.95f, 0.75f, 0.25f, 0.6f);
@@ -148,7 +153,9 @@ public class PlayerPermissionRow {
         selectPane.addChild(selectPaneTitle);
 
         String defaultLabel = permissionLabel(areaPermissionLabelMap, defaultPermission, forPlayer);
+        String customLabel = t().get("tc.ui.permission.custom", forPlayer);
         String buttonLabel = currentPermission.isBlank() ? defaultLabel
+                : CustomAreaPermissionService.isCustomGroup(currentPermission) ? customLabel
                 : permissionLabel(permissionLabelMap, currentPermission, forPlayer);
 
         AdvancedButton permissionButton = AdvancedButtonFactory.defaultButton(buttonLabel, event -> {
@@ -180,6 +187,19 @@ public class PlayerPermissionRow {
             cb.style.top.set(OPTION_TOP_OFFSET + (row++ * (OPTION_HEIGHT + OPTION_GAP)), Unit.Pixel);
             selectPane.addChild(cb);
         }
+        if (allowCustom) {
+            AdvancedButton customButton = AdvancedButtonFactory.defaultButton(customLabel, event -> {
+                selectPane.setVisible(false);
+                callback.onCall(CUSTOM_PERMISSION_OPTION);
+                permissionButton.setText(customLabel);
+            });
+            customButton.style.width.set(98, Unit.Percent);
+            customButton.style.height.set(OPTION_HEIGHT, Unit.Pixel);
+            customButton.setPivot(Pivot.UpperCenter);
+            customButton.setPosition(50, 0, true);
+            customButton.style.top.set(OPTION_TOP_OFFSET + (row++ * (OPTION_HEIGHT + OPTION_GAP)), Unit.Pixel);
+            selectPane.addChild(customButton);
+        }
         AdvancedButton cb = AdvancedButtonFactory.defaultButton(defaultLabel, event -> {
             selectPane.setVisible(false);
             callback.onCall(defaultPermission);
@@ -192,7 +212,24 @@ public class PlayerPermissionRow {
         cb.style.top.set(OPTION_TOP_OFFSET + (row++ * (OPTION_HEIGHT + OPTION_GAP)), Unit.Pixel);
         selectPane.addChild(cb);
 
-        TableCell workaroundCell = new TableCell(permissionButton, 20);
+        UIElement permissionContent = permissionButton;
+        if (allowCustom && CustomAreaPermissionService.isCustomGroup(currentPermission)) {
+            OZUIElement permissionActions = new OZUIElement();
+            permissionActions.setSize(98, 98, true);
+            permissionButton.setPivot(Pivot.UpperLeft);
+            permissionButton.setPosition(0, 0, true);
+            permissionButton.setSize(66, 100, true);
+            permissionActions.addChild(permissionButton);
+            AdvancedButton editButton = AdvancedButtonFactory.defaultButton(t().get("tc.ui.custom.edit", forPlayer),
+                    event -> onEditCustom.run());
+            editButton.setPivot(Pivot.UpperLeft);
+            editButton.setPosition(68, 0, true);
+            editButton.setSize(32, 100, true);
+            permissionActions.addChild(editButton);
+            permissionContent = permissionActions;
+        }
+
+        TableCell workaroundCell = new TableCell(permissionContent, 20);
 
         return new TableRow(Arrays.asList(cellName, cellUID, cellStatus, workaroundCell));
     }

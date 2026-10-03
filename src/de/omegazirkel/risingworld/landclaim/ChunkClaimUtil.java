@@ -1,5 +1,7 @@
 package de.omegazirkel.risingworld.landclaim;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -940,6 +942,8 @@ public class ChunkClaimUtil {
         // we remove all areas before createing the new one
         // Server.removeArea(area);
         for (Area a : areasToRemove) {
+            // absorbed/split leftovers keep no custom group files behind
+            CustomAreaPermissionService.cleanupArea(a.getID());
             Server.removeArea(a);
             // a.destroy();
         }
@@ -1144,6 +1148,7 @@ public class ChunkClaimUtil {
                 for (Map.Entry<Integer, String> entry : permissionSet.entrySet()) {
                     area.removePlayerPermission(entry.getKey());
                 }
+            CustomAreaPermissionService.cleanupArea(area.getID());
             // 2. remove area from server
             String areaName = area.getName() == null ? "Unnamed Area" : area.getName();
             Server.removeArea(area);
@@ -1216,6 +1221,7 @@ public class ChunkClaimUtil {
 
         // Remove origin area
         Server.removeArea(existingArea);
+        Map<Area, List<Integer>> customAssignments = new HashMap<>();
         for (Vector3i chunk : chunks) {
             Area newArea = getVirtualAreaFromChunkVector(chunk);
             newArea.setName(existingArea.getName());
@@ -1226,7 +1232,19 @@ public class ChunkClaimUtil {
             Map<Integer, String> permissions = existingArea.getAllPlayerPermissions();
             if (permissions != null)
                 for (Map.Entry<Integer, String> entry : permissions.entrySet()) {
-                    newArea.setPlayerPermission(entry.getKey(), entry.getValue());
+                    String permission = entry.getValue();
+                    // custom groups are bound to an area id, every new area gets one shared copy
+                    if (CustomAreaPermissionService.isCustomGroup(permission)) {
+                        List<Integer> customPlayers = customAssignments.get(newArea);
+                        if (customPlayers == null && CustomAreaPermissionService.copyToArea(permission, newArea.getID())) {
+                            customPlayers = new ArrayList<>();
+                            customAssignments.put(newArea, customPlayers);
+                        }
+                        if (customPlayers != null)
+                            customPlayers.add(entry.getKey());
+                        continue;
+                    }
+                    newArea.setPlayerPermission(entry.getKey(), permission);
                     if (entry.getValue().equals(s.ownerAreaPermission)) {
                         ownerId = entry.getKey();
                     }
@@ -1240,6 +1258,12 @@ public class ChunkClaimUtil {
             newArea.setDefaultPermission(defaultPermission);
             service.saveChunkClaim(ownerUIDS[0], ownerId, chunk, System.currentTimeMillis(), newArea.getID());
         }
+        // a new area may reuse the old id, so keep the group that was just written
+        if (customAssignments.keySet().stream().noneMatch(a -> a.getID() == existingArea.getID()))
+            CustomAreaPermissionService.cleanupArea(existingArea.getID());
+        if (!customAssignments.isEmpty())
+            CustomAreaPermissionService.assignWhenLoaded(customAssignments, ok -> {
+            });
 
         p.sendTextMessage(t().get("tc.area.split", p)
                 .replace("PH_AREA_NAME", existingArea.getName())

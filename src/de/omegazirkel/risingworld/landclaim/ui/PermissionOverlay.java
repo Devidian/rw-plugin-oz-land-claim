@@ -10,6 +10,8 @@ import net.risingworld.api.Server;
 import net.risingworld.api.callbacks.Callback;
 import net.risingworld.api.objects.Area;
 import net.risingworld.api.objects.Player;
+import net.risingworld.api.ui.UIElement;
+import net.risingworld.api.ui.UITarget;
 
 public class PermissionOverlay extends BasePluginOverlay {
     public static final String ATTRIBUTE_KEY = "landclaim-overlay";
@@ -23,6 +25,20 @@ public class PermissionOverlay extends BasePluginOverlay {
 
         rebuild();
         body.addChild(new AreaPermissionPanel(area, player, this));
+    }
+
+    /** Opens (or replaces) the permission manager for the given area. */
+    public static void open(Player player, Area area, Callback<Player> onClose) {
+        UIElement existing = (UIElement) player.getAttribute(ATTRIBUTE_KEY);
+        if (existing != null)
+            player.removeUIElement(existing);
+        PermissionOverlay overlay = new PermissionOverlay(area, player, onClose);
+        player.addUIElement(overlay, UITarget.Modal);
+        player.setAttribute(ATTRIBUTE_KEY, overlay);
+    }
+
+    Callback<Player> closeCallback() {
+        return onClose;
     }
 
     @Override

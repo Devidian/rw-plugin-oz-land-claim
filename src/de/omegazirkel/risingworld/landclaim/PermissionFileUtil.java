@@ -22,6 +22,11 @@ public class PermissionFileUtil {
         this.plugin = plugin;
     }
 
+    /** The server's Permissions/Areas directory. */
+    public File areaPermissionDirectory() {
+        return new File(plugin.getPath() + "/../../Permissions/Areas/");
+    }
+
     /**
      * Copies a permission file from inside the plugin JAR into the server's
      * Permissions/Areas directory.
@@ -32,7 +37,7 @@ public class PermissionFileUtil {
      * @return true if file was copied, false if skipped
      */
     public boolean copyPermissionFile(String sourceName, boolean overwrite) {
-        File targetDir = new File(plugin.getPath() + "/../../Permissions/Areas/");
+        File targetDir = areaPermissionDirectory();
         if (!targetDir.exists()) {
             if (targetDir.mkdirs()) {
                 logger().info("Created permission target directory: " + targetDir.getAbsolutePath());

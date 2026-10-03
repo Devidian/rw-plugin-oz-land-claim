@@ -1081,7 +1081,51 @@
         },
         "unoccupied": "Unoccupied"
       },
+      "custom": {
+        "apply": "Apply",
+        "cancel": "Cancel",
+        "edit": "Edit",
+        "failed": "Custom permissions could not be saved.",
+        "flag": {
+          "destroyconstructions": "Destroy constructions",
+          "destroyobjects": "Destroy objects",
+          "destroyownconstructions": "Destroy own constructions",
+          "destroyownobjects": "Destroy own objects",
+          "destroyownvegetations": "Destroy own vegetation",
+          "destroyterrain": "Destroy terrain",
+          "destroyvegetations": "Destroy vegetation",
+          "editconstructions": "Edit constructions",
+          "editobjects": "Edit objects",
+          "editownconstructions": "Edit own constructions",
+          "editownobjects": "Edit own objects",
+          "editownvegetations": "Edit own vegetation",
+          "editvegetations": "Edit vegetation",
+          "placeconstructions": "Place constructions",
+          "placeobjects": "Place objects",
+          "placeterrain": "Place terrain",
+          "placevegetations": "Place vegetation",
+          "keepinventory": "Keep inventory",
+          "pve": "PvE (fight creatures)",
+          "pvp": "PvP (fight players)",
+          "ridemounts": "Ride mounts",
+          "unlockalldoors": "Unlock all doors",
+          "useallchests": "Use all chests",
+          "usealldoors": "Use all doors",
+          "useallfurnaces": "Use all furnaces",
+          "usealllights": "Use all lights",
+          "useallobjects": "Use all objects",
+          "useallvehicles": "Use all vehicles"
+        },
+        "legend": "Applies to all players set to Custom on this area. Changes are only saved with Apply.",
+        "section": {
+          "general": "General",
+          "world": "World"
+        },
+        "subtitle": "Area: PH_AREA_NAME",
+        "title": "Custom permissions"
+      },
       "permission": {
+        "custom": "Custom",
         "exiled": "Exiled",
         "friend": "Friend",
         "guest": "Guest",
@@ -1099,6 +1143,9 @@
       },
       "player": {
         "permission": {
+          "custom": {
+            "failed": "Player \u003ccolor\u003dyellow\u003ePH_PLAYER_NAME\u003c/color\u003e could not be set to Custom."
+          },
           "set": "Permissions for player \u003ccolor\u003dyellow\u003ePH_PLAYER_NAME\u003c/color\u003e set to \u003ccolor\u003dyellow\u003ePH_PERMISSION\u003c/color\u003e.",
           "unset": "Permissions for player \u003ccolor\u003dyellow\u003ePH_PLAYER_NAME\u003c/color\u003e removed."
         }
