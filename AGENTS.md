@@ -17,7 +17,7 @@ Does not own:
 - GPS, intercom, or admin utility domain logic
 
 ## Mandatory Workflow Rules
-- Preserve the Java 20 baseline.
+- Preserve the Java 25 baseline.
 - Preserve Maven build and GitHub tag-release behavior.
 - Keep dependencies minimal and runtime-safe.
 - Use `rw-plugin-oz-tools` for reusable infrastructure.
