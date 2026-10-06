@@ -4,6 +4,12 @@
 
 ## Unreleased
 
+## [0.22.0] - 2026-10-06 | Native zone naming
+
+- change: ask for a zone name in a native dialog before creating player claims, unclaimed rentals, or special zones, and use native dialogs for renaming.
+- fix: title the native name dialog for the selected claim, purchase, rental, or special-zone action.
+- build: move the plugin baseline to Java 25 and refresh the bundled PluginAPI 0.9.3.2 JAR.
+
 ## [0.21.3] - 2026-09-30 | Offline owner claim release
 
 - fix: clear claims for offline owners during administrative area release without dereferencing an online Player.

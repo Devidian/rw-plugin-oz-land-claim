@@ -465,12 +465,17 @@ public class ChunkClaimUtil {
 
     /** Creates a world-rented claim without the normal up-front land purchase. */
     public Area claimUnclaimedRental(Player player, Area area) {
+        return claimUnclaimedRental(player, area, null);
+    }
+
+    public Area claimUnclaimedRental(Player player, Area area, String name) {
         if (!canPlayerClaimArea(player, area, message -> player.sendTextMessage(message))) return null;
         try {
             long now = System.currentTimeMillis();
             area.setNameVisible(true);
             area.setDefaultPermission(s.defaultAreaPermission);
             area.setName("Rented by " + player.getName());
+            if (name != null && !name.isBlank()) area.setName(name.trim());
             Server.addArea(area, true);
             area.setAttribute("ownerUID", player.getUID());
             area.setAttribute("ownerDBID", player.getDbID());
@@ -497,6 +502,10 @@ public class ChunkClaimUtil {
     }
 
     public Area claimArea(Player p, Area area, String defaultPermission, Integer ownerDBId) {
+        return claimArea(p, area, defaultPermission, ownerDBId, null);
+    }
+
+    public Area claimArea(Player p, Area area, String defaultPermission, Integer ownerDBId, String name) {
         if (!canPlayerClaimArea(p, area, (t) -> p.sendTextMessage(t))) {
             return null;
         }
@@ -569,6 +578,7 @@ public class ChunkClaimUtil {
         } else {
             area.setName(defaultPermission + " area");
         }
+        if (name != null && !name.isBlank()) area.setName(name.trim());
         // we must set name BEFORE addArea
         Server.addArea(area, true);
         // we must set player permission AFTER addArea (because before it has no id in

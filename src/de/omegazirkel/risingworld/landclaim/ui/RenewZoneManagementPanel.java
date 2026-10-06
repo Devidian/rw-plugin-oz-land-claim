@@ -76,7 +76,18 @@ public final class RenewZoneManagementPanel extends UIElement {
         return new TableRow(Arrays.asList(cell(name, 42), cell(String.valueOf(config.intervalHours()), 16),
                 cell(NEXT_RESET_FORMAT.format(Instant.ofEpochMilli(nextReset)), 25), new TableCell(actions, 17)));
     }
-    private void rename(Area area) { if (area == null) return; input(t().get("tc.renew.zone.management.rename", player), area.getName(), value -> { if (!value.isBlank()) area.setName(value); rebuild(); }); }
+    private void rename(Area area) {
+        if (area == null) return;
+        player.showInputMessageBox(t().get("tc.renew.zone.management.rename", player),
+                t().get("tc.dialog.area.name.prompt", player), area.getName() == null ? "" : area.getName(),
+                value -> LandClaim.getInstance().enqueue(() -> {
+                    if (!player.isConnected()) return;
+                    if (value != null && !value.isBlank() && Server.getArea(area.getID()) != null) {
+                        area.setName(value.trim());
+                    }
+                    rebuild();
+                }));
+    }
     private void edit(RenewZoneConfig config) { input(t().get("tc.renew.zone.management.interval", player), String.valueOf(config.intervalHours()), value -> { int hours = positive(value); if (hours > 0) configs.save(config.areaId(), hours, config.lastResetAt()); rebuild(); }); }
     private void editAll() { input(t().get("tc.renew.zone.management.all.interval", player), String.valueOf(settings.renewZoneDefaultIntervalHours), value -> { int hours = positive(value); if (hours > 0) confirm(t().get("tc.renew.zone.management.confirm.interval", player), () -> configs.updateAllIntervals(hours)); }); }
     private void confirmAll() { confirm(t().get("tc.renew.zone.management.confirm.all", player), () -> resetter.resetAll(System.currentTimeMillis())); }

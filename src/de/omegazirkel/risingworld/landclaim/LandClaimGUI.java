@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.time.LocalDate;
 
 import de.omegazirkel.risingworld.LandClaim;
@@ -181,12 +182,8 @@ public class LandClaimGUI {
         return new MenuItem("zone-claim-rename",
                 t.get("tc.menu.area.rename", player),
                 (p) -> {
-                    UIElement renameWindow = UIDialogFactory.getTextInput(p,
-                            t.get("tc.dialog.area.rename.title", p),
-                            area.getName(), (String v) -> {
-                                if (v.isEmpty())
-                                    onCancel.onCall(p);
-                                else {
+                    showAreaNameInput(p, "tc.dialog.area.rename.title", area.getName(), v -> {
+                                if (v != null && Server.getArea(area.getID()) != null) {
                                     area.setName(v);
                                     if (LandClaim.cityService() != null
                                             && LandClaim.cityService().findCity(area.getID()).isPresent()) {
@@ -206,14 +203,25 @@ public class LandClaimGUI {
                                             .replace("PH_AREA_NAME", v)
                                             .replace("PH_OLD_NAME",
                                                     currentName != null ? currentName : "Unnamed Area"));
-                                    onCancel.onCall(p);
                                 }
-                            }, onCancel);
-
-                    p.addUIElement(renameWindow, UITarget.Modal);
-                    p.hideRadialMenu(false);
+                                onCancel.onCall(p);
+                            });
 
                 });
+    }
+
+    private void showAreaNameInput(Player player, String titleKey, String currentName, Callback<String> onResult) {
+        player.hideRadialMenu(false);
+        LandClaim.getInstance().executeDelayed(0.1f, () -> {
+            if (!player.isConnected()) return;
+            AtomicBoolean handled = new AtomicBoolean();
+            player.showInputMessageBox(t.get(titleKey, player),
+                    t.get("tc.dialog.area.name.prompt", player), currentName == null ? "" : currentName,
+                    answer -> LandClaim.getInstance().enqueue(() -> {
+                        if (!player.isConnected() || !handled.compareAndSet(false, true)) return;
+                        onResult.onCall(answer == null || answer.isBlank() ? null : answer.trim());
+                    }));
+        });
     }
 
     private MenuItem menuItemRemoveArea(Player player, Area area, Callback<Player> onCancel) {
@@ -476,14 +484,17 @@ public class LandClaimGUI {
             UIElement confirm = UIDialogFactory.getConfirmDangerDialogText(p,
                     t.get("tc.menu.area.lease.rent-unclaimed", p), confirmation, 150, accepted -> {
                         if (!accepted) { onCancel.onCall(p); return; }
-                        Area created = chunkClaimUtil.claimUnclaimedRental(p, virtualArea);
-                        if (created != null && !LandClaim.unclaimedLeaseService().create(created.getID(), p.getUID(),
-                                p.getDbID(), purchasePrice, dailyRent,
-                                Math.max(0L, s.unclaimedLeaseAncillaryCost), LocalDate.now().toString())) {
-                            chunkClaimUtil.revokeUnclaimedRental(created);
-                        }
-                        Area3DUtils.updateAreaFramesForAllPlayers();
-                        onCancel.onCall(p);
+                        showAreaNameInput(p, "tc.dialog.area.rent.title", "", name -> {
+                            if (name == null) { onCancel.onCall(p); return; }
+                            Area created = chunkClaimUtil.claimUnclaimedRental(p, virtualArea, name);
+                            if (created != null && !LandClaim.unclaimedLeaseService().create(created.getID(), p.getUID(),
+                                    p.getDbID(), purchasePrice, dailyRent,
+                                    Math.max(0L, s.unclaimedLeaseAncillaryCost), LocalDate.now().toString())) {
+                                chunkClaimUtil.revokeUnclaimedRental(created);
+                            }
+                            Area3DUtils.updateAreaFramesForAllPlayers();
+                            onCancel.onCall(p);
+                        });
                     }, onCancel);
             p.addUIElement(confirm, UITarget.Modal);
             p.hideRadialMenu(false);
@@ -705,59 +716,65 @@ public class LandClaimGUI {
         return new MenuItem(iconKey,
                 t.get(labelKey, uiPlayer),
                 (p) -> {
-                    Area createdArea = chunkClaimUtil.claimArea(uiPlayer, area, permission, null);
-
-                    if (createdArea != null) {
-                        if (permission.equals(s.specialRenewAreaPermission)
-                                && LandClaim.renewZoneConfigService() != null) {
-                            LandClaim.renewZoneConfigService().save(
-                                    createdArea.getID(),
-                                    s.renewZoneDefaultIntervalHours,
-                                    System.currentTimeMillis());
+                    showAreaNameInput(p, labelKey, "", name -> {
+                        if (name == null) {
+                            openSpecialAreaMenu(p, onBack);
+                            return;
                         }
-                        if (permission.equals(s.specialCityCorePermission)) {
-                            if (LandClaim.cityService() == null) {
-                                Server.removeArea(createdArea);
-                                showCityCreationError(p, "SERVICE_UNAVAILABLE", "");
-                                openSpecialAreaMenu(uiPlayer, onBack);
-                                return;
-                            }
-                            de.omegazirkel.risingworld.landclaim.db.CityService.CityCreationEligibility eligibility =
-                                    LandClaim.cityService().creationEligibility(createdArea, s.cityBaseRadius);
-                            if (!eligibility.eligible()) {
-                                Server.removeArea(createdArea);
-                                showCityCreationError(p, eligibility.blocker().name(), "");
-                                openSpecialAreaMenu(uiPlayer, onBack);
-                                return;
-                            }
-                            CityRecord city = LandClaim.cityService().createCity(createdArea, createdArea.getName(),
-                                    s.cityBaseRadius);
-                            EconomyIntegration.WalletOperationResult account = city == null
-                                    ? new EconomyIntegration.WalletOperationResult(false, "")
-                                    : LandClaim.economyIntegration().createCityAccount(createdArea.getID(), city.name());
-                            if (city == null || !account.success()) {
-                                if (city != null) LandClaim.cityService().deleteCityRecord(createdArea.getID());
-                                Server.removeArea(createdArea);
-                                showCityCreationError(p, "WALLET", account.message());
-                                openSpecialAreaMenu(uiPlayer, onBack);
-                                return;
-                            }
-                        } else if (permission.equals(s.specialCityLeaseholdPermission)) {
-                            CityRecord city = LandClaim.cityService() == null ? null
-                                    : LandClaim.cityService().containingCity(createdArea.getStartChunkPosition())
-                                            .orElse(null);
-                            if (city == null || LandClaim.cityService().createLeasehold(createdArea, city) == null) {
-                                Server.removeArea(createdArea);
-                                p.sendTextMessage(t.get("tc.city.leasehold.create.failed", p));
-                                openSpecialAreaMenu(uiPlayer, onBack);
-                                return;
-                            }
-                        }
-                        createSpecialAreaAnnouncement(area, uiPlayer);
-                        Area3DUtils.updateAreaFramesForAllPlayers();
-                    }
+                        Area createdArea = chunkClaimUtil.claimArea(p, area, permission, null, name);
 
-                    openSpecialAreaMenu(uiPlayer, onBack);
+                        if (createdArea != null) {
+                            if (permission.equals(s.specialRenewAreaPermission)
+                                    && LandClaim.renewZoneConfigService() != null) {
+                                LandClaim.renewZoneConfigService().save(
+                                        createdArea.getID(),
+                                        s.renewZoneDefaultIntervalHours,
+                                        System.currentTimeMillis());
+                            }
+                            if (permission.equals(s.specialCityCorePermission)) {
+                                if (LandClaim.cityService() == null) {
+                                    Server.removeArea(createdArea);
+                                    showCityCreationError(p, "SERVICE_UNAVAILABLE", "");
+                                    openSpecialAreaMenu(uiPlayer, onBack);
+                                    return;
+                                }
+                                de.omegazirkel.risingworld.landclaim.db.CityService.CityCreationEligibility eligibility =
+                                        LandClaim.cityService().creationEligibility(createdArea, s.cityBaseRadius);
+                                if (!eligibility.eligible()) {
+                                    Server.removeArea(createdArea);
+                                    showCityCreationError(p, eligibility.blocker().name(), "");
+                                    openSpecialAreaMenu(uiPlayer, onBack);
+                                    return;
+                                }
+                                CityRecord city = LandClaim.cityService().createCity(createdArea, createdArea.getName(),
+                                        s.cityBaseRadius);
+                                EconomyIntegration.WalletOperationResult account = city == null
+                                        ? new EconomyIntegration.WalletOperationResult(false, "")
+                                        : LandClaim.economyIntegration().createCityAccount(createdArea.getID(), city.name());
+                                if (city == null || !account.success()) {
+                                    if (city != null) LandClaim.cityService().deleteCityRecord(createdArea.getID());
+                                    Server.removeArea(createdArea);
+                                    showCityCreationError(p, "WALLET", account.message());
+                                    openSpecialAreaMenu(uiPlayer, onBack);
+                                    return;
+                                }
+                            } else if (permission.equals(s.specialCityLeaseholdPermission)) {
+                                CityRecord city = LandClaim.cityService() == null ? null
+                                        : LandClaim.cityService().containingCity(createdArea.getStartChunkPosition())
+                                                .orElse(null);
+                                if (city == null || LandClaim.cityService().createLeasehold(createdArea, city) == null) {
+                                    Server.removeArea(createdArea);
+                                    p.sendTextMessage(t.get("tc.city.leasehold.create.failed", p));
+                                    openSpecialAreaMenu(uiPlayer, onBack);
+                                    return;
+                                }
+                            }
+                            createSpecialAreaAnnouncement(createdArea, p);
+                            Area3DUtils.updateAreaFramesForAllPlayers();
+                        }
+
+                        openSpecialAreaMenu(p, onBack);
+                    });
                 });
     }
 
@@ -1624,8 +1641,20 @@ public class LandClaimGUI {
     }
 
     private void claimCurrentChunk(Player p) {
-        Area createdArea = chunkClaimUtil.claimArea(p,
-                ChunkClaimUtil.getVirtualAreaFromChunkVector(p.getChunkPosition()));
+        Area target = ChunkClaimUtil.getVirtualAreaFromChunkVector(p.getChunkPosition());
+        String titleKey = ClaimModePolicy.current() == ClaimMode.LAND_PRICING || isCityPrivateClaim(target)
+                ? "tc.dialog.area.buy.title" : "tc.menu.claim";
+        showAreaNameInput(p, titleKey, "", name -> {
+            if (name == null) {
+                openMainMenu(p);
+                return;
+            }
+            createNamedClaim(p, target, name);
+        });
+    }
+
+    private void createNamedClaim(Player p, Area target, String name) {
+        Area createdArea = chunkClaimUtil.claimArea(p, target, s.defaultAreaPermission, p.getDbID(), name);
         if (createdArea != null) {
                             p.sendYellMessage(t.get("tc.claim.congratulation", p), 5, true);
                             // Discord announcement

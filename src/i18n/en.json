@@ -372,6 +372,15 @@
         "rename": {
           "title": "Rename area"
         },
+        "buy": {
+          "title": "Buy area"
+        },
+        "rent": {
+          "title": "Rent area"
+        },
+        "name": {
+          "prompt": "Area name"
+        },
         "sale": {
           "buy": {
             "confirm": "Buy\n\u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e\nfor \u003ccolor\u003dyellow\u003ePH_PRICE PH_CURRENCY\u003c/color\u003e?",

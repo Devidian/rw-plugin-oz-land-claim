@@ -372,6 +372,15 @@
         "rename": {
           "title": "Zone umbenennen"
         },
+        "buy": {
+          "title": "Zone kaufen"
+        },
+        "rent": {
+          "title": "Zone mieten"
+        },
+        "name": {
+          "prompt": "Name der Zone"
+        },
         "sale": {
           "buy": {
             "confirm": "\u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e\nfür \u003ccolor\u003dyellow\u003ePH_PRICE PH_CURRENCY\u003c/color\u003e kaufen?",
