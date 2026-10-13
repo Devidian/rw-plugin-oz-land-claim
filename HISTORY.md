@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- fix: bound each time-based claim wait to configurable minimum and maximum multiples of the base time, including area expansions.
+
 ## [0.22.0] - 2026-10-06 | Native zone naming
 
 - change: ask for a zone name in a native dialog before creating player claims, unclaimed rentals, or special zones, and use native dialogs for renaming.

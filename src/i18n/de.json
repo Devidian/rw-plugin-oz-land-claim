@@ -764,6 +764,14 @@
         "desc": "Dezimaler Skalierungsfaktor zum Erhöhen oder Verringern der Claim-Wartezeit.",
         "label": "Claim-Zeitskalierung"
       },
+      "claimtimeminfactor": {
+        "desc": "Untergrenze der Claim-Wartezeit als Vielfaches von Minuten bis Claim.",
+        "label": "Minimaler Claim-Zeitfaktor"
+      },
+      "claimtimemaxfactor": {
+        "desc": "Obergrenze der Claim-Wartezeit als Vielfaches von Minuten bis Claim.",
+        "label": "Maximaler Claim-Zeitfaktor"
+      },
       "discordrenewzonelogchannelid": {
         "desc": "Discord-Kanal-ID für Erneuerungszonen-Protokolle; 0 deaktiviert sie.",
         "label": "Discord-Erneuerungsprotokoll"

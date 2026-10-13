@@ -78,6 +78,9 @@ All settings can be adjusted in the `settings.<world>.json` file located in the 
 | `cityExpansionBasePrice`        | `50` | Price per newly covered chunk for city radius expansion. |
 | `cityRentBillingHour`           | `0` | Server-local daily rent billing hour, from 0 through 23. |
 | `minutesToClaim`                | `10`    | The minimum time in minutes a player must stay in a chunk before they are allowed to claim it.                 |
+| `claimTimeScaleFactor`          | `1.01`  | Multiplies claim time for each successive chunk; positive values below `1` decrease the wait. |
+| `claimTimeMinFactor`            | `0.1`   | Lower bound for each chunk's wait time as a multiple of `minutesToClaim`. |
+| `claimTimeMaxFactor`            | `2.5`   | Upper bound for each chunk's wait time as a multiple of `minutesToClaim`. |
 | `basicClaimLimit`               | `1`     | The initial number of chunks a player can claim.                                                               |
 | `playTimeHoursExtraClaimFactor` | `0.6`   | A factor to calculate additional claim slots based on playtime. `HoursPlayed * Factor = ExtraClaims`.          |
 | `claimProtectionBaseTimeDays`   | `7`     | The minimum number of offline days before another player can claim a chunk.                                    |

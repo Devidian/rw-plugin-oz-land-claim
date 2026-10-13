@@ -764,6 +764,14 @@
         "desc": "Decimal scale factor for increasing or decreasing claim wait time.",
         "label": "Claim time scale"
       },
+      "claimtimeminfactor": {
+        "desc": "Lower claim wait time bound as a multiple of minutes to claim.",
+        "label": "Minimum claim time factor"
+      },
+      "claimtimemaxfactor": {
+        "desc": "Upper claim wait time bound as a multiple of minutes to claim.",
+        "label": "Maximum claim time factor"
+      },
       "discordrenewzonelogchannelid": {
         "desc": "Discord channel ID for renew-zone logs; 0 disables them.",
         "label": "Discord renew-zone log"

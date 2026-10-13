@@ -31,6 +31,8 @@ public class PluginSettings {
         public ClaimMode claimMode = ClaimMode.TIME_BASED;
         public Integer minutesToClaim = 10;
         public double claimTimeScaleFactor = 1.01;
+        public double claimTimeMinFactor = 0.1;
+        public double claimTimeMaxFactor = 2.5;
         public Integer basicClaimLimit = 5;
         public double playTimeHoursExtraClaimFactor = 0.6;
         public Integer claimProtectionBaseTimeDays = 7;
@@ -264,6 +266,18 @@ public class PluginSettings {
                         // claim settings
                         minutesToClaim = Integer.parseInt(settings.getProperty("minutesToClaim", "10"));
                         claimTimeScaleFactor = Double.parseDouble(settings.getProperty("claimTimeScaleFactor", "1.01"));
+                        claimTimeMinFactor = Double.parseDouble(settings.getProperty("claimTimeMinFactor", "0.1"));
+                        claimTimeMaxFactor = Double.parseDouble(settings.getProperty("claimTimeMaxFactor", "2.5"));
+                        if (!Double.isFinite(claimTimeScaleFactor) || claimTimeScaleFactor <= 0) {
+                                logger().warn("Invalid claimTimeScaleFactor; using 1.01.");
+                                claimTimeScaleFactor = 1.01;
+                        }
+                        if (!Double.isFinite(claimTimeMinFactor) || claimTimeMinFactor <= 0
+                                        || !Double.isFinite(claimTimeMaxFactor) || claimTimeMaxFactor < claimTimeMinFactor) {
+                                logger().warn("Invalid claim time factor bounds; using 0.1 and 2.5.");
+                                claimTimeMinFactor = 0.1;
+                                claimTimeMaxFactor = 2.5;
+                        }
                         landPriceBase = Long.parseLong(settings.getProperty("landPriceBase", "1000"));
                         landPriceClusterIncrement = Double
                                         .parseDouble(settings.getProperty("landPriceClusterIncrement", "0.05"));
@@ -475,6 +489,12 @@ public class PluginSettings {
                                 entry("claimTimeScaleFactor", "Claim time scale",
                                                 "Decimal scale factor for increasing or decreasing claim wait time.",
                                                 claimTimeScaleFactor, "1.01", AdminSettingsType.DECIMAL),
+                                entry("claimTimeMinFactor", "Minimum claim time factor",
+                                                "Lowest claim wait time as a multiple of minutes to claim.",
+                                                claimTimeMinFactor, "0.1", AdminSettingsType.DECIMAL),
+                                entry("claimTimeMaxFactor", "Maximum claim time factor",
+                                                "Highest claim wait time as a multiple of minutes to claim.",
+                                                claimTimeMaxFactor, "2.5", AdminSettingsType.DECIMAL),
                                 entry("playTimeHoursExtraClaimFactor", "Playtime extra-claim factor",
                                                 "Decimal factor used to grant additional claims from playtime.",
                                                 playTimeHoursExtraClaimFactor, "0.6", AdminSettingsType.DECIMAL),

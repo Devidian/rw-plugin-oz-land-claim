@@ -141,14 +141,17 @@ public class ChunkClaimUtil {
     }
 
     public long getPlayerNextClaimTime(Player p, Integer chunkCount) {
-        return claimTimeForClaimRange(s.minutesToClaim * 60, s.claimTimeScaleFactor, getPlayerClaimCount(p), chunkCount);
+        return claimTimeForClaimRange(s.minutesToClaim * 60, s.claimTimeScaleFactor,
+                s.claimTimeMinFactor, s.claimTimeMaxFactor, getPlayerClaimCount(p), chunkCount);
     }
 
-    static long claimTimeForClaimRange(int baseTimeSeconds, double scaleFactor, long claimCountBeforeRange,
-            int chunkCount) {
+    static long claimTimeForClaimRange(int baseTimeSeconds, double scaleFactor, double minFactor,
+            double maxFactor, long claimCountBeforeRange, int chunkCount) {
         long timeToClaim = 0;
         for (int i = 0; i < chunkCount; i++) {
-            timeToClaim += (long) (baseTimeSeconds * Math.pow(scaleFactor, claimCountBeforeRange + i));
+            double factor = Math.max(minFactor, Math.min(maxFactor,
+                    Math.pow(scaleFactor, claimCountBeforeRange + i)));
+            timeToClaim += (long) (baseTimeSeconds * factor);
         }
         return timeToClaim;
     }
@@ -874,7 +877,7 @@ public class ChunkClaimUtil {
         // area therefore remains creditable towards the newly required total.
         long claimCountBeforeArea = Math.max(0L, (long) ownerClaimCount - chunks.size());
         long timeToClaimNeeded = claimTimeForClaimRange(s.minutesToClaim * 60, s.claimTimeScaleFactor,
-                claimCountBeforeArea, chunkInExtendedArea.size());
+                s.claimTimeMinFactor, s.claimTimeMaxFactor, claimCountBeforeArea, chunkInExtendedArea.size());
         long sumTimeInChunks = 0;
         for (Vector3i chunk : chunkInExtendedArea) {
             sumTimeInChunks += playerTimeInChunkInSeconds(p, chunk);

@@ -1,0 +1,1 @@
+- Bound time-based claim and area-expansion wait times with configurable minimum and maximum factors.

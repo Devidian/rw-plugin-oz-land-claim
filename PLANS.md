@@ -1,5 +1,6 @@
 # PLANS.md
 
+- [x] Bound time-based claim and expansion waits with configurable factors and targeted tests.
 - [ ] Validate the next-300926 change on Development with a controlled player check.
 
 Planning is stored in repository-local docs.
