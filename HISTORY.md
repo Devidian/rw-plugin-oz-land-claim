@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+## [0.22.1] - 2026-10-13 | Bounded claim wait times
+
 - fix: bound each time-based claim wait to configurable minimum and maximum multiples of the base time, including area expansions.
 
 ## [0.22.0] - 2026-10-06 | Native zone naming
