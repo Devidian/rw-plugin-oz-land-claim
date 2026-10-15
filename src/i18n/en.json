@@ -630,6 +630,19 @@
       }
     },
     "setting": {
+      "discordclaimannouncementthreadtopic": {"label": "Claim announcements thread", "desc": "Blank uses the plugin display name. The same channel and thread name reuse one thread."},
+      "discordexpandannouncementthreadtopic": {"label": "Claim expansions thread", "desc": "Blank uses the plugin display name. The same channel and thread name reuse one thread."},
+      "discordreleaseaccouncementthreadtopic": {"label": "Claim releases thread", "desc": "Blank uses the plugin display name. The same channel and thread name reuse one thread."},
+      "discordforsaleaccouncementthreadtopic": {"label": "Claims for sale thread", "desc": "Blank uses the plugin display name. The same channel and thread name reuse one thread."},
+      "discordbuyaccouncementthreadtopic": {"label": "Claim purchases thread", "desc": "Blank uses the plugin display name. The same channel and thread name reuse one thread."},
+      "discordrenewzonelogthreadtopic": {"label": "Renew zone log thread", "desc": "Blank uses the plugin display name. The same channel and thread name reuse one thread."},
+      "discord.cleanupeventthreadtopic": {"label": "Claim cleanup thread", "desc": "Blank uses the plugin display name. The same channel and thread name reuse one thread."},
+      "discordclaimannouncementchannelid": {"label": "Claim announcements channel", "desc": "Discord channel ID; 0 disables these notifications."},
+      "discordexpandannouncementchannelid": {"label": "Claim expansions channel", "desc": "Discord channel ID; 0 disables these notifications."},
+      "discordreleaseaccouncementchannelid": {"label": "Claim releases channel", "desc": "Discord channel ID; 0 disables these notifications."},
+      "discordforsaleaccouncementchannelid": {"label": "Claims for sale channel", "desc": "Discord channel ID; 0 disables these notifications."},
+      "discordbuyaccouncementchannelid": {"label": "Claim purchases channel", "desc": "Discord channel ID; 0 disables these notifications."},
+      "discord": {"label": "Discord", "desc": "Channels and threads for claim events and logs."},
       "discord.channelid.cleanupevent": {
         "label": "Discord cleanup event log",
         "desc": "Discord channel ID for automatic claim-cleanup events; 0 disables logging."

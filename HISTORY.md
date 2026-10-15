@@ -4,6 +4,11 @@
 
 ## Unreleased
 
+## [0.22.2] - 2026-10-15 | Discord event threads
+
+- feat: Route claim and cleanup Discord events into configurable threads, preserving image attachments.
+- ui: group all Discord channel and thread settings and translate the new controls in German and English.
+
 ## [0.22.1] - 2026-10-13 | Bounded claim wait times
 
 - fix: bound each time-based claim wait to configurable minimum and maximum multiples of the base time, including area expansions.

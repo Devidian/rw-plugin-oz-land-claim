@@ -630,6 +630,19 @@
       }
     },
     "setting": {
+      "discordclaimannouncementthreadtopic": {"label": "Grundstücksbeanspruchungen-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
+      "discordexpandannouncementthreadtopic": {"label": "Grundstückserweiterungen-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
+      "discordreleaseaccouncementthreadtopic": {"label": "Grundstücksfreigaben-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
+      "discordforsaleaccouncementthreadtopic": {"label": "Grundstücksangebote-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
+      "discordbuyaccouncementthreadtopic": {"label": "Grundstückskäufe-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
+      "discordrenewzonelogthreadtopic": {"label": "Erneuerungszonen-Protokollthread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
+      "discord.cleanupeventthreadtopic": {"label": "Grundstückssäuberungen-Thread", "desc": "Leer verwendet den Plugin-Namen. Gleicher Kanal und Thread-Titel nutzen denselben Thread."},
+      "discordclaimannouncementchannelid": {"label": "Grundstücksbeanspruchungen-Kanal", "desc": "Discord-Kanal-ID; 0 deaktiviert diese Benachrichtigungen."},
+      "discordexpandannouncementchannelid": {"label": "Grundstückserweiterungen-Kanal", "desc": "Discord-Kanal-ID; 0 deaktiviert diese Benachrichtigungen."},
+      "discordreleaseaccouncementchannelid": {"label": "Grundstücksfreigaben-Kanal", "desc": "Discord-Kanal-ID; 0 deaktiviert diese Benachrichtigungen."},
+      "discordforsaleaccouncementchannelid": {"label": "Grundstücksangebote-Kanal", "desc": "Discord-Kanal-ID; 0 deaktiviert diese Benachrichtigungen."},
+      "discordbuyaccouncementchannelid": {"label": "Grundstückskäufe-Kanal", "desc": "Discord-Kanal-ID; 0 deaktiviert diese Benachrichtigungen."},
+      "discord": {"label": "Discord", "desc": "Kanäle und Threads für Grundstücksereignisse und Protokolle."},
       "discord.channelid.cleanupevent": {
         "label": "Discord-Log für Säuberungsereignisse",
         "desc": "Discord-Kanal-ID für automatische Grundstückssäuberungen; 0 deaktiviert die Protokollierung."

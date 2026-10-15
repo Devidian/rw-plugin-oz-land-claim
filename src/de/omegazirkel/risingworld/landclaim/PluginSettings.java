@@ -77,7 +77,9 @@ public class PluginSettings {
         public Integer renewZoneResetDelayPerChunkMillis = 25;
         public Integer renewZoneResetMaxDelaySeconds = 60;
         public long discordRenewZoneLogChannelId = 0;
+        public String discordRenewZoneLogThreadTopic = "";
         public long discordCleanupEventChannelId = 0;
+        public String discordCleanupEventThreadTopic = "";
         public Boolean allowClaimSale = false;
         public Boolean allowClaimBuyExceedLimit = false;
         public Boolean exposeClaimSales = true;
@@ -89,10 +91,15 @@ public class PluginSettings {
         public String extraClaimShopCurrencyIdentifier = "";
         // Discord announcements
         public long discordClaimAnnouncementChannelId = 0;
+        public String discordClaimAnnouncementThreadTopic = "";
         public long discordExpandAnnouncementChannelId = 0;
+        public String discordExpandAnnouncementThreadTopic = "";
         public long discordReleaseAccouncementChannelId = 0;
+        public String discordReleaseAccouncementThreadTopic = "";
         public long discordForSaleAccouncementChannelId = 0;
+        public String discordForSaleAccouncementThreadTopic = "";
         public long discordBuyAccouncementChannelId = 0;
+        public String discordBuyAccouncementThreadTopic = "";
         // Ingame event announcements
         public Boolean enableIngameClaimAnnouncement = true;
         public Boolean enableIngameExpandAnnouncement = true;
@@ -300,18 +307,25 @@ public class PluginSettings {
                         // Discord announcements
                         discordClaimAnnouncementChannelId = Long
                                         .parseLong(settings.getProperty("discordClaimAnnouncementChannelId", "0"));
+                        discordClaimAnnouncementThreadTopic = settings.getProperty("discordClaimAnnouncementThreadTopic", "");
                         discordExpandAnnouncementChannelId = Long
                                         .parseLong(settings.getProperty("discordExpandAnnouncementChannelId", "0"));
+                        discordExpandAnnouncementThreadTopic = settings.getProperty("discordExpandAnnouncementThreadTopic", "");
                         discordReleaseAccouncementChannelId = Long
                                         .parseLong(settings.getProperty("discordReleaseAccouncementChannelId", "0"));
+                        discordReleaseAccouncementThreadTopic = settings.getProperty("discordReleaseAccouncementThreadTopic", "");
                         discordForSaleAccouncementChannelId = Long
                                         .parseLong(settings.getProperty("discordForSaleAccouncementChannelId", "0"));
+                        discordForSaleAccouncementThreadTopic = settings.getProperty("discordForSaleAccouncementThreadTopic", "");
                         discordBuyAccouncementChannelId = Long
                                         .parseLong(settings.getProperty("discordBuyAccouncementChannelId", "0"));
+                        discordBuyAccouncementThreadTopic = settings.getProperty("discordBuyAccouncementThreadTopic", "");
                         discordRenewZoneLogChannelId = Long
                                         .parseLong(settings.getProperty("discordRenewZoneLogChannelId", "0"));
+                        discordRenewZoneLogThreadTopic = settings.getProperty("discordRenewZoneLogThreadTopic", "");
                         discordCleanupEventChannelId = Long
                                         .parseLong(settings.getProperty("discord.channelId.cleanupEvent", "0"));
+                        discordCleanupEventThreadTopic = settings.getProperty("discord.cleanupEventThreadTopic", "");
                         // Ingame announcements
                         enableIngameClaimAnnouncement = settings.getProperty("enableIngameClaimAnnouncement", "false")
                                         .contentEquals("true");
@@ -543,12 +557,6 @@ public class PluginSettings {
                                 entry("renewZoneResetMaxDelaySeconds", "Maximum reset delay",
                                                 "Maximum delay in seconds before the next due renew zone is reset.",
                                                 renewZoneResetMaxDelaySeconds, "60", AdminSettingsType.INTEGER),
-                                entry("discordRenewZoneLogChannelId", "Discord renew-zone log",
-                                                "Discord channel id for renew-zone reset logs. 0 disables logging.",
-                                                discordRenewZoneLogChannelId, "0", AdminSettingsType.INTEGER),
-                                entry("discord.channelId.cleanupEvent", "Discord cleanup event log",
-                                                "Discord channel id for automatic claim-cleanup events. 0 disables logging.",
-                                                discordCleanupEventChannelId, "0", AdminSettingsType.INTEGER),
                                 AdminSettingsEntry.group("landPricingRules", "Land-pricing rules",
                                                 "Rules used by the LAND_PRICING acquisition mode."),
                                 entry("landPriceBase", "Land base price",
@@ -627,6 +635,43 @@ public class PluginSettings {
                                 entry("extraClaimShopCurrencyIdentifier", "Extra claim currency",
                                                 "Currency identifier for extra-claim Shop purchases. Empty uses Wallet default.",
                                                 extraClaimShopCurrencyIdentifier, "", AdminSettingsType.STRING),
+                                AdminSettingsEntry.group("discord", "Discord",
+                                                "Channels and threads for claim events and logs."),
+                                entry("discordClaimAnnouncementChannelId", "Claim announcement channel",
+                                                "Discord channel ID for new claims; 0 disables messages.",
+                                                discordClaimAnnouncementChannelId, "0", AdminSettingsType.STRING),
+                                entry("discordClaimAnnouncementThreadTopic", "Claim announcement thread",
+                                                "Blank uses the plugin display name.", discordClaimAnnouncementThreadTopic, "", AdminSettingsType.STRING),
+                                entry("discordExpandAnnouncementChannelId", "Claim expansion channel",
+                                                "Discord channel ID for claim expansions; 0 disables messages.",
+                                                discordExpandAnnouncementChannelId, "0", AdminSettingsType.STRING),
+                                entry("discordExpandAnnouncementThreadTopic", "Claim expansion thread",
+                                                "Blank uses the plugin display name.", discordExpandAnnouncementThreadTopic, "", AdminSettingsType.STRING),
+                                entry("discordReleaseAccouncementChannelId", "Claim release channel",
+                                                "Discord channel ID for released claims; 0 disables messages.",
+                                                discordReleaseAccouncementChannelId, "0", AdminSettingsType.STRING),
+                                entry("discordReleaseAccouncementThreadTopic", "Claim release thread",
+                                                "Blank uses the plugin display name.", discordReleaseAccouncementThreadTopic, "", AdminSettingsType.STRING),
+                                entry("discordForSaleAccouncementChannelId", "Claim sale channel",
+                                                "Discord channel ID for claims offered for sale; 0 disables messages.",
+                                                discordForSaleAccouncementChannelId, "0", AdminSettingsType.STRING),
+                                entry("discordForSaleAccouncementThreadTopic", "Claim sale thread",
+                                                "Blank uses the plugin display name.", discordForSaleAccouncementThreadTopic, "", AdminSettingsType.STRING),
+                                entry("discordBuyAccouncementChannelId", "Claim purchase channel",
+                                                "Discord channel ID for claim purchases; 0 disables messages.",
+                                                discordBuyAccouncementChannelId, "0", AdminSettingsType.STRING),
+                                entry("discordBuyAccouncementThreadTopic", "Claim purchase thread",
+                                                "Blank uses the plugin display name.", discordBuyAccouncementThreadTopic, "", AdminSettingsType.STRING),
+                                entry("discordRenewZoneLogChannelId", "Renew zone log channel",
+                                                "Discord channel ID for renew zone reset logs; 0 disables logging.",
+                                                discordRenewZoneLogChannelId, "0", AdminSettingsType.STRING),
+                                entry("discordRenewZoneLogThreadTopic", "Renew zone log thread",
+                                                "Blank uses the plugin display name.", discordRenewZoneLogThreadTopic, "", AdminSettingsType.STRING),
+                                entry("discord.channelId.cleanupEvent", "Cleanup event channel",
+                                                "Discord channel ID for automatic claim cleanup; 0 disables logging.",
+                                                discordCleanupEventChannelId, "0", AdminSettingsType.STRING),
+                                entry("discord.cleanupEventThreadTopic", "Cleanup event thread",
+                                                "Blank uses the plugin display name.", discordCleanupEventThreadTopic, "", AdminSettingsType.STRING),
                                 AdminSettingsEntry.group("unusedRules", "Currently unused rules",
                                                 "Reserved settings without current gameplay effect."),
                                 entry("claimProtectionBaseTimeDays", "Claim protection days",

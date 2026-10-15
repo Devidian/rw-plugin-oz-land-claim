@@ -193,3 +193,9 @@ are no longer included. Runtime settings remain world-scoped as
 its backup remains supported. Updating the package does not delete old files
 already present on the server. Use `mvn clean package` for a fresh local
 package; ZIP assembly also excludes stale legacy settings and translations.
+
+## Discord event threads
+
+Existing Discord event channel IDs remain in effect. Each route also accepts an optional thread topic: `discordClaimAnnouncementThreadTopic`, `discordExpandAnnouncementThreadTopic`, `discordReleaseAccouncementThreadTopic`, `discordForSaleAccouncementThreadTopic`, `discordBuyAccouncementThreadTopic`, `discordRenewZoneLogThreadTopic`, and `discord.cleanupEventThreadTopic` for claim event routes. Leave a topic blank to use the plugin display name from `plugin.yml`. Matching topics in the same parent channel share one thread. Topic routing requires compatible OZ Tools and Discord Connect with the bot enabled; an older Discord Connect logs a failure and does not send the event to the parent channel. Install OZ Tools, then Discord Connect, then this plugin.
+
+The admin settings page groups all Discord channel IDs and thread topics under **Discord**, with German and English labels. All seven channel IDs default to `0`; the five claim announcement channels can also be configured there.
