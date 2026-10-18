@@ -721,6 +721,7 @@ class LandClaimRuntime extends Plugin {
                 "ozlc-resident.json",
                 "ozlc-prisoner.json",
                 "ozlc-exiled.json",
+                "ozlc-custom-template.json",
                 "ozlc-special-rest.json",
                 "ozlc-special-pvp.json",
                 "ozlc-special-static.json",

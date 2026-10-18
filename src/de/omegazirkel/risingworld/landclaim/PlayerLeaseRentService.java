@@ -49,7 +49,10 @@ public final class PlayerLeaseRentService {
             paid++;
             if (lease.purchaseAllowed() && credit >= lease.purchasePrice()) {
                 if (claims.transferAreaOwnership(area, lease.tenantUuid(), lease.tenantDbId())
-                        && leases.completePurchase(lease.areaId())) purchased++;
+                        && leases.completePurchase(lease.areaId())) {
+                    CustomAreaPermissionService.cleanupArea(lease.areaId());
+                    purchased++;
+                }
             }
         }
         return new RentRunResult(checked, paid, evicted, purchased);
