@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- Add a repeatable neutral-zone conversion for a departing player's native areas, retaining other players' permissions and appending `(verlassen)` to the name.
+
 ## [0.22.2] - 2026-10-15 | Discord event threads
 
 - feat: Route claim and cleanup Discord events into configurable threads, preserving image attachments.

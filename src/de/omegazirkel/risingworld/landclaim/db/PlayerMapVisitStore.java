@@ -52,6 +52,17 @@ public final class PlayerMapVisitStore {
         }
     }
 
+    public synchronized void erasePlayer(String playerUuid) throws SQLException {
+        if (playerUuid == null || playerUuid.isBlank()) throw new IllegalArgumentException("Player UID required");
+        for (String table : new String[] { "landClaimPlayerMapVisits", "landClaimPlayerMapInitialization" }) {
+            try (PreparedStatement statement = connection.prepareStatement(
+                    "DELETE FROM " + table + " WHERE player_uuid = ?")) {
+                statement.setString(1, playerUuid);
+                statement.executeUpdate();
+            }
+        }
+    }
+
     /** Seeds a new player's history from the existing per-chunk visit store once. */
     public synchronized int initializeFromChunkData(String playerUuid, int playerDbId, String world) throws SQLException {
         if (playerUuid == null || playerUuid.isBlank() || playerDbId <= 0 || isInitialized(playerUuid, world)) return 0;

@@ -659,12 +659,15 @@ public class LandClaimGUI {
     }
 
     private void announceAreaPurchase(Area area, Player buyer, ClaimSaleListing listing) {
-        String sellerName = Server.getLastKnownPlayerName(listing.ownerDbId());
-        String resolvedSellerName = sellerName == null || sellerName.isBlank() ? "Unknown" : sellerName;
+        String sellerName = de.omegazirkel.risingworld.tools.ExternalDataConsent.isGranted(listing.ownerDbId(),
+                de.omegazirkel.risingworld.tools.ExternalDataConsent.Purpose.DISCORD)
+                ? Server.getLastKnownPlayerName(listing.ownerDbId()) : null;
+        String resolvedSellerName = sellerName == null || sellerName.isBlank()
+                ? "Spieler #" + listing.ownerDbId() : sellerName;
         String message = t.get("tc.discord.area.sold", DiscordConnect.botLang())
                 .replace("PH_AREA_NAME", areaName(area))
                 .replace("PH_PRICE", String.valueOf(listing.price()))
-                .replace("PH_BUYER_NAME", buyer.getName())
+                .replace("PH_BUYER_NAME", discordPlayerLabel(buyer))
                 .replace("PH_SELLER_NAME", resolvedSellerName);
         DiscordConnect.sendDiscordBuyAccouncement(message);
         if (!s.enableIngameBuyAccouncement) {
@@ -1490,7 +1493,7 @@ public class LandClaimGUI {
         String message = t.get("tc.discord.area.expanded", DiscordConnect.botLang())
                 .replace("PH_AREA_NAME", area.getName())
                 .replace("PH_CHUNK_POS", area.getStartChunkPosition() + "")
-                .replace("PH_PLAYER_NAME", Server.getLastKnownPlayerName(player.getDbID()));
+                .replace("PH_PLAYER_NAME", discordPlayerLabel(player));
         DiscordConnect.sendDiscordExpandAnnouncement(message);
         // message to all players
         for (Player onlinePlayer : Server.getAllPlayers()) {
@@ -1509,7 +1512,7 @@ public class LandClaimGUI {
         String message = t.get("tc.discord.area.special.created", DiscordConnect.botLang())
                 .replace("PH_AREA_NAME", area.getName())
                 .replace("PH_CHUNK_POS", area.getStartChunkPosition().toString())
-                .replace("PH_PLAYER_NAME", Server.getLastKnownPlayerName(player.getDbID()));
+                .replace("PH_PLAYER_NAME", discordPlayerLabel(player));
         DiscordConnect.sendDiscordClaimAnnouncement(message);
         // Server announcement
         for (Player onlinePlayer : Server.getAllPlayers()) {
@@ -1661,7 +1664,7 @@ public class LandClaimGUI {
                             String message = t.get("tc.discord.area.claimed", DiscordConnect.botLang())
                                     .replace("PH_AREA_NAME", createdArea.getName())
                                     .replace("PH_CHUNK_POS", createdArea.getStartChunkPosition().toString())
-                                    .replace("PH_PLAYER_NAME", Server.getLastKnownPlayerName(p.getDbID()));
+                                    .replace("PH_PLAYER_NAME", discordPlayerLabel(p));
                             DiscordConnect.sendDiscordClaimAnnouncement(message);
                             // Server announcement
                             for (Player onlinePlayer : Server.getAllPlayers()) {
@@ -1811,6 +1814,12 @@ public class LandClaimGUI {
 
     private boolean isRenewArea(Area area) {
         return area != null && s.specialRenewAreaPermission.equals(area.getDefaultPermission());
+    }
+
+    private static String discordPlayerLabel(Player player) {
+        return de.omegazirkel.risingworld.tools.ExternalDataConsent.isGranted(player,
+                de.omegazirkel.risingworld.tools.ExternalDataConsent.Purpose.DISCORD)
+                ? player.getName() : "Spieler #" + player.getDbID();
     }
 
 }

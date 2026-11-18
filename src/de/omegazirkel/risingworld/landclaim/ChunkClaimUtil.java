@@ -619,6 +619,32 @@ public class ChunkClaimUtil {
         return transferAreaOwnership(area, newOwner.getUID(), newOwner.getDbID());
     }
 
+    /** Makes this player's areas neutral while preserving every other player's permissions. */
+    public boolean neutralizePlayerAreas(String playerUid, int playerDbId) {
+        if (playerUid == null || playerUid.isBlank() || playerDbId <= 0) return false;
+        try {
+            for (Area area : Server.getAllAreas()) {
+                ClaimOwner owner = claimOwner(area);
+                if (owner == null || !playerUid.equals(owner.uid()) || owner.dbId() != playerDbId) {
+                    Map<Integer, String> permissions = area.getAllPlayerPermissions();
+                    if (permissions != null && permissions.containsKey(playerDbId)) area.removePlayerPermission(playerDbId);
+                    continue;
+                }
+                area.setDefaultPermission(s.specialAreaPermission);
+                String name = area.getName();
+                if (name == null || name.isBlank()) name = s.specialAreaPermission + " area";
+                if (!name.endsWith(" (verlassen)")) area.setName(name + " (verlassen)");
+                area.removePlayerPermission(playerDbId);
+                area.deleteAttribute("ownerUID");
+                area.deleteAttribute("ownerDBID");
+            }
+            return true;
+        } catch (RuntimeException ex) {
+            logger().error("Could not neutralize player areas: " + ex.getMessage());
+            return false;
+        }
+    }
+
     public boolean transferAreaOwnership(Area area, String newOwnerUid, int newOwnerDbId) {
         if (area == null || newOwnerUid == null || newOwnerUid.isBlank() || newOwnerDbId <= 0) {
             return false;
@@ -1180,7 +1206,9 @@ public class ChunkClaimUtil {
             String message = t().get("tc.discord.area.released", DiscordConnect.botLang())
                     .replace("PH_AREA_NAME", areaName)
                     .replace("PH_CHUNK_POS", area.getStartChunkPosition().toString())
-                    .replace("PH_PLAYER_NAME", Server.getLastKnownPlayerName(p.getDbID()));
+                    .replace("PH_PLAYER_NAME", de.omegazirkel.risingworld.tools.ExternalDataConsent.isGranted(p,
+                            de.omegazirkel.risingworld.tools.ExternalDataConsent.Purpose.DISCORD)
+                            ? p.getName() : "Spieler #" + p.getDbID());
             DiscordConnect.sendDiscordReleaseAccouncement(message);
             // Server announcement
             for (Player player : Server.getAllPlayers()) {

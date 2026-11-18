@@ -352,9 +352,9 @@ public class AdminCleanupOverlay extends BasePluginOverlayWithTabs {
             player.sendTextMessage(t().get("tc.admin.cleanup.blocked", player)
                     .replace("PH_CHUNK_POS", String.valueOf(result.conflictChunk())));
             DiscordConnect.sendDiscordReleaseAccouncement(t().get("tc.discord.admin.cleanup.blocked", DiscordConnect.botLang())
-                    .replace("PH_TARGET", targetName)
+                    .replace("PH_TARGET", "area")
                     .replace("PH_CHUNK_POS", String.valueOf(result.conflictChunk()))
-                    .replace("PH_ADMIN_NAME", player.getName()));
+                    .replace("PH_ADMIN_NAME", discordPlayerLabel()));
             return;
         }
         Area3DUtils.updateAreaFramesForAllPlayers();
@@ -365,10 +365,10 @@ public class AdminCleanupOverlay extends BasePluginOverlayWithTabs {
                 .replace("PH_RESET_COUNT", String.valueOf(result.chunksReset())));
         String discordKey = resetChunks ? "tc.discord.admin.cleanup" : "tc.discord.admin.delete";
         DiscordConnect.sendDiscordReleaseAccouncement(t().get(discordKey, DiscordConnect.botLang())
-                .replace("PH_TARGET", targetName)
+                .replace("PH_TARGET", "area")
                 .replace("PH_CLAIM_COUNT", String.valueOf(result.claimsAffected()))
                 .replace("PH_RESET_COUNT", String.valueOf(result.chunksReset()))
-                .replace("PH_ADMIN_NAME", player.getName()));
+                .replace("PH_ADMIN_NAME", discordPlayerLabel()));
         rebuild();
     }
 
@@ -380,9 +380,9 @@ public class AdminCleanupOverlay extends BasePluginOverlayWithTabs {
                 .replace("PH_RESET_COUNT", String.valueOf(result.chunksReset())));
         String discordKey = resetChunks ? "tc.discord.admin.cleanup.special.area" : "tc.discord.admin.delete.special.area";
         DiscordConnect.sendDiscordReleaseAccouncement(t().get(discordKey, DiscordConnect.botLang())
-                .replace("PH_TARGET", targetName)
+                .replace("PH_TARGET", "area")
                 .replace("PH_RESET_COUNT", String.valueOf(result.chunksReset()))
-                .replace("PH_ADMIN_NAME", player.getName()));
+                .replace("PH_ADMIN_NAME", discordPlayerLabel()));
         rebuild();
     }
 
@@ -400,5 +400,11 @@ public class AdminCleanupOverlay extends BasePluginOverlayWithTabs {
     protected void close() {
         player.deleteAttribute(ATTRIBUTE_KEY);
         super.close();
+    }
+
+    private String discordPlayerLabel() {
+        return de.omegazirkel.risingworld.tools.ExternalDataConsent.isGranted(player,
+                de.omegazirkel.risingworld.tools.ExternalDataConsent.Purpose.DISCORD)
+                ? player.getName() : "Spieler #" + player.getDbID();
     }
 }

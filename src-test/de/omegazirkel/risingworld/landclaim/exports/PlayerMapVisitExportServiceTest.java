@@ -49,4 +49,17 @@ public class PlayerMapVisitExportServiceTest {
             assertEquals(2, new PlayerMapVisitExportService(connection).export("player", "world", 0, 10).sectors().size());
         }
     }
+
+    @Test
+    public void erasePlayerRemovesVisitsAndInitializationOnlyForThatPlayer() throws Exception {
+        try (Connection connection = DriverManager.getConnection("jdbc:sqlite::memory:")) {
+            PlayerMapVisitStore store = new PlayerMapVisitStore(connection);
+            store.recordVisit("leaving", 7, "world", 0, 0);
+            store.recordVisit("staying", 8, "world", 1, 1);
+            store.erasePlayer("leaving");
+            PlayerMapVisitExportService export = new PlayerMapVisitExportService(connection);
+            assertEquals(0, export.export("leaving", "world", 0, 10).sectors().size());
+            assertEquals(1, export.export("staying", "world", 0, 10).sectors().size());
+        }
+    }
 }

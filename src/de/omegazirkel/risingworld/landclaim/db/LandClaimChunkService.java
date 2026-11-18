@@ -83,6 +83,17 @@ public class LandClaimChunkService {
         return set == null ? List.of() : new ArrayList<>(set);
     }
 
+    /** Deletes the player's local exploration and claim index after owned areas became neutral zones. */
+    public synchronized void erasePlayerChunks(String playerUuid) {
+        if (playerUuid == null || playerUuid.isBlank()) throw new IllegalArgumentException("Player UID required");
+        for (LandClaimChunkInfo info : getChunkInfoListByPlayer(playerUuid)) {
+            unindex(info);
+            store.remove(new LandClaimChunkKey(playerUuid, info.world, info.chunkPos));
+        }
+        byPlayer.remove(playerUuid);
+        claimCountByPlayer.remove(playerUuid);
+    }
+
     public List<LandClaimChunkInfo> getChunkInfoListByChunk(Vector3i chunk) {
         Set<LandClaimChunkInfo> set = byChunk.get(chunk);
         return set == null ? List.of() : new ArrayList<>(set);

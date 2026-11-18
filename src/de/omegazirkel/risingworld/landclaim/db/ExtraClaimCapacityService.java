@@ -42,6 +42,15 @@ public class ExtraClaimCapacityService {
         }
     }
 
+    public void erasePlayer(String playerUuid) throws SQLException {
+        if (playerUuid == null || playerUuid.isBlank()) throw new IllegalArgumentException("Player UID required");
+        try (PreparedStatement statement = connection.prepareStatement(
+                "DELETE FROM extraClaimCapacity WHERE player_uuid = ?")) {
+            statement.setString(1, playerUuid);
+            statement.executeUpdate();
+        }
+    }
+
     public int addPurchasedCapacity(Player player, int amount) {
         if (player == null || amount <= 0) {
             return getPurchasedCapacity(player);

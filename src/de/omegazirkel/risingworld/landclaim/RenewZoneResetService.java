@@ -87,7 +87,7 @@ public class RenewZoneResetService {
     private void announceReset(Area area, int resetCount) {
         I18n t = I18n.getInstance(LandClaim.name);
         String discordMessage = t.get("tc.discord.renew.zone.reset", DiscordConnect.botLang())
-                .replace("PH_AREA_NAME", areaName(area))
+                .replace("PH_AREA_NAME", "Area")
                 .replace("PH_AREA_ID", String.valueOf(area.getID()))
                 .replace("PH_RESET_COUNT", String.valueOf(resetCount));
         DiscordConnect.sendDiscordRenewZoneLog(discordMessage);

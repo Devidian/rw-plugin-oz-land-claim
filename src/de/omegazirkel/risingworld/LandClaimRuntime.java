@@ -121,6 +121,7 @@ class LandClaimRuntime extends Plugin {
     public static LandClaimChunkService llcs;
     public static LandClaimChunkStore lccStore;
     private PlayerMapVisitStore playerMapVisitStore;
+    private de.omegazirkel.risingworld.tools.privacy.PlayerErasureService.Registration erasureRegistration;
     private final Map<Integer, PrisonerRespawn> prisonerRespawns = new ConcurrentHashMap<>();
 
     public static OZLogger logger() {
@@ -209,6 +210,19 @@ class LandClaimRuntime extends Plugin {
         SharedIndicators.registerProvider(name, new ClaimSaleIndicatorProvider());
 
         scheduleAutoClaimRemoval();
+        var erasureStore = new de.omegazirkel.risingworld.landclaim.db.LandClaimErasureStore(sqliteCon);
+        erasureRegistration = de.omegazirkel.risingworld.tools.privacy.PlayerErasureService.register(
+                "land-claim", erasureStore::ready, request -> {
+                    int dbId = request.playerDbId();
+                    String uid = Server.getPlayerUID(dbId);
+                    if (uid == null || uid.isBlank() || !erasureStore.erase(dbId)
+                            || !chunkClaimUtil.neutralizePlayerAreas(uid, dbId)) return false;
+                    llcs.erasePlayerChunks(uid);
+                    playerMapVisitStore.erasePlayer(uid);
+                    extraClaimCapacityService.erasePlayer(uid);
+                    ps.erasePlayer(dbId);
+                    return true;
+                });
 
         logger().info("✅ " + this.getName() + " Plugin is enabled version:" + this.getDescription("version"));
     }
@@ -234,6 +248,7 @@ class LandClaimRuntime extends Plugin {
 
     @Override
     public void onDisable() {
+        if (erasureRegistration != null) erasureRegistration.close();
         logger().warn("⚠️ Disabling " + this.getName() + " ...");
         unregisterWebserverExportRoutes();
         if (chunkInfoManager != null)
