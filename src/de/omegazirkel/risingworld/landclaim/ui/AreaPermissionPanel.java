@@ -6,12 +6,14 @@ import java.util.List;
 import java.util.Map;
 
 import de.omegazirkel.risingworld.LandClaim;
+import de.omegazirkel.risingworld.landclaim.CustomAreaPermissionService;
 import de.omegazirkel.risingworld.landclaim.PluginSettings;
 import de.omegazirkel.risingworld.tools.I18n;
 import de.omegazirkel.risingworld.tools.PlayerDatabaseHelper;
 import de.omegazirkel.risingworld.tools.ui.table.TableRow;
 import de.omegazirkel.risingworld.tools.ui.table.TableScrollView;
 import net.risingworld.api.Server;
+import net.risingworld.api.callbacks.Callback;
 import net.risingworld.api.objects.Area;
 import net.risingworld.api.objects.Player;
 import net.risingworld.api.ui.UIElement;
@@ -76,6 +78,7 @@ public class AreaPermissionPanel extends UIElement {
             }
         }
 
+        boolean allowCustom = CustomAreaPermissionService.isAvailable(area);
         for (Map.Entry<Integer, String> entry : permissionCandidates.entrySet()) {
             int uid = entry.getKey();
             String permission = entry.getValue();
@@ -85,6 +88,8 @@ public class AreaPermissionPanel extends UIElement {
                     isOnline,
                     permission,
                     area.getDefaultPermission(),
+                    allowCustom,
+                    () -> CustomPermissionOverlay.open(player, area, uid),
                     newPermission -> setPermission(area, uid, newPermission), player, parentOverlay);
             table.addRow(row);
         }
@@ -94,7 +99,25 @@ public class AreaPermissionPanel extends UIElement {
     private void setPermission(Area area, Integer playerDBID, String newPermission) {
         String playerName = Server.getLastKnownPlayerName(playerDBID);
         String areaDefault = area.getDefaultPermission();
+        String oldPermission = area.getPlayerPermission(playerDBID);
 
+        if (PlayerPermissionRow.CUSTOM_PERMISSION_OPTION.equals(newPermission)) {
+            CustomAreaPermissionService.assignCustom(area, playerDBID, success -> {
+                if (!Boolean.TRUE.equals(success)) {
+                    uiPlayer.sendTextMessage(t().get("tc.ui.player.permission.custom.failed", uiPlayer)
+                            .replace("PH_PLAYER_NAME", playerName != null ? playerName : "#" + playerDBID));
+                    refreshPermissionOverlay(area);
+                    return;
+                }
+                uiPlayer.sendTextMessage(t().get("tc.ui.player.permission.set", uiPlayer)
+                        .replace("PH_PLAYER_NAME", playerName != null ? playerName : "#" + playerDBID)
+                        .replace("PH_PERMISSION", t().get("tc.ui.permission.custom", uiPlayer)));
+                CustomPermissionOverlay.open(uiPlayer, area, playerDBID);
+            });
+            return;
+        }
+
+        CustomAreaPermissionService.cancelAssign(area.getID(), playerDBID);
         if (newPermission != null && !newPermission.isEmpty() && !newPermission.equals(areaDefault)) {
             area.setPlayerPermission(playerDBID, newPermission);
             String permissionText = newPermission;
@@ -117,6 +140,20 @@ public class AreaPermissionPanel extends UIElement {
                     .replace("PH_PLAYER_NAME", playerName));
             uiPlayer.sendTextMessage("Player permission removed");
         }
+        // Rebuild so the Edit control disappears with Custom.
+        if (CustomAreaPermissionService.isCustomGroup(oldPermission)) {
+            CustomAreaPermissionService.releaseIfUnused(area, oldPermission);
+            refreshPermissionOverlay(area);
+        }
+    }
+
+    private void refreshPermissionOverlay(Area area) {
+        Callback<Player> onClose = p -> {
+        };
+        UIElement current = (UIElement) uiPlayer.getAttribute(PermissionOverlay.ATTRIBUTE_KEY);
+        if (current instanceof PermissionOverlay overlay)
+            onClose = overlay.closeCallback();
+        PermissionOverlay.open(uiPlayer, area, onClose);
     }
 
 }

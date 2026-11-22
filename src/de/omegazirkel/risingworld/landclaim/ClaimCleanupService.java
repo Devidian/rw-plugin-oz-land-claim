@@ -248,6 +248,7 @@ public class ClaimCleanupService {
         for (Long areaId : areaIds) {
             Area area = Server.getArea(areaId);
             if (area != null) {
+                CustomAreaPermissionService.cleanupArea(areaId);
                 Server.removeArea(area);
             }
         }
