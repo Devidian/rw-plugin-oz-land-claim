@@ -20,3 +20,4 @@ Claims, area permissions, zones, leases and land transactions. The [plugin descr
 - `rw-plugin-oz-wallet/ledger` — optional economy integration. [Evidence](../src/de/omegazirkel/risingworld/landclaim/EconomyIntegration.java)
 - `rw-plugin-oz-shop/api` — optional offer integration. [Evidence](../src/de/omegazirkel/risingworld/landclaim/ShopBridge.java)
 - `rw-plugin-oz-discord-connect/discord` — optional notification integration. [Evidence](../src/de/omegazirkel/risingworld/landclaim/DiscordConnect.java)
+- `rw-plugin-oz-tools/persistence` — cached chunk claim storage with final flush. [Call site](../src/de/omegazirkel/risingworld/LandClaimRuntime.java)

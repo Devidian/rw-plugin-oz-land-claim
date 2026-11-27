@@ -266,8 +266,10 @@ class LandClaimRuntime extends Plugin {
             PluginInfoStatusProviders.unregisterProvider(name);
             SharedIndicators.unregisterProvider(name);
         }
-        if (lccStore != null) {
-            lccStore.shutdown();
+        try {
+            if (lccStore != null) lccStore.shutdown();
+        } catch (RuntimeException ex) {
+            logger().error("Failed to persist cached claim chunks during shutdown: " + ex.getMessage());
         }
         if (sqliteCon != null) {
             try {
