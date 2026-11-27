@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- Remove the unused radial city expansion handler. Expansion runs through City Management.
 
 - Show a native message when a city lease confirmation refers to a plot that is already occupied.
 - Confirm city rent in Rising World’s native Yes/No dialog with the daily rent and its currency.

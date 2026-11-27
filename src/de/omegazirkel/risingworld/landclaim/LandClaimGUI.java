@@ -15,7 +15,6 @@ import de.omegazirkel.risingworld.landclaim.db.ClaimSaleListing;
 import de.omegazirkel.risingworld.landclaim.db.RenewZoneConfig;
 import de.omegazirkel.risingworld.landclaim.db.CityRecord;
 import de.omegazirkel.risingworld.landclaim.db.LeaseholdRecord;
-import de.omegazirkel.risingworld.landclaim.db.LandPriceService;
 import de.omegazirkel.risingworld.landclaim.db.PlayerLeaseRecord;
 import de.omegazirkel.risingworld.landclaim.db.UnclaimedLeaseRecord;
 import de.omegazirkel.risingworld.landclaim.ui.AdminCleanupOverlay;
@@ -1024,36 +1023,6 @@ public class LandClaimGUI {
         if (permissions != null) for (Integer dbId : List.copyOf(permissions.keySet())) area.removePlayerPermission(dbId);
     }
 
-    private MenuItem menuItemExpandCity(Player player, CityRecord city, Callback<Player> onCancel) {
-        long chunks = LandClaim.cityService().expansionChunkCount(city);
-        long price;
-        try { price = Math.multiplyExact(chunks, Math.max(0L, s.cityExpansionBasePrice)); }
-        catch (ArithmeticException ex) { price = Long.MAX_VALUE; }
-        long safePrice = price > LandPriceService.MAX_SAFE_INTEGER ? -1L : price;
-        return new MenuItem("menu-expand-zone", t.get("tc.menu.city.expand", player)
-                .replace("PH_PRICE", safePrice < 0 ? "N/A" : String.valueOf(safePrice)), p -> {
-            de.omegazirkel.risingworld.landclaim.db.CityService.ExpansionEligibility eligibility =
-                    LandClaim.cityService().expansionEligibility(city.areaId());
-            if (!eligibility.eligible()) {
-                p.sendTextMessage(cityExpansionBlockerText(p, eligibility));
-                onCancel.onCall(p);
-                return;
-            }
-            if (safePrice < 0 || LandClaim.economyIntegration().cityBalance(city.areaId()) < safePrice) {
-                p.sendTextMessage(t.get("tc.city.expand.funds", p));
-                onCancel.onCall(p);
-                return;
-            }
-            UIElement confirm = UIDialogFactory.getConfirmDangerDialog(p, t.get("tc.dialog.city.expand.title", p),
-                    t.get("tc.dialog.city.expand.confirm", p).replace("PH_PRICE", String.valueOf(safePrice)), accepted -> {
-                        if (accepted) expandCity(p, city, safePrice);
-                        onCancel.onCall(p);
-                    }, onCancel);
-            p.addUIElement(confirm, UITarget.Modal);
-            p.hideRadialMenu(false);
-        });
-    }
-
     private MenuItem menuItemDeleteCity(Player player, Area core, CityRecord city, Callback<Player> onCancel) {
         return new MenuItem("zone-claim-delete", t.get("tc.menu.city.delete", player), p -> {
             UIElement confirm = UIDialogFactory.getConfirmDangerDialog(p, t.get("tc.menu.city.delete", p),
@@ -1122,28 +1091,6 @@ public class LandClaimGUI {
                     }, onCancel);
             p.addUIElement(confirm, UITarget.Modal); p.hideRadialMenu(false);
         });
-    }
-
-    private void expandCity(Player player, CityRecord city, long price) {
-        String correlation = "city-expand:" + city.areaId() + ":" + (city.radius() + 1);
-        EconomyIntegration.WalletOperationResult payment = price == 0
-                ? new EconomyIntegration.WalletOperationResult(true, "")
-                : LandClaim.economyIntegration().transferCityToWorld(city.areaId(), price,
-                        t.get("tc.wallet.city.expansion", LandClaim.economyIntegration().walletAuditLanguage())
-                                .replace("PH_CITY_NAME", city.name()), correlation);
-        if (!payment.success() || !LandClaim.cityService().expandCity(city.areaId())) {
-            if (payment.success() && price > 0) LandClaim.economyIntegration().reverseTransfer(
-                    correlation, correlation + ":reversal", t.get("tc.wallet.city.expansion.rollback",
-                            LandClaim.economyIntegration().walletAuditLanguage()));
-            player.sendTextMessage(t.get("tc.city.expand.failed", player));
-            return;
-        }
-        player.sendTextMessage(t.get("tc.city.expanded", player).replace("PH_RADIUS", String.valueOf(city.radius() + 1)));
-    }
-
-    private String cityExpansionBlockerText(Player player,
-            de.omegazirkel.risingworld.landclaim.db.CityService.ExpansionEligibility eligibility) {
-        return t.get("TC_UI_CITY_EXPAND_BLOCKED_" + eligibility.blocker().name(), player);
     }
 
     private void showCityCreationError(Player player, String blocker, String detail) {

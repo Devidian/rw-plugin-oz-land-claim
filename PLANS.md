@@ -31,3 +31,4 @@ City lease confirmation checks stored terms and journals payment before assignin
 - [x] Verify the native occupied-plot dialog on Development.
 - [x] Verify native city rent prompt wording on Development.
 - [ ] Verify native city rent cancellation and acceptance separately on Development.
+- [x] Verify the active City Management expansion on V80 Development and remove the unused radial expansion handler.

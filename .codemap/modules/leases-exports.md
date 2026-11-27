@@ -8,6 +8,7 @@ Lease, sale, city and map export services. Land Claim owns lease and sale record
 ## Source and tests
 
 - [City lease acquisition](../../src/de/omegazirkel/risingworld/landclaim/CityLeaseAcquisition.java) reserves payment and verifies the displayed lease before assignment. [SQLite tests](../../src-test/de/omegazirkel/risingworld/landclaim/db/CityLeaseAcquisitionTest.java) cover stale terms and payment outcomes.
+- [City management overlay](../../src/de/omegazirkel/risingworld/landclaim/ui/CityManagementOverlay.java) owns expansion confirmation and settlement. [City service](../../src/de/omegazirkel/risingworld/landclaim/db/CityService.java) validates and updates the city radius.
 - [`PlayerLeaseService`](../../src/de/omegazirkel/risingworld/landclaim/db/PlayerLeaseService.java)
 - [`ClaimSaleListingService`](../../src/de/omegazirkel/risingworld/landclaim/db/ClaimSaleListingService.java)
 - [`LandClaimExportRoute`](../../src/de/omegazirkel/risingworld/landclaim/web/LandClaimExportRoute.java)
