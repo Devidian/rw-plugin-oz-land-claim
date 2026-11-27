@@ -4,6 +4,12 @@
 
 ## Unreleased
 
+
+- Show a native message when a city lease confirmation refers to a plot that is already occupied.
+- Confirm city rent in Rising World’s native Yes/No dialog with the daily rent and its currency.
+
+- City lease confirmation checks stored terms and journals payment before assigning ownership. Shutdown reports failed final claim-cache writes.
+
 - Add a repeatable neutral-zone conversion for a departing player's native areas, retaining other players' permissions and appending `(verlassen)` to the name.
 
 ## [0.22.2] - 2026-10-15 | Discord event threads

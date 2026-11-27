@@ -37,6 +37,7 @@ import net.risingworld.api.Server;
 import net.risingworld.api.callbacks.Callback;
 import net.risingworld.api.objects.Area;
 import net.risingworld.api.objects.Player;
+import net.risingworld.api.ui.MessageBoxButtons;
 import net.risingworld.api.ui.UIElement;
 import net.risingworld.api.ui.UITarget;
 import net.risingworld.api.utils.Vector3i;
@@ -918,15 +919,35 @@ public class LandClaimGUI {
         String label = purchase ? t.get("tc.menu.city.lease.buy", player) : t.get("tc.menu.city.lease.rent", player);
         long amount = purchase ? Math.max(0L, lease.purchasePrice() - lease.paidRentCredit()) : lease.dailyRent();
         return new MenuItem(purchase ? "zone-sale" : "zone-city-leasehold", label + " (" + amount + ")", p -> {
-            UIElement confirm = UIDialogFactory.getConfirmDialog(p, label,
-                    t.get("tc.dialog.city.lease.confirm", p)
-                            .replace("PH_AREA_NAME", areaName(area)).replace("PH_PRICE", String.valueOf(amount)),
+            String message = t.get(purchase ? "tc.dialog.city.lease.confirm" : "tc.dialog.city.lease.confirm.rent", p)
+                    .replace("PH_AREA_NAME", areaName(area)).replace("PH_PRICE", String.valueOf(amount));
+            if (!purchase) {
+                showLeaseRentConfirmation(p, label, message.replace("PH_CURRENCY", defaultCurrency()), area, lease,
+                        onCancel);
+                return;
+            }
+            UIElement confirm = UIDialogFactory.getConfirmDialog(p, label, message,
                     accepted -> {
-                        if (accepted) acquireLeasehold(p, area, lease, purchase);
+                        if (accepted) acquireLeasehold(p, area, lease, true);
                         onCancel.onCall(p);
                     }, onCancel);
             p.addUIElement(confirm, UITarget.Modal);
             p.hideRadialMenu(false);
+        });
+    }
+
+    private void showLeaseRentConfirmation(Player player, String title, String message, Area area,
+            LeaseholdRecord lease, Callback<Player> onClose) {
+        var plugin = LandClaim.getInstance();
+        player.hideRadialMenu(false);
+        plugin.executeDelayed(0.1f, () -> {
+            if (!player.isConnected()) return;
+            AtomicBoolean handled = new AtomicBoolean();
+            player.showMessageBox(MessageBoxButtons.Yes_No, title, message, 0, answer -> plugin.enqueue(() -> {
+                if (!player.isConnected() || !handled.compareAndSet(false, true)) return;
+                if (answer != null && answer == 0) acquireLeasehold(player, area, lease, false);
+                onClose.onCall(player);
+            }));
         });
     }
 
@@ -937,7 +958,7 @@ public class LandClaimGUI {
         }
         boolean sameOwner = lease.ownerDbId() == player.getDbID();
         if (lease.occupied() && !(sameOwner && lease.rented() && purchase)) {
-            player.sendTextMessage(t.get("tc.city.lease.occupied", player));
+            showLeaseholdOccupied(player);
             return;
         }
         if ((purchase && !lease.purchaseAllowed()) || (!purchase && !lease.rentAllowed())) return;
@@ -948,41 +969,39 @@ public class LandClaimGUI {
             return;
         }
         long amount = purchase ? Math.max(0L, lease.purchasePrice() - lease.paidRentCredit()) : lease.dailyRent();
-        String correlation = "city-lease-" + (purchase ? "buy:" : "rent:") + UUID.randomUUID();
-        if (amount > 0) LandClaim.cityService().beginEconomyOperation(correlation,
-                purchase ? "LEASE_PURCHASE" : "LEASE_RENT", area.getID(), player.getDbID(), amount);
-        EconomyIntegration.WalletOperationResult payment = amount == 0
-                ? new EconomyIntegration.WalletOperationResult(true, "")
-                : LandClaim.economyIntegration().transferPlayerToCity(player.getDbID(), lease.cityAreaId(), amount,
+        CityLeaseAcquisition.Result result = CityLeaseAcquisition.acquire(LandClaim.cityService(), lease,
+                player.getUID(), player.getDbID(), purchase,
+                correlation -> LandClaim.economyIntegration().transferPlayerToCity(
+                        player.getDbID(), lease.cityAreaId(), amount,
                         t.get(purchase ? "tc.wallet.city.lease.purchase" : "tc.wallet.city.lease.rent",
                                 LandClaim.economyIntegration().walletAuditLanguage())
                                 .replace("PH_AREA_NAME", areaName(area))
-                                .replace("PH_AREA_ID", String.valueOf(area.getID())), correlation);
-        if (!payment.success()) {
-            if (amount > 0) LandClaim.cityService().updateEconomyOperation(correlation, "FAILED", area.getID(),
-                    payment.message());
-            ChunkClaimUtil.sendPaymentFailure(player, payment.message());
+                                .replace("PH_AREA_ID", String.valueOf(area.getID())), correlation),
+                correlation -> LandClaim.economyIntegration().reverseTransfer(correlation, correlation + ":reversal",
+                        t.get("tc.wallet.city.lease.rollback", LandClaim.economyIntegration().walletAuditLanguage())),
+                () -> {
+                    clearAreaPermissions(area);
+                    area.setPlayerPermission(player.getDbID(), s.ownerAreaPermission);
+                });
+        if (result.status() == CityLeaseAcquisition.Status.PAYMENT_FAILED) {
+            ChunkClaimUtil.sendPaymentFailure(player, result.message());
             return;
         }
-        if (amount > 0) LandClaim.cityService().updateEconomyOperation(correlation, "PAID", area.getID(), "");
-        boolean persisted = LandClaim.cityService().assignLeasehold(area.getID(), player.getUID(), player.getDbID(),
-                purchase ? "PURCHASED" : "RENTED", purchase ? 0 : amount, LocalDate.now().toString());
-        if (!persisted) {
-            if (amount > 0) {
-                EconomyIntegration.WalletOperationResult reversal = LandClaim.economyIntegration().reverseTransfer(
-                        correlation, correlation + ":reversal", t.get("tc.wallet.city.lease.rollback",
-                                LandClaim.economyIntegration().walletAuditLanguage()));
-                LandClaim.cityService().updateEconomyOperation(correlation,
-                        reversal.success() ? "REVERSED" : "RECONCILIATION_REQUIRED", area.getID(), reversal.message());
-            }
+        if (result.status() == CityLeaseAcquisition.Status.STALE) {
+            showLeaseholdOccupied(player);
+            return;
+        }
+        if (result.status() != CityLeaseAcquisition.Status.COMPLETED) {
             player.sendTextMessage(t.get("tc.city.lease.update.failed", player));
             return;
         }
-        clearAreaPermissions(area);
-        area.setPlayerPermission(player.getDbID(), s.ownerAreaPermission);
-        if (amount > 0) LandClaim.cityService().updateEconomyOperation(correlation, "COMPLETED", area.getID(), "");
         player.sendTextMessage(t.get(purchase ? "tc.city.lease.purchased" : "tc.city.lease.rented", player)
                 .replace("PH_AREA_NAME", areaName(area)));
+    }
+
+    private void showLeaseholdOccupied(Player player) {
+        player.showInfoMessageBox(t.get("tc.dialog.city.lease.occupied", player),
+                t.get("tc.city.lease.occupied", player));
     }
 
     private MenuItem menuItemReturnLeasehold(Player player, Area area, Callback<Player> onCancel) {

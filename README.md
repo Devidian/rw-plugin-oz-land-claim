@@ -37,6 +37,7 @@ Wallet and Shop are detected optionally for economy features; core claim protect
 - **Global Claim Modes:** Choose time-based, administrative, geometric land-pricing, or city rules without rewriting existing areas.
 - **Geometric Land Pricing:** Wallet-backed chunk prices use 26-neighbor three-dimensional clusters, persisted additive surcharges, ceiling rounding, and a safe maximum.
 - **Cities and Leaseholds:** Admins can create non-overlapping city cores and leaseholds, manage city treasuries and radius expansion, and offer property for purchase, rent, or rent-to-own.
+- City administrators expand a city from **City Management** in its core. The displayed price is charged to the city treasury.
 - **Daily Rent:** Server-local daily billing is idempotent, does not accrue downtime debt, warns low-balance tenants, and returns unpaid property to its city with Mail or login-dialog fallback.
 - **Extra Claim Capacity:** Purchased extra-claim capacity is stored separately from playtime-derived limits and is included in max-claim calculations. When Shop and Wallet are installed, LandClaim registers an extra-claim capacity offer with per-player linear pricing.
 - **Claim Protection:** Protect inactive players' areas from being claimed by others for a configurable amount of time.
@@ -201,3 +202,7 @@ package; ZIP assembly also excludes stale legacy settings and translations.
 Existing Discord event channel IDs remain in effect. Each route also accepts an optional thread topic: `discordClaimAnnouncementThreadTopic`, `discordExpandAnnouncementThreadTopic`, `discordReleaseAccouncementThreadTopic`, `discordForSaleAccouncementThreadTopic`, `discordBuyAccouncementThreadTopic`, `discordRenewZoneLogThreadTopic`, and `discord.cleanupEventThreadTopic` for claim event routes. Leave a topic blank to use the plugin display name from `plugin.yml`. Matching topics in the same parent channel share one thread. Topic routing requires compatible OZ Tools and Discord Connect with the bot enabled; an older Discord Connect logs a failure and does not send the event to the parent channel. Install OZ Tools, then Discord Connect, then this plugin.
 
 The admin settings page groups all Discord channel IDs and thread topics under **Discord**, with German and English labels. All seven channel IDs default to `0`; the five claim announcement channels can also be configured there.
+
+## Maintenance
+
+City lease confirmation checks stored terms and journals payment before assigning ownership. A lost race for an occupied plot displays a native information dialog. Renting a city plot uses the native Yes/No confirmation with the daily rent and its currency. Shutdown reports failed final claim-cache writes.

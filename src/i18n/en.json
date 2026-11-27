@@ -409,7 +409,11 @@
           "title": "Expand city"
         },
         "lease": {
-          "confirm": "Take over PH_AREA_NAME for PH_PRICE?",
+          "occupied": "Plot already occupied",
+          "confirm": {
+            "$value": "Take over PH_AREA_NAME for PH_PRICE?",
+            "rent": "Rent PH_AREA_NAME for PH_PRICE PH_CURRENCY per day?"
+          },
           "delete": "Delete \u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e? Existing ownership will be revoked without compensation.",
           "return": "Return PH_AREA_NAME without a refund?"
         }

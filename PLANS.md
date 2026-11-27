@@ -22,3 +22,12 @@ Every implementation plan must include objective, ownership, dependencies, risks
 The conversion uses the configured special-zone permission. Area changes are native game state; the Java suite validates compilation only, so a runtime check is required before enabling player deletion.
 
 Discord event thread routing is installed on Development. A controlled Discord event test and the separately authorized release remain open. Configuration is documented in README.md.
+
+## Maintenance
+
+City lease confirmation checks stored terms and journals payment before assigning ownership. Shutdown reports failed final claim-cache writes.
+
+- [x] Verify the two-player city lease confirmation on V80 Development.
+- [x] Verify the native occupied-plot dialog on Development.
+- [x] Verify native city rent prompt wording on Development.
+- [ ] Verify native city rent cancellation and acceptance separately on Development.

@@ -409,7 +409,11 @@
           "title": "Stadt erweitern"
         },
         "lease": {
-          "confirm": "PH_AREA_NAME für PH_PRICE übernehmen?",
+          "occupied": "Grundstück belegt",
+          "confirm": {
+            "$value": "PH_AREA_NAME für PH_PRICE übernehmen?",
+            "rent": "Möchtest du PH_AREA_NAME für eine Tagesmiete von PH_PRICE PH_CURRENCY mieten?"
+          },
           "delete": "\u003ccolor\u003dred\u003ePH_AREA_NAME\u003c/color\u003e löschen? Bestehender Besitz wird ohne Entschädigung entzogen.",
           "return": "PH_AREA_NAME ohne Erstattung zurückgeben?"
         }

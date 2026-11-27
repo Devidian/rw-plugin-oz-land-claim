@@ -19,10 +19,15 @@ public final class CityService {
     /** Rising World sectors span 256 chunks on each horizontal axis. */
     public static final int CHUNKS_PER_SECTOR = 256;
     private final Connection connection;
-    private final String world = World.getName();
+    private final String world;
 
     public CityService(Connection connection) throws SQLException {
+        this(connection, World.getName());
+    }
+
+    CityService(Connection connection, String world) throws SQLException {
         this.connection = connection;
+        this.world = world;
         init();
     }
 
@@ -326,6 +331,48 @@ public final class CityService {
         return updateLeaseOwner(areaId, ownerUuid, ownerDbId, type, Math.max(0, rentCredit), billingDate);
     }
 
+    public enum LeaseAssignment { ASSIGNED, STALE, UNCERTAIN }
+
+    /** Compare every displayed offer term and the previous owner in one SQLite write. */
+    public LeaseAssignment assignLeaseholdIfUnchanged(LeaseholdRecord expected, String ownerUuid, int ownerDbId,
+            boolean purchase, String billingDate) {
+        if (expected == null || ownerUuid == null || ownerUuid.isBlank() || ownerDbId <= 0) {
+            return LeaseAssignment.STALE;
+        }
+        boolean conversion = expected.rented() && expected.ownerDbId() == ownerDbId;
+        if ((expected.occupied() && !(conversion && purchase))
+                || (purchase && !expected.purchaseAllowed()) || (!purchase && !expected.rentAllowed())) {
+            return LeaseAssignment.STALE;
+        }
+        String sql = "UPDATE leaseholds SET owner_uuid=?,owner_dbid=?,ownership_type=?,paid_rent_credit=?,"
+                + "last_billing_date=? WHERE world=? AND area_id=? AND city_area_id=? AND purchase_price=? "
+                + "AND daily_rent=? AND purchase_allowed=? AND rent_allowed=? AND owner_uuid=? AND owner_dbid=? "
+                + "AND ownership_type=? AND paid_rent_credit=? AND last_billing_date=?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, ownerUuid);
+            statement.setInt(2, ownerDbId);
+            statement.setString(3, purchase ? "PURCHASED" : "RENTED");
+            statement.setLong(4, purchase ? 0 : expected.dailyRent());
+            statement.setString(5, billingDate == null ? "" : billingDate);
+            statement.setString(6, world);
+            statement.setLong(7, expected.areaId());
+            statement.setLong(8, expected.cityAreaId());
+            statement.setLong(9, expected.purchasePrice());
+            statement.setLong(10, expected.dailyRent());
+            statement.setInt(11, expected.purchaseAllowed() ? 1 : 0);
+            statement.setInt(12, expected.rentAllowed() ? 1 : 0);
+            statement.setString(13, expected.ownerUuid());
+            statement.setInt(14, expected.ownerDbId());
+            statement.setString(15, expected.ownershipType());
+            statement.setLong(16, expected.paidRentCredit());
+            statement.setString(17, expected.lastBillingDate());
+            return statement.executeUpdate() == 1 ? LeaseAssignment.ASSIGNED : LeaseAssignment.STALE;
+        } catch (SQLException ex) {
+            LandClaim.logger().error("Could not assign leasehold: " + ex.getMessage());
+            return LeaseAssignment.UNCERTAIN;
+        }
+    }
+
     public boolean clearLeasehold(long areaId) {
         return updateLeaseOwner(areaId, "", 0, "NONE", 0, "");
     }
@@ -439,9 +486,21 @@ public final class CityService {
     }
 
     public void beginEconomyOperation(String correlationId, String type, long areaId, int playerDbId, long amount) {
-        if (correlationId == null || correlationId.isBlank()) return;
+        beginEconomyOperation(correlationId, type, areaId, playerDbId, amount, false);
+    }
+
+    public boolean tryBeginLeaseOperation(String correlationId, String type, long areaId, int playerDbId, long amount) {
+        return beginEconomyOperation(correlationId, type, areaId, playerDbId, amount, true);
+    }
+
+    private boolean beginEconomyOperation(String correlationId, String type, long areaId, int playerDbId, long amount,
+            boolean guardLease) {
+        if (correlationId == null || correlationId.isBlank()) return false;
         String sql = "INSERT OR IGNORE INTO landClaimEconomyOperations(correlation_id,world,operation_type,area_id,"
-                + "player_dbid,amount,status,created_at,updated_at,last_error) VALUES(?,?,?,?,?,?,'PREPARED',?,?, '')";
+                + "player_dbid,amount,status,created_at,updated_at,last_error) SELECT ?,?,?,?,?,?,'PREPARED',?,?, ''"
+                + (guardLease ? " WHERE NOT EXISTS (SELECT 1 FROM landClaimEconomyOperations WHERE world=? "
+                        + "AND area_id=? AND operation_type IN ('LEASE_PURCHASE','LEASE_RENT') "
+                        + "AND status NOT IN ('COMPLETED','REVERSED','FAILED'))" : "");
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             long now = System.currentTimeMillis();
             statement.setString(1, correlationId);
@@ -452,9 +511,14 @@ public final class CityService {
             statement.setLong(6, amount);
             statement.setLong(7, now);
             statement.setLong(8, now);
-            statement.executeUpdate();
+            if (guardLease) {
+                statement.setString(9, world);
+                statement.setLong(10, areaId);
+            }
+            return statement.executeUpdate() == 1;
         } catch (SQLException ex) {
             LandClaim.logger().error("Could not journal economy operation: " + ex.getMessage());
+            return false;
         }
     }
 
