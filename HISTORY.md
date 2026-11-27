@@ -4,14 +4,13 @@
 
 ## Unreleased
 
-- Remove the unused radial city expansion handler. Expansion runs through City Management.
+## [0.23.1] - 2026-11-27 | OZ Land Claim city lease recovery
 
-- Show a native message when a city lease confirmation refers to a plot that is already occupied.
-- Confirm city rent in Rising World’s native Yes/No dialog with the daily rent and its currency.
+- City lease confirmation checks current terms and journals payment before assigning the area. Stale confirmations report that the plot is occupied. The native confirmation includes daily rent and currency.
+- Claim shutdown reports cache write failures. Packaged permission templates use the shared Tools copier and preserve local files by default.
+- Keep correlated lease and Wallet journal records when reviewing rollback.
 
-- City lease confirmation checks stored terms and journals payment before assigning ownership. Shutdown reports failed final claim-cache writes.
-
-- Add a repeatable neutral-zone conversion for a departing player's native areas, retaining other players' permissions and appending `(verlassen)` to the name.
+Requires OZ Tools 0.30.0.
 
 ## [0.22.2] - 2026-10-15 | Discord event threads
 

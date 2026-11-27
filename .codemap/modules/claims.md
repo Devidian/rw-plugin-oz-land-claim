@@ -12,5 +12,12 @@ Claim acquisition, protection and area permissions. Claim records and permission
 - [`ClaimModePolicy`](../../src/de/omegazirkel/risingworld/landclaim/ClaimModePolicy.java)
 - [`LandClaimChunkStore`](../../src/de/omegazirkel/risingworld/landclaim/db/LandClaimChunkStore.java)
 - [`AreaPermissionPanel`](../../src/de/omegazirkel/risingworld/landclaim/ui/AreaPermissionPanel.java)
+- [`PermissionFileUtil`](../../src/de/omegazirkel/risingworld/landclaim/PermissionFileUtil.java) delegates copying to Tools. Land Claim owns the packaged templates and selects which files to install.
+
+## Dependencies
+
+- `rw-plugin-oz-tools/shared-api` — shared area permission template copying. [Evidence](../../src/de/omegazirkel/risingworld/landclaim/PermissionFileUtil.java)
+
+## See also
 
 See the [repository index](../README.md) for lifecycle, build and cross-repository dependencies.
